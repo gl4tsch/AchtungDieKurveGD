@@ -16,6 +16,8 @@ public partial class SnakeComputer : TextureRect
     Rid uniformSet;
     Rid snakeBuffer;
 
+    double tempTime = 0;
+
     public struct SnakeData
     {
         public float prevPosX, prevPosY, newPosX, newPosY;
@@ -102,25 +104,15 @@ public partial class SnakeComputer : TextureRect
     public override void _Process(double delta)
     {
         base._Process(delta);
-        ComputeSync();
-        DisplayArena();
-    }
 
-    void ComputeSync()
-    {
-        ComputeAsync();
-        rd.Sync();
-    }
+        tempTime += delta;
 
-    void ComputeAsync()
-    {
-        // update snake data buffer
         var snakesData = new SnakeData[] {
             new SnakeData(){
-            prevPosX = 10,
-            prevPosY = 10,
-            newPosX = 400,
-            newPosY = 400,
+            prevPosX = 10 + (float)tempTime * 10,
+            prevPosY = 10 + (float)tempTime * 10,
+            newPosX = 10 + (float)tempTime * 10 + 5,
+            newPosY = 10 + (float)tempTime * 10 + 5,
             thickness = 10,
             colorR = 1,
             colorG = 1,
@@ -128,6 +120,20 @@ public partial class SnakeComputer : TextureRect
             colorA = 1,
             collision = 0
         } };
+
+        ComputeSync(snakesData);
+        DisplayArena();
+    }
+
+    void ComputeSync(SnakeData[] snakesData)
+    {
+        ComputeAsync(snakesData);
+        rd.Sync();
+    }
+
+    void ComputeAsync(SnakeData[] snakesData)
+    {
+        // update snake data buffer
         var snakesBytes = snakesData[0].ToByteArray();
         rd.BufferUpdate(snakeBuffer, 0, SnakeData.SizeInByte * (uint)snakesData.Length, snakesBytes);
 
