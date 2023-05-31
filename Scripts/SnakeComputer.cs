@@ -1,7 +1,9 @@
+using System.Linq;
 using System.IO;
 using Godot;
 using Godot.Collections;
 using System;
+using System.Collections.Generic;
 
 public partial class SnakeComputer : TextureRect
 {
@@ -17,38 +19,11 @@ public partial class SnakeComputer : TextureRect
     Rid snakeBuffer;
 
     double tempTime = 0;
-
-    public struct SnakeData
-    {
-        public float prevPosX, prevPosY, newPosX, newPosY;
-        public float thickness;
-        public float colorR, colorG, colorB, colorA;
-        public int collision; // bool
-
-        public byte[] ToByteArray()
-        {
-            var stream = new MemoryStream();
-            var writer = new BinaryWriter(stream);
-
-            writer.Write(this.prevPosX);
-            writer.Write(this.prevPosY);
-            writer.Write(this.newPosX);
-            writer.Write(this.newPosY);
-            writer.Write(this.thickness);
-            writer.Write(this.colorR);
-            writer.Write(this.colorG);
-            writer.Write(this.colorB);
-            writer.Write(this.colorA);
-            writer.Write(this.collision);
-
-            return stream.ToArray();
-        }
-
-        public static uint SizeInByte => sizeof(float) * 9 + sizeof(int);
-    }
+    Snake[] snakes;
 
     public SnakeComputer()
     {
+        InitializeSnakes(1000);
         InitializeComputeShader();
     }
 
@@ -58,7 +33,7 @@ public partial class SnakeComputer : TextureRect
         rd = RenderingServer.CreateLocalRenderingDevice();
 
         // load GLSL shader
-        shaderFile = GD.Load<RDShaderFile>("res://snakeCompute.glsl");
+        shaderFile = GD.Load<RDShaderFile>("res://Scripts/SnakeCompute.glsl");
         var shaderBytecode = shaderFile.GetSpirV();
         shader = rd.ShaderCreateFromSpirV(shaderBytecode);
 
@@ -88,7 +63,7 @@ public partial class SnakeComputer : TextureRect
         arenaUniform.AddId(arenaTex);
 
         // create snake buffer
-        snakeBuffer = rd.StorageBufferCreate(SnakeData.SizeInByte); // max 1 snake for now
+        snakeBuffer = rd.StorageBufferCreate(SnakeData.SizeInByte * (uint)snakes.Length);
 
         // create a snake uniform to assign the snake buffer to the rendering device
         var snakeUniform = new RDUniform
@@ -101,25 +76,28 @@ public partial class SnakeComputer : TextureRect
         uniformSet = rd.UniformSetCreate(new Array<RDUniform> { arenaUniform, snakeUniform }, shader, 0);
     }
 
+    void InitializeSnakes(int snakeCount)
+    {
+        var rng = new RandomNumberGenerator();
+        snakes = new Snake[snakeCount];
+        for (int i = 0; i < snakeCount; i++)
+        {
+            snakes[i] = new Snake();
+            snakes[i].Color = new Color(rng.RandfRange(0, 1), rng.RandfRange(0, 1), rng.RandfRange(0, 1), 1);
+            snakes[i].RandomizeStartPos(new Vector2I((int)pxWidth, (int)pxHeight));
+        }
+    }
+
     public override void _Process(double delta)
     {
         base._Process(delta);
 
-        tempTime += delta;
-
-        var snakesData = new SnakeData[] {
-            new SnakeData(){
-            prevPosX = 10 + (float)tempTime * 10,
-            prevPosY = 10 + (float)tempTime * 10,
-            newPosX = 10 + (float)tempTime * 10 + 5,
-            newPosY = 10 + (float)tempTime * 10 + 5,
-            thickness = 10,
-            colorR = 1,
-            colorG = 1,
-            colorB = 0,
-            colorA = 1,
-            collision = 0
-        } };
+        var snakesData = new SnakeData[snakes.Length];
+        for(int i = 0; i < snakes.Length; i++)
+        {
+            snakes[i].Update((float)delta);
+            snakesData[i] = snakes[i].GetComputeData();
+        }
 
         ComputeSync(snakesData);
         DisplayArena();
@@ -134,8 +112,13 @@ public partial class SnakeComputer : TextureRect
     void ComputeAsync(SnakeData[] snakesData)
     {
         // update snake data buffer
-        var snakesBytes = snakesData[0].ToByteArray();
-        rd.BufferUpdate(snakeBuffer, 0, SnakeData.SizeInByte * (uint)snakesData.Length, snakesBytes);
+        List<byte> snakesBytes = new List<byte>();
+
+        foreach (var data in snakesData)
+        {
+            snakesBytes.AddRange(data.ToByteArray());
+        }
+        rd.BufferUpdate(snakeBuffer, 0, (uint)snakesBytes.Count(), snakesBytes.ToArray());
 
         var computeList = rd.ComputeListBegin();
         rd.ComputeListBindComputePipeline(computeList, pipeline);

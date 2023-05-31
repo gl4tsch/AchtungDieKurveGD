@@ -1,0 +1,14 @@
+[remap]
+
+importer="glsl"
+type="RDShaderFile"
+uid="uid://b6aumiyfp2u4y"
+path="res://.godot/imported/SnakeCompute.glsl-1a4de95ea14c680c55292f0ad03ccb2d.res"
+
+[deps]
+
+source_file="res://Scripts/SnakeCompute.glsl"
+dest_files=["res://.godot/imported/SnakeCompute.glsl-1a4de95ea14c680c55292f0ad03ccb2d.res"]
+
+[params]
+

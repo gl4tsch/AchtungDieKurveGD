@@ -11,8 +11,8 @@ layout(r8, binding = 0) restrict uniform image2D arena;
 
 struct GLSLSnakeData
 {
-    float prevPosX, prevPosY, newPosX, newPosY;
-    float thickness;
+    int prevPosX, prevPosY, newPosX, newPosY;
+    int halfThickness;
     float colorR, colorG, colorB, colorA;
     int collision; // bool
 };
@@ -33,9 +33,6 @@ void main() {
 	// Grab the current pixel's position from the ID of this specific invocation ("thread").
 	ivec2 coords = ivec2(gl_GlobalInvocationID.xy);
 	ivec2 dimensions = imageSize(arena);
-
-	// Even though the image format only has the red channel,
-	// this will still return a vec4: `vec4(red, 0.0, 0.0, 1.0)`
 	vec4 pixel = imageLoad(arena, coords);
 
 	for (int i = 0; i < snakeBuffer.snakes.length(); i++)
@@ -46,7 +43,7 @@ void main() {
 		vec4 color = vec4(snake.colorR, snake.colorG, snake.colorB, snake.colorA);
 		float distToSegment = sdSegment(coords, prevPos, newPos);
 
-		if (distToSegment <= snake.thickness / 2)
+		if (distToSegment <= snake.halfThickness)
 		{
 			imageStore(arena, coords, color);
 		}
