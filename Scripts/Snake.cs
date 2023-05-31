@@ -38,7 +38,7 @@ public class Snake
             prevPosY = Mathf.RoundToInt(pxPrevPos.Y),
             newPosX = Mathf.RoundToInt(PxPosition.X),
             newPosY = Mathf.RoundToInt(PxPosition.Y),
-            thickness = Mathf.RoundToInt(PxThickness / 2),
+            halfThickness = Mathf.RoundToInt(PxThickness / 2),
             colorR = Color.R,
             colorG = Color.G,
             colorB = Color.B,
@@ -51,7 +51,7 @@ public class Snake
 public struct SnakeData
 {
     public int prevPosX, prevPosY, newPosX, newPosY;
-    public int thickness;
+    public int halfThickness;
     public float colorR, colorG, colorB, colorA;
     public int collision; // bool
 
@@ -65,7 +65,7 @@ public struct SnakeData
         writer.Write(this.prevPosY);
         writer.Write(this.newPosX);
         writer.Write(this.newPosY);
-        writer.Write(this.thickness);
+        writer.Write(this.halfThickness);
         writer.Write(this.colorR);
         writer.Write(this.colorG);
         writer.Write(this.colorB);
