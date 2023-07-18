@@ -14,7 +14,7 @@ public partial class SnakeComputer : TextureRect
     RDShaderFile snakeShaderFile, explosionShaderFile;
     Rid snakeShader, explosionShader;
     Rid snakePipeline, explosionPipeline;
-    Rid arenaTex;
+    Rid arenaTexRead, arenaTexWrite;
     Rid snakeUniformSet, explodyUniformSet;
     Rid snakeBuffer, explodyBuffer, paramsBuffer;
 
@@ -48,27 +48,46 @@ public partial class SnakeComputer : TextureRect
         snakePipeline = rd.ComputePipelineCreate(snakeShader);
         explosionPipeline = rd.ComputePipelineCreate(explosionShader);
 
-        // create arena texture format
-        var arenaTexFormat = new RDTextureFormat();
-        arenaTexFormat.Format = RenderingDevice.DataFormat.R8G8B8A8Unorm;
-        arenaTexFormat.Width = pxWidth;
-        arenaTexFormat.Height = pxHeight;
-        arenaTexFormat.Depth = 4;
-        arenaTexFormat.UsageBits =
+        // create arena read texture format
+        var arenaTexReadFormat = new RDTextureFormat();
+        arenaTexReadFormat.Format = RenderingDevice.DataFormat.R8G8B8A8Unorm;
+        arenaTexReadFormat.Width = pxWidth;
+        arenaTexReadFormat.Height = pxHeight;
+        arenaTexReadFormat.Depth = 1;
+        arenaTexReadFormat.UsageBits =
             RenderingDevice.TextureUsageBits.StorageBit |
-            RenderingDevice.TextureUsageBits.CanUpdateBit |
-            RenderingDevice.TextureUsageBits.CanCopyFromBit;
-        
-        // create arena texture
-        arenaTex = rd.TextureCreate(arenaTexFormat, new RDTextureView());
+            RenderingDevice.TextureUsageBits.CanUpdateBit;
 
-        // arena tex uniform
-        var arenaUniform = new RDUniform
+        // create arena write texture format
+        var arenaTexWriteFormat = new RDTextureFormat();
+        arenaTexWriteFormat.Format = RenderingDevice.DataFormat.R8G8B8A8Unorm;
+        arenaTexWriteFormat.Width = pxWidth;
+        arenaTexWriteFormat.Height = pxHeight;
+        arenaTexWriteFormat.Depth = 1;
+        arenaTexWriteFormat.UsageBits =
+            RenderingDevice.TextureUsageBits.CanCopyFromBit |
+            RenderingDevice.TextureUsageBits.StorageBit |
+            RenderingDevice.TextureUsageBits.CanUpdateBit;
+
+        // create arena textures
+        arenaTexRead = rd.TextureCreate(arenaTexReadFormat, new RDTextureView());
+        arenaTexWrite = rd.TextureCreate(arenaTexWriteFormat, new RDTextureView());
+
+        // arena input tex uniform
+        var arenaInUniform = new RDUniform
         {
             UniformType = RenderingDevice.UniformType.Image,
-            Binding = 0
+            Binding = 0 // the in tex
         };
-        arenaUniform.AddId(arenaTex);
+        arenaInUniform.AddId(arenaTexRead);
+
+        // arena output tex uniform
+        var arenaOutUniform = new RDUniform
+        {
+            UniformType = RenderingDevice.UniformType.Image,
+            Binding = 1 // the out tex
+        };
+        arenaOutUniform.AddId(arenaTexWrite);
 
         // create snake buffer
         snakeBuffer = rd.StorageBufferCreate(SnakeData.SizeInByte * (uint)snakes.Length);
@@ -89,7 +108,7 @@ public partial class SnakeComputer : TextureRect
         var explodyUniform = new RDUniform
         {
             UniformType = RenderingDevice.UniformType.StorageBuffer,
-            Binding = 1
+            Binding = 2
         };
         explodyUniform.AddId(explodyBuffer);
 
@@ -97,12 +116,12 @@ public partial class SnakeComputer : TextureRect
         var paramsUniform = new RDUniform
         {
             UniformType = RenderingDevice.UniformType.StorageBuffer,
-            Binding = 2
+            Binding = 3
         };
         paramsUniform.AddId(paramsBuffer);
 
-        snakeUniformSet = rd.UniformSetCreate(new Array<RDUniform> { arenaUniform, snakeUniform }, snakeShader, 0);
-        explodyUniformSet = rd.UniformSetCreate(new Array<RDUniform> { arenaUniform, explodyUniform, paramsUniform}, explosionShader, 0);
+        snakeUniformSet = rd.UniformSetCreate(new Array<RDUniform> { arenaInUniform, snakeUniform }, snakeShader, 0);
+        explodyUniformSet = rd.UniformSetCreate(new Array<RDUniform> { arenaInUniform, arenaOutUniform, explodyUniform, paramsUniform }, explosionShader, 0);
     }
 
     void InitializeSnakes(int snakeCount)
@@ -128,7 +147,7 @@ public partial class SnakeComputer : TextureRect
             snakesData[i] = snakes[i].GetComputeData();
         }
 
-        ComputeSnakesSync(snakesData);
+        //ComputeSnakesSync(snakesData);
         ExplodyTest((float)delta);
         DisplayArena();
     }
@@ -174,6 +193,8 @@ public partial class SnakeComputer : TextureRect
             px.xDir = rng.RandfRange(-1, 1);
             px.yDir = rng.RandfRange(-1, 1);
             px.r = 1;
+            px.g = 1;
+            px.b = 0;
             explodyBytes.AddRange(px.ToByteArray());
         }
         rd.BufferUpdate(explodyBuffer, 0, (uint)testExplodyPxCount * ExplodyPixelData.SizeInByte, explodyBytes.ToArray());
@@ -182,7 +203,7 @@ public partial class SnakeComputer : TextureRect
     // explision tests
     void ExplodyTest(float deltaTime)
     {
-        rd.BufferUpdate(paramsBuffer, 0, sizeof(float), new byte[]{(byte)deltaTime});
+        rd.BufferUpdate(paramsBuffer, 0, sizeof(float), BitConverter.GetBytes(deltaTime));
 
         var computeList = rd.ComputeListBegin();
         rd.ComputeListBindComputePipeline(computeList, explosionPipeline);
@@ -198,10 +219,11 @@ public partial class SnakeComputer : TextureRect
 
     void DisplayArena()
     {
-        var texBytes = rd.TextureGetData(arenaTex, 0);
+        var texBytes = rd.TextureGetData(arenaTexWrite, 0);
         var arenaImg = Image.CreateFromData((int)pxWidth, (int)pxHeight, false, Image.Format.Rgba8, texBytes);
         var displayTex = ImageTexture.CreateFromImage(arenaImg);
         Texture = displayTex;
+        rd.TextureUpdate(arenaTexRead, 0, texBytes);
     }
 }
 

@@ -6,7 +6,8 @@ layout(local_size_x = 16, local_size_y = 1, local_size_z = 1) in;
 // Prepare memory for the image, which will be both read and written to
 // `restrict` is used to tell the compiler that the memory will only be accessed
 // by this variable.
-layout(r8, binding = 0) restrict uniform image2D arena;
+layout(r8, binding = 0) restrict uniform image2D arenaIn;
+layout(r8, binding = 1) restrict uniform image2D arenaOut;
 
 struct GLSLExplodyPixelData
 {
@@ -15,15 +16,20 @@ struct GLSLExplodyPixelData
     float r, g, b;
 };
 
-layout(set = 0, binding = 1, std430) restrict buffer ExplodyPixelBuffer {
+layout(set = 0, binding = 2, std430) restrict buffer ExplodyPixelBuffer {
     GLSLExplodyPixelData pixels[];
 }
 explodyPixelBuffer;
 
-layout(set = 0, binding = 2, std430) restrict buffer Params {
+layout(set = 0, binding = 3, std430) restrict buffer Params {
 	float deltaTime;
 }
 params;
+
+float pxMoveSpeed = 100.0;
+float pxSpeedDecay = 1; // percent lost per second (?)
+float pxAlpha = 0.9;
+float pxEqualityThreshold = 0.01;
 
 void main() {
 
@@ -31,24 +37,29 @@ void main() {
 	if (pxIdx >= explodyPixelBuffer.pixels.length()) {
 		return;
 	}
+
 	GLSLExplodyPixelData px = explodyPixelBuffer.pixels[pxIdx];
 	vec2 pos = vec2(px.xPos, px.yPos);
 	ivec2 coords = ivec2(pos.x, pos.y);
-	vec4 color = vec4(px.r, px.g, px.b, 0.5);
+	vec4 color = vec4(px.r, px.g, px.b, pxAlpha);
 
-	// remove old pixel if still there
-	if (imageLoad(arena, coords).rgb == color.rgb)
-	{
-		//imageStore(arena, coords, vec4(0,0,0,0));
-	}
-
-	// calculate new position and velocity
+	// calculate new position
 	vec2 moveDirection = vec2(px.xDir, px.yDir);
-	vec2 newPos = pos + moveDirection; // * params.deltaTime * 100.0;
+	vec2 newPos = pos + moveDirection * params.deltaTime * pxMoveSpeed;
 	explodyPixelBuffer.pixels[pxIdx].xPos = newPos.x;
 	explodyPixelBuffer.pixels[pxIdx].yPos = newPos.y;
+	ivec2 newCoords = ivec2(newPos.x, newPos.y);
+	// calculate new velocity
+	moveDirection *= clamp(1.0 - pxSpeedDecay * params.deltaTime, 0.0, 1.0);
+	explodyPixelBuffer.pixels[pxIdx].xDir = moveDirection.x;
+	explodyPixelBuffer.pixels[pxIdx].yDir = moveDirection.y;
+
+	// remove old pixel if still there
+	if (distance(imageLoad(arenaIn, coords), color) < pxEqualityThreshold)
+	{
+		imageStore(arenaOut, coords, vec4(0,0,0,0));
+	}
 
 	// draw new pixel
-	ivec2 newCoords = ivec2(newPos.x, newPos.y);
-	imageStore(arena, newCoords, color);
+	imageStore(arenaOut, newCoords, color);
 }
