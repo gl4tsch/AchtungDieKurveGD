@@ -9,17 +9,19 @@ layout(local_size_x = 8, local_size_y = 8, local_size_z = 1) in;
 // by this variable.
 layout(r8, binding = 0) restrict uniform image2D arena;
 
-struct GLSLSnakeData
-{
-    int prevPosX, prevPosY, newPosX, newPosY;
-    int halfThickness;
-    float colorR, colorG, colorB, colorA;
-    int collision; // bool
-};
+// select pixels in circle at center with radius
+layout(set = 0, binding = 1, std430) restrict buffer PixelFilter {
+	ivec2 center;
+	float radius;
+	// all colors for now
+} pixelFilter;
 
-layout(set = 0, binding = 1, std430) restrict buffer SnakeBuffer {
-    GLSLSnakeData[] snakes;
-} snakeBuffer;
+// this gets filled with coordinates
+layout(set = 0, binding = 2, std430) restrict buffer PixelBuffer {
+    vec2[512*512] pixels;
+	int size;
+	uint insertIdx;
+} pixelBuffer;
 
 float sdSegment( vec2 p, vec2 a, vec2 b )
 {
@@ -31,20 +33,10 @@ float sdSegment( vec2 p, vec2 a, vec2 b )
 void main() {
 	// Grab the current pixel's position from the ID of this specific invocation ("thread").
 	ivec2 coords = ivec2(gl_GlobalInvocationID.xy);
-	ivec2 dimensions = imageSize(arena);
 	vec4 pixel = imageLoad(arena, coords);
-
-	for (int i = 0; i < snakeBuffer.snakes.length(); i++)
+	if (pixel.a == 1 && distance(coords, pixelFilter.center) <= pixelFilter.radius)
 	{
-		GLSLSnakeData snake = snakeBuffer.snakes[i];
-		vec2 prevPos = vec2(snake.prevPosX, snake.prevPosY);
-		vec2 newPos = vec2(snake.newPosX, snake.newPosY);
-		vec4 color = vec4(snake.colorR, snake.colorG, snake.colorB, snake.colorA);
-		float distToSegment = sdSegment(coords, prevPos, newPos);
-
-		if (distToSegment <= snake.halfThickness)
-		{
-			imageStore(arena, coords, color);
-		}
+		uint idx = atomicAdd(pixelBuffer.insertIdx, 1);
+		pixelBuffer.pixels[idx] = coords;
 	}
 }

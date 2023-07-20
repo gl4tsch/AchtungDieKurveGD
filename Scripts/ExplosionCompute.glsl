@@ -28,7 +28,7 @@ params;
 
 float pxMoveSpeed = 100.0;
 float pxSpeedDecay = 1; // percent lost per second (?)
-float pxAlpha = 0.9;
+float pxAlpha = 0.99;
 float pxEqualityThreshold = 0.01;
 
 void main() {
