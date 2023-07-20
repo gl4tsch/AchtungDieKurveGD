@@ -1,3 +1,4 @@
+using System.Linq.Expressions;
 using System.Linq;
 using System.IO;
 using Godot;
@@ -11,25 +12,28 @@ public partial class SnakeComputer : TextureRect
     uint pxWidth = 512, pxHeight = 512;
 
     RenderingDevice rd;
-    RDShaderFile snakeShaderFile, explosionShaderFile;
-    Rid snakeShader, explosionShader;
-    Rid snakePipeline, explosionPipeline;
+    RDShaderFile snakeShaderFile, explosionShaderFile, pixelSelectShaderFile;
+    Rid snakeShader, explosionShader, pixelSelectShader;
+    Rid snakePipeline, explosionPipeline, pixelSelectPipeline;
     Rid arenaTexRead, arenaTexWrite;
-    Rid snakeUniformSet, explodyUniformSet;
-    Rid snakeBuffer, explodyBuffer, paramsBuffer;
+    Rid snakeUniformSet, explodyUniformSet, pixelSelectUniformSet;
+    Rid snakeBuffer, explodyBuffer, paramsBuffer, pxFilterBuffer, selectedPixelsBuffer;
 
     double tempTime = 0;
     Snake[] snakes;
     SnakeData[] snakesData;
     int testExplodyPxCount = 511;
+    List<Explosion> activeExplosions = new List<Explosion>();
+    ulong startTime;
 
     public SnakeComputer()
     {
+        startTime = Time.GetTicksMsec();
         InitializeSnakes(2);
         InitArenaTextures();
         InitSnakeComputeShader();
         InitExplodeComputeShader();
-        ExplodyInit();
+        InitPixelSelectComputeShader();
     }
 
     void InitArenaTextures()
@@ -145,6 +149,49 @@ public partial class SnakeComputer : TextureRect
         explodyUniformSet = rd.UniformSetCreate(new Array<RDUniform> { arenaInUniform, arenaOutUniform, explodyUniform, paramsUniform }, explosionShader, 0);
     }
 
+    void InitPixelSelectComputeShader()
+    {
+        // load GLSL shader
+        pixelSelectShaderFile = GD.Load<RDShaderFile>("res://Scripts/PixelSelectCompute.glsl");
+        var pxSelectBytecode = pixelSelectShaderFile.GetSpirV();
+        pixelSelectShader = rd.ShaderCreateFromSpirV(pxSelectBytecode);
+
+        // Create a compute pipeline
+        pixelSelectPipeline = rd.ComputePipelineCreate(pixelSelectShader);
+
+        // arena input tex uniform
+        var arenaUniform = new RDUniform
+        {
+            UniformType = RenderingDevice.UniformType.Image,
+            Binding = 0 // the in tex
+        };
+        arenaUniform.AddId(arenaTexWrite);
+
+        // create filter buffer
+        pxFilterBuffer = rd.StorageBufferCreate(sizeof(int) * 2 + sizeof(float));
+
+        // create a uniform to assign the buffer to the rendering device
+        var pxFilterUniform = new RDUniform
+        {
+            UniformType = RenderingDevice.UniformType.StorageBuffer,
+            Binding = 1
+        };
+        pxFilterUniform.AddId(pxFilterBuffer);
+
+        // create output buffer
+        selectedPixelsBuffer = rd.StorageBufferCreate(sizeof(int)*512*512*2 + sizeof(uint));
+
+        // create a uniform to assign the buffer to the rendering device
+        var selectedPxUniform = new RDUniform
+        {
+            UniformType = RenderingDevice.UniformType.StorageBuffer,
+            Binding = 2
+        };
+        selectedPxUniform.AddId(selectedPixelsBuffer);
+
+        pixelSelectUniformSet = rd.UniformSetCreate(new Array<RDUniform> { arenaUniform, pxFilterUniform, selectedPxUniform }, pixelSelectShader, 0);
+    }
+
     void InitializeSnakes(int snakeCount)
     {
         var rng = new RandomNumberGenerator();
@@ -158,34 +205,81 @@ public partial class SnakeComputer : TextureRect
         snakesData = new SnakeData[snakes.Length];
     }
 
-    void ExplodyInit()
+    void Explode(Vector2I center, float radius)
     {
-        // update explosion data buffer
-        List<byte> explodyBytes = new List<byte>();
-        var rng = new RandomNumberGenerator();
+        var pixels = SelectPixels(center, radius);
+        //GD.Print(pixels[0] + " " + pixels[1] + " " + pixels[2] + " " + pixels[3] + " " + pixels[4]);
 
-        for (int i = 0; i < testExplodyPxCount; i++)
+        var rng = new RandomNumberGenerator();
+        List<byte> explodyPixels = new List<byte>();
+
+        for (int i = 0; i < pixels.Length; i+=2)
         {
-            var px = new ExplodyPixelData();
-            px.xPos = i;
-            px.yPos = i;
-            px.xDir = rng.RandfRange(-1, 1);
-            px.yDir = rng.RandfRange(-1, 1);
-            px.r = 1;
-            px.g = 1;
-            px.b = 0;
-            explodyBytes.AddRange(px.ToByteArray());
+            var ePx = new ExplodyPixelData{
+                xPos = pixels[i],
+                yPos = pixels[i+1],
+                xDir = rng.RandfRange(-1, 1),
+                yDir = rng.RandfRange(-1, 1),
+                r = 1,
+                g = 0,
+                b = 0
+            };
+            explodyPixels.AddRange(ePx.ToByteArray());
         }
-        rd.BufferUpdate(explodyBuffer, 0, (uint)testExplodyPxCount * ExplodyPixelData.SizeInByte, explodyBytes.ToArray());
+
+        activeExplosions.Add(new Explosion{
+            pixelData = explodyPixels.ToArray(),
+            center = center,
+            radius = radius,
+            duration = 10f
+        });
+    }
+
+    uint[] SelectPixels(Vector2I center, float radius)
+    {
+        // select the pixels involved in the explosion
+        var xBytes = BitConverter.GetBytes(center.X).ToList();
+        var yBytes = BitConverter.GetBytes(center.Y).ToList();
+        var rBytes = BitConverter.GetBytes(radius).ToList();
+        var data = xBytes.Concat(yBytes).Concat(rBytes).ToArray();
+        rd.BufferUpdate(pxFilterBuffer, 0, sizeof(int)*2 + sizeof(float), data);
+        // reset the array insertion index
+        rd.BufferUpdate(selectedPixelsBuffer, 0, sizeof(uint), BitConverter.GetBytes((uint)0));
+
+        var computeList = rd.ComputeListBegin();
+        rd.ComputeListBindComputePipeline(computeList, pixelSelectPipeline);
+        rd.ComputeListBindUniformSet(computeList, pixelSelectUniformSet, 0);
+        rd.ComputeListDispatch(computeList, xGroups: pxWidth / 8, yGroups: pxHeight / 8, zGroups: 1);
+        rd.ComputeListEnd();
+
+        // force the GPU to start the commands
+        rd.Submit();
+        rd.Sync();
+
+        byte byteSize = rd.BufferGetData(selectedPixelsBuffer, 0, sizeof(uint))[0]; // should be an array of length 1
+        uint numPixels = Convert.ToUInt32(byteSize);
+        GD.Print("# exploding pixels: " + numPixels);
+
+        // offset by insertion index size
+        var pixelData = rd.BufferGetData(selectedPixelsBuffer, sizeof(uint), sizeof(uint) * 512 * 512 * 2);
+        uint[] pixels = new uint[numPixels * sizeof(uint)];
+        Buffer.BlockCopy(pixelData, 0, pixels, 0, pixels.Length);
+        return pixels;
     }
 
     public override void _Process(double delta)
     {
         base._Process(delta);
 
+        if (Time.GetTicksMsec()-startTime > 3000)
+        {
+            Explode(new Vector2I(200, 200), 100);
+            startTime = Time.GetTicksMsec();
+        }
+
         UpdateSnakeData(delta);
         ComputeSnakesSync(snakesData);
-        //UpdateExplosions((float)delta);
+        UpdateExplosions((float)delta);
         DisplayArena();
     }
 
@@ -225,21 +319,36 @@ public partial class SnakeComputer : TextureRect
         rd.Submit();
     }
 
-    // explision tests
     void UpdateExplosions(float deltaTime)
     {
+        if (activeExplosions.Count == 0)
+            return;
+
         rd.BufferUpdate(paramsBuffer, 0, sizeof(float), BitConverter.GetBytes(deltaTime));
 
-        var computeList = rd.ComputeListBegin();
-        rd.ComputeListBindComputePipeline(computeList, explosionPipeline);
-        rd.ComputeListBindUniformSet(computeList, explodyUniformSet, 0);
-        int numGroupsX = Mathf.CeilToInt(testExplodyPxCount / (float)16); // 16 = num thread groups x
-        rd.ComputeListDispatch(computeList, xGroups: (uint)numGroupsX, yGroups: 1, zGroups: 1);
-        rd.ComputeListEnd();
+        for (int i = activeExplosions.Count - 1; i >= 0; i--)
+        {
+            var explosion = activeExplosions[i];
+            explosion.elapsedTime += deltaTime;
+            if (explosion.elapsedTime > explosion.duration)
+            {
+                activeExplosions.Remove(explosion);
+                continue;
+            }
 
-        // force the GPU to start the commands
-        rd.Submit();
-        rd.Sync();
+            rd.BufferUpdate(explodyBuffer, 0, (uint)explosion.pixelData.Length, explosion.pixelData);
+
+            var computeList = rd.ComputeListBegin();
+            rd.ComputeListBindComputePipeline(computeList, explosionPipeline);
+            rd.ComputeListBindUniformSet(computeList, explodyUniformSet, 0);
+            int numGroupsX = Mathf.CeilToInt(testExplodyPxCount / (float)16); // 16 = num thread groups x
+            rd.ComputeListDispatch(computeList, xGroups: (uint)numGroupsX, yGroups: 1, zGroups: 1);
+            rd.ComputeListEnd();
+
+            // force the GPU to start the commands
+            rd.Submit();
+            rd.Sync();
+        }
     }
 
     void DisplayArena()
@@ -249,29 +358,5 @@ public partial class SnakeComputer : TextureRect
         var displayTex = ImageTexture.CreateFromImage(arenaImg);
         Texture = displayTex;
         rd.TextureUpdate(arenaTexRead, 0, texBytes);
-    }
-}
-
-public struct ExplodyPixelData
-{
-    public float xPos, yPos;
-    public float xDir, yDir;
-    public float r, g, b;
-    public static uint SizeInByte => sizeof(float) * 7;
-
-    public byte[] ToByteArray()
-    {
-        var stream = new MemoryStream();
-        var writer = new BinaryWriter(stream);
-
-        writer.Write(this.xPos);
-        writer.Write(this.yPos);
-        writer.Write(this.xDir);
-        writer.Write(this.yDir);
-        writer.Write(this.r);
-        writer.Write(this.g);
-        writer.Write(this.b);
-
-        return stream.ToArray();
     }
 }
