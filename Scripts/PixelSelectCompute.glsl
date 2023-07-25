@@ -19,7 +19,7 @@ layout(set = 0, binding = 1, std430) restrict buffer PixelFilter {
 // this gets filled with coordinates
 layout(set = 0, binding = 2, std430) restrict buffer PixelBuffer {
 	uint insertIdx;
-    ivec2[512*512] pixels;
+    ivec2[] pixels;
 } pixelBuffer;
 
 float sdSegment( vec2 p, vec2 a, vec2 b )
@@ -36,7 +36,7 @@ void main() {
 	if (pixel.w == 1 && distance(coords, pixelFilter.center) <= pixelFilter.radius)
 	{
 		uint idx = atomicAdd(pixelBuffer.insertIdx, 1);
-		pixelBuffer.pixels[idx - 1] = coords; // somehow idx is the value after increment, not before
+		pixelBuffer.pixels[idx] = coords;
 		imageStore(arena, coords, vec4(1,0,0,0.8));
 	}
 }

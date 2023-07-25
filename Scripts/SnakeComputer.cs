@@ -23,12 +23,11 @@ public partial class SnakeComputer : TextureRect
     Snake[] snakes;
     SnakeData[] snakesData;
     List<Explosion> activeExplosions = new List<Explosion>();
-    uint maxPixelsPerExplosion = 512;
-    ulong startTime;
+    uint maxPixelsPerExplosion = 512*512;
+    double timer = 0;
 
     public SnakeComputer()
     {
-        startTime = Time.GetTicksMsec();
         InitializeSnakes(2);
         InitArenaTextures();
         InitSnakeComputeShader();
@@ -65,7 +64,6 @@ public partial class SnakeComputer : TextureRect
         // create arena textures
         arenaTexRead = rd.TextureCreate(arenaTexReadFormat, new RDTextureView());
         arenaTexWrite = rd.TextureCreate(arenaTexWriteFormat, new RDTextureView());
-
     }
 
     void InitSnakeComputeShader()
@@ -179,7 +177,7 @@ public partial class SnakeComputer : TextureRect
         pxFilterUniform.AddId(pxFilterBuffer);
 
         // create output buffer
-        selectedPixelsBuffer = rd.StorageBufferCreate(sizeof(int)*512*512*2 + sizeof(uint));
+        selectedPixelsBuffer = rd.StorageBufferCreate(sizeof(uint) + sizeof(int)* 2 * maxPixelsPerExplosion);
 
         // create a uniform to assign the buffer to the rendering device
         var selectedPxUniform = new RDUniform
@@ -222,7 +220,7 @@ public partial class SnakeComputer : TextureRect
         var rng = new RandomNumberGenerator();
         List<byte> explodyPixels = new List<byte>();
 
-        for (int i = 0; i < pixels.Length; i+=2)
+        for (int i = 0; i < pixels.Length-1; i+=2)
         {
             var ePx = new ExplodyPixelData{
                 xPos = (float)pixels[i],
@@ -248,13 +246,17 @@ public partial class SnakeComputer : TextureRect
         rd.BufferUpdate(explodyBuffer, 0, (uint)explosion.pixelData.Length, explosion.pixelData);
     }
 
-    uint[] SelectPixels(Vector2I center, float radius)
+    int[] SelectPixels(Vector2I center, float radius)
     {
         // select the pixels involved in the explosion
-        var xBytes = BitConverter.GetBytes(center.X).ToList();
-        var yBytes = BitConverter.GetBytes(center.Y).ToList();
-        var rBytes = BitConverter.GetBytes(radius).ToList();
-        var data = xBytes.Concat(yBytes).Concat(rBytes).ToArray();
+        var xBytes = BitConverter.GetBytes(center.X);
+        var yBytes = BitConverter.GetBytes(center.Y);
+        var rBytes = BitConverter.GetBytes(radius);
+        var data = new byte[xBytes.Length + yBytes.Length + rBytes.Length];
+        xBytes.CopyTo(data, 0);
+        yBytes.CopyTo(data, xBytes.Length);
+        rBytes.CopyTo(data, xBytes.Length + yBytes.Length);
+
         rd.BufferUpdate(pxFilterBuffer, 0, sizeof(int)*2 + sizeof(float), data);
         // reset the array insertion index
         rd.BufferUpdate(selectedPixelsBuffer, 0, sizeof(uint), BitConverter.GetBytes((uint)0));
@@ -269,13 +271,13 @@ public partial class SnakeComputer : TextureRect
         rd.Submit();
         rd.Sync();
 
-        byte byteSize = rd.BufferGetData(selectedPixelsBuffer, 0, sizeof(uint))[0]; // should be an array of length 1
-        uint numPixels = Convert.ToUInt32(byteSize);
+        byte[] byteSize = rd.BufferGetData(selectedPixelsBuffer, 0, sizeof(uint));
+        uint numPixels = BitConverter.ToUInt32(byteSize);
         GD.Print("# exploding pixels: " + numPixels);
 
         // offset by insertion index size
-        var pixelData = rd.BufferGetData(selectedPixelsBuffer, sizeof(uint), sizeof(uint) * 512 * 512 * 2);
-        uint[] pixels = new uint[numPixels * sizeof(uint)];
+        var pixelData = rd.BufferGetData(selectedPixelsBuffer, sizeof(uint), sizeof(int) * 2 * maxPixelsPerExplosion);
+        int[] pixels = new int[numPixels];
         Buffer.BlockCopy(pixelData, 0, pixels, 0, pixels.Length);
         return pixels;
     }
@@ -284,10 +286,11 @@ public partial class SnakeComputer : TextureRect
     {
         base._Process(delta);
 
-        if (Time.GetTicksMsec()-startTime > 5000)
+        timer += delta;
+        if (timer > 5)
         {
+            timer = 0;
             Explode(new Vector2I(200, 200), 1000);
-            startTime = Time.GetTicksMsec();
         }
 
         UpdateSnakeData(delta);
