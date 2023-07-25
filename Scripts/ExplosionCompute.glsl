@@ -55,11 +55,16 @@ void main() {
 	explodyPixelBuffer.pixels[pxIdx].yDir = moveDirection.y;
 
 	// remove old pixel if still there
-	if (distance(imageLoad(arenaIn, coords), color) < pxEqualityThreshold)
+	vec4 oldPxColor = imageLoad(arenaIn, coords);
+	if (distance(oldPxColor, color) < pxEqualityThreshold)
 	{
 		imageStore(arenaOut, coords, vec4(0,0,0,0));
 	}
 
-	// draw new pixel
-	imageStore(arenaOut, newCoords, color);
+	// draw new pixel if there is space
+	vec4 newPxColor = imageLoad(arenaIn, newCoords);
+	if (newPxColor.a < 0.98)
+	{
+		imageStore(arenaOut, newCoords, color);
+	}
 }

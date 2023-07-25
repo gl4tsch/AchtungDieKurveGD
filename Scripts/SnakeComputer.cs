@@ -28,7 +28,7 @@ public partial class SnakeComputer : TextureRect
 
     public SnakeComputer()
     {
-        InitializeSnakes(2);
+        InitializeSnakes(1);
         InitArenaTextures();
         InitSnakeComputeShader();
         InitExplodeComputeShader();
@@ -177,7 +177,7 @@ public partial class SnakeComputer : TextureRect
         pxFilterUniform.AddId(pxFilterBuffer);
 
         // create output buffer
-        selectedPixelsBuffer = rd.StorageBufferCreate(sizeof(uint) + sizeof(int)* 2 * maxPixelsPerExplosion);
+        selectedPixelsBuffer = rd.StorageBufferCreate(sizeof(uint) + sizeof(int) * 2 * maxPixelsPerExplosion);
 
         // create a uniform to assign the buffer to the rendering device
         var selectedPxUniform = new RDUniform
@@ -197,7 +197,7 @@ public partial class SnakeComputer : TextureRect
         for (int i = 0; i < snakeCount; i++)
         {
             snakes[i] = new Snake();
-            snakes[i].Color = new Color(rng.RandfRange(0, 1), rng.RandfRange(0, 1), rng.RandfRange(0, 1), 1);
+            //snakes[i].Color = new Color(rng.RandfRange(0, 1), rng.RandfRange(0, 1), rng.RandfRange(0, 1), 1);
             snakes[i].RandomizeStartPos(new Vector2I((int)pxWidth, (int)pxHeight));
         }
         snakesData = new SnakeData[snakes.Length];
@@ -220,17 +220,21 @@ public partial class SnakeComputer : TextureRect
         var rng = new RandomNumberGenerator();
         List<byte> explodyPixels = new List<byte>();
 
-        for (int i = 0; i < pixels.Length-1; i+=2)
+        for (int i = 0; i < pixels.Length; i+=2)
         {
-            var ePx = new ExplodyPixelData{
-                xPos = (float)pixels[i],
-                yPos = (float)pixels[i+1],
-                xDir = rng.RandfRange(-1, 1),
-                yDir = rng.RandfRange(-1, 1),
-                r = 1f,
-                g = 0f,
-                b = 0f
-            };
+            var ePx = new ExplodyPixelData ();
+            Vector2 pos = new Vector2((float)pixels[i], (float)pixels[i+1]);
+            //Vector2 dir = pos - center;
+            Vector2 dir = new Vector2(rng.RandfRange(-1, 1), rng.RandfRange(-1, 1));
+            dir = dir.Normalized();
+            dir *= rng.Randf();
+            ePx.xPos = pos.X;
+            ePx.yPos = pos.Y;
+            ePx.xDir = dir.X;
+            ePx.yDir = dir.Y;
+            ePx.r = 1f;
+            ePx.g = 0f;
+            ePx.b = 0f;
             explodyPixels.AddRange(ePx.ToByteArray());
         }
 
@@ -272,13 +276,13 @@ public partial class SnakeComputer : TextureRect
         rd.Sync();
 
         byte[] byteSize = rd.BufferGetData(selectedPixelsBuffer, 0, sizeof(uint));
-        uint numPixels = BitConverter.ToUInt32(byteSize);
-        GD.Print("# exploding pixels: " + numPixels);
+        uint numCoords = BitConverter.ToUInt32(byteSize);
+        GD.Print("# exploding pixels: " + numCoords / 2);
 
         // offset by insertion index size
-        var pixelData = rd.BufferGetData(selectedPixelsBuffer, sizeof(uint), sizeof(int) * 2 * maxPixelsPerExplosion);
-        int[] pixels = new int[numPixels];
-        Buffer.BlockCopy(pixelData, 0, pixels, 0, pixels.Length);
+        var pixelData = rd.BufferGetData(selectedPixelsBuffer, sizeof(uint), sizeof(int) * numCoords);
+        int[] pixels = new int[numCoords];
+        Buffer.BlockCopy(pixelData, 0, pixels, 0, pixelData.Length);
         return pixels;
     }
 

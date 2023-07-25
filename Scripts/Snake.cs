@@ -7,7 +7,7 @@ public class Snake
     public Color Color = new Color(1,0,0,1);
     public float PxThickness = 10f;
     public float MoveSpeed = 100f;
-    public float TurnRate = 1f;
+    public float TurnRate = 3f;
 
     public int TurnSign{get; private set;} = 1; // 0 = straight, -1 = left, 1 = right
     public Vector2 Direction{get; private set;} = Vector2.Right;
@@ -17,7 +17,7 @@ public class Snake
     public void RandomizeStartPos(Vector2I arenaSize)
     {
         var rng = new RandomNumberGenerator();
-        PxPosition = new Vector2(rng.RandfRange(0, arenaSize.X), rng.RandfRange(0, arenaSize.Y));
+        PxPosition = new Vector2(rng.RandfRange(0 + arenaSize.X / 4, arenaSize.X - arenaSize.X / 4), rng.RandfRange(0 + arenaSize.Y / 4, arenaSize.Y - arenaSize.Y / 4));
         Vector2 arenaCenter = arenaSize / 2;
         Direction = (arenaCenter - PxPosition).Normalized();
     }
