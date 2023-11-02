@@ -16,12 +16,14 @@ struct GLSLExplodyPixelData
     float r, g, b;
 };
 
-layout(set = 0, binding = 2, std430) restrict buffer ExplodyPixelBuffer {
+layout(set = 0, binding = 2, std430) restrict buffer ExplodyPixelBuffer
+{
     GLSLExplodyPixelData pixels[];
 }
 explodyPixelBuffer;
 
-layout(set = 0, binding = 3, std430) restrict buffer Params {
+layout(set = 0, binding = 3, std430) restrict buffer Params
+{
 	float deltaTime;
 }
 params;
@@ -31,10 +33,11 @@ float pxSpeedDecay = 1; // percent lost per second (?)
 float pxAlpha = 0.8;
 float pxEqualityThreshold = 0.01;
 
-void main() {
-
+void main()
+{
 	uint pxIdx = gl_GlobalInvocationID.x;
-	if (pxIdx >= explodyPixelBuffer.pixels.length()) {
+	if (pxIdx >= explodyPixelBuffer.pixels.length())
+	{
 		return;
 	}
 

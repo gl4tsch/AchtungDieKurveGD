@@ -10,14 +10,16 @@ layout(local_size_x = 8, local_size_y = 8, local_size_z = 1) in;
 layout(r8, binding = 0) restrict uniform image2D arena;
 
 // select pixels in circle at center with radius
-layout(set = 0, binding = 1, std430) restrict buffer PixelFilter {
+layout(set = 0, binding = 1, std430) restrict buffer PixelFilter
+{
 	ivec2 center;
 	float radius;
-	// all colors for now
+	// all colors with high enough alpha for now
 } pixelFilter;
 
 // this gets filled with coordinates
-layout(set = 0, binding = 2, std430) restrict buffer PixelBuffer {
+layout(set = 0, binding = 2, std430) restrict buffer PixelBuffer
+{
 	uint insertIdx;
     int[] pixels;
 } pixelBuffer;
@@ -29,7 +31,8 @@ float sdSegment( vec2 p, vec2 a, vec2 b )
     return length( pa - ba*h );
 }
 
-void main() {
+void main()
+{
 	// Grab the current pixel's position from the ID of this specific invocation ("thread").
 	ivec2 coords = ivec2(gl_GlobalInvocationID.xy);
 	vec4 pixel = imageLoad(arena, coords);

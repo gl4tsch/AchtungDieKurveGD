@@ -17,7 +17,8 @@ struct GLSLSnakeData
     int collision; // bool
 };
 
-layout(set = 0, binding = 1, std430) restrict buffer SnakeBuffer {
+layout(set = 0, binding = 1, std430) restrict buffer SnakeBuffer
+{
     GLSLSnakeData[] snakes;
 } snakeBuffer;
 
@@ -28,7 +29,8 @@ float sdSegment( vec2 p, vec2 a, vec2 b )
     return length( pa - ba*h );
 }
 
-void main() {
+void main()
+{
 	// Grab the current pixel's position from the ID of this specific invocation ("thread").
 	ivec2 coords = ivec2(gl_GlobalInvocationID.xy);
 	ivec2 dimensions = imageSize(arena);
