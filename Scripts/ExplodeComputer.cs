@@ -51,19 +51,7 @@ public class ExplodeComputer
         };
         arenaOutUniform.AddId(arenaTexWrite);
 
-        // // create explody buffer
-        // var explodyBuffer = rd.StorageBufferCreate(ExplodyPixelData.SizeInByte * maxExplodingPixels);
-        // explodyBuffers.Add(explodyBuffer);
-        // create params buffer
         paramsBuffer = rd.StorageBufferCreate(sizeof(float));
-
-        // // create an explody uniform to assign the explody buffer to the rendering device
-        // var explodyUniform = new RDUniform
-        // {
-        //     UniformType = RenderingDevice.UniformType.StorageBuffer,
-        //     Binding = 2
-        // };
-        // explodyUniform.AddId(explodyBuffer);
 
         // create params uniform for things like delta time
         paramsUniform = new RDUniform
@@ -133,7 +121,7 @@ public class ExplodeComputer
 
         rd.BufferUpdate(paramsBuffer, 0, sizeof(float), BitConverter.GetBytes(deltaTime));
 
-        // get rid of old explosions
+        // tick explosions and get rid of old explosions
         List<Explosion> finishedExplosions = new();
         foreach (var explosion in activeExplosions)
         {
@@ -143,7 +131,7 @@ public class ExplodeComputer
                 finishedExplosions.Add(explosion);
             }
         }
-        activeExplosions.RemoveAll(e => finishedExplosions.Contains(e));
+        finishedExplosions.Select(explover => activeExplosions.Remove(explover));
 
         foreach (var explosion in activeExplosions)
         {
@@ -154,7 +142,7 @@ public class ExplodeComputer
             rd.ComputeListDispatch(computeList, xGroups: (uint)numGroupsX, yGroups: 1, zGroups: 1);
             rd.ComputeListEnd();
         }
-        
+
         // force the GPU to start the commands
         rd.Submit();
         rd.Sync();

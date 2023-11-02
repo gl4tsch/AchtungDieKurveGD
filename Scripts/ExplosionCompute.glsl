@@ -28,7 +28,7 @@ layout(set = 0, binding = 3, std430) restrict buffer Params
 }
 params;
 
-float pxMoveSpeed = 100.0;
+float pxMoveSpeed = 30.0;
 float pxSpeedDecay = 1; // percent lost per second (?)
 float pxAlpha = 0.8;
 float pxEqualityThreshold = 0.01;
@@ -54,6 +54,7 @@ void main()
 	ivec2 newCoords = ivec2(newPos.x, newPos.y);
 	// calculate new velocity
 	moveDirection *= clamp(1.0 - pxSpeedDecay * params.deltaTime, 0.0, 1.0);
+
 	explodyPixelBuffer.pixels[pxIdx].xDir = moveDirection.x;
 	explodyPixelBuffer.pixels[pxIdx].yDir = moveDirection.y;
 
