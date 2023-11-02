@@ -8,6 +8,7 @@ public class Explosion
     public float duration = 5; // [s]
     public float elapsedTime = 0;
     public byte[] pixelData;
+    public Rid explodyUniformSet;
 }
 
 public struct ExplodyPixelData

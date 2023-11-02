@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using Godot;
 using Godot.Collections;
 
@@ -12,12 +13,11 @@ public class ExplodeComputer
     RDShaderFile explosionShaderFile;
     Rid explosionShader;
     Rid explosionPipeline;
-    Rid explodyUniformSet;
+    RDUniform arenaInUniform, arenaOutUniform, paramsUniform;
     Rid paramsBuffer;
-    Rid explodyBuffer;
+    List<Explosion> activeExplosions = new();
 
     uint maxExplodingPixels = 512 * 512;
-    Explosion activeExplosion;
 
     public ExplodeComputer(RenderingDevice rd, Rid arenaTexRead, Rid arenaTexWrite)
     {
@@ -36,7 +36,7 @@ public class ExplodeComputer
         explosionPipeline = rd.ComputePipelineCreate(explosionShader);
 
         // arena input tex uniform
-        var arenaInUniform = new RDUniform
+        arenaInUniform = new RDUniform
         {
             UniformType = RenderingDevice.UniformType.Image,
             Binding = 0 // the in tex
@@ -44,17 +44,40 @@ public class ExplodeComputer
         arenaInUniform.AddId(arenaTexRead);
 
         // arena output tex uniform
-        var arenaOutUniform = new RDUniform
+        arenaOutUniform = new RDUniform
         {
             UniformType = RenderingDevice.UniformType.Image,
             Binding = 1 // the out tex
         };
         arenaOutUniform.AddId(arenaTexWrite);
 
-        // create explody buffer
-        explodyBuffer = rd.StorageBufferCreate(ExplodyPixelData.SizeInByte * maxExplodingPixels);
+        // // create explody buffer
+        // var explodyBuffer = rd.StorageBufferCreate(ExplodyPixelData.SizeInByte * maxExplodingPixels);
+        // explodyBuffers.Add(explodyBuffer);
         // create params buffer
         paramsBuffer = rd.StorageBufferCreate(sizeof(float));
+
+        // // create an explody uniform to assign the explody buffer to the rendering device
+        // var explodyUniform = new RDUniform
+        // {
+        //     UniformType = RenderingDevice.UniformType.StorageBuffer,
+        //     Binding = 2
+        // };
+        // explodyUniform.AddId(explodyBuffer);
+
+        // create params uniform for things like delta time
+        paramsUniform = new RDUniform
+        {
+            UniformType = RenderingDevice.UniformType.StorageBuffer,
+            Binding = 3
+        };
+        paramsUniform.AddId(paramsBuffer);
+    }
+
+    public void Explode(Vector2I center, float radius, int[] pixels)
+    {
+        // create explody buffer
+        var explodyBuffer = rd.StorageBufferCreate(ExplodyPixelData.SizeInByte * maxExplodingPixels);
 
         // create an explody uniform to assign the explody buffer to the rendering device
         var explodyUniform = new RDUniform
@@ -64,20 +87,8 @@ public class ExplodeComputer
         };
         explodyUniform.AddId(explodyBuffer);
 
-        // create params uniform for things like delta time
-        var paramsUniform = new RDUniform
-        {
-            UniformType = RenderingDevice.UniformType.StorageBuffer,
-            Binding = 3
-        };
-        paramsUniform.AddId(paramsBuffer);
+        var explodyUniformSet = rd.UniformSetCreate(new Array<RDUniform> { arenaInUniform, arenaOutUniform, explodyUniform, paramsUniform }, explosionShader, 0);
 
-        explodyUniformSet = rd.UniformSetCreate(new Array<RDUniform> { arenaInUniform, arenaOutUniform, explodyUniform, paramsUniform }, explosionShader, 0);
-    }
-
-    public void Explode(Vector2I center, float radius, int[] pixels)
-    {
-        GD.Print("Boom");
         //GD.Print(pixels[0] + " " + pixels[1] + " " + pixels[2] + " " + pixels[3] + " " + pixels[4]);
 
         var rng = new RandomNumberGenerator();
@@ -106,33 +117,44 @@ public class ExplodeComputer
             pixelData = explodyPixels.ToArray(),
             center = center,
             radius = radius,
-            duration = 3f
+            duration = 3f,
+            explodyUniformSet = explodyUniformSet
         };
-        activeExplosion = explosion;
-
+        
+        activeExplosions.Add(explosion);
         rd.BufferUpdate(explodyBuffer, 0, (uint)explosion.pixelData.Count(), explosion.pixelData);
+        GD.Print("Boom");
     }
 
     public void UpdateExplosion(float deltaTime)
     {
-        if (activeExplosion == null)
+        if (activeExplosions.Count == 0)
             return;
 
         rd.BufferUpdate(paramsBuffer, 0, sizeof(float), BitConverter.GetBytes(deltaTime));
 
-        activeExplosion.elapsedTime += deltaTime;
-        if (activeExplosion.elapsedTime > activeExplosion.duration)
+        // get rid of old explosions
+        List<Explosion> finishedExplosions = new();
+        foreach (var explosion in activeExplosions)
         {
-            activeExplosion = null;
+            explosion.elapsedTime += deltaTime;
+            if (explosion.elapsedTime > explosion.duration)
+            {
+                finishedExplosions.Add(explosion);
+            }
         }
+        activeExplosions.RemoveAll(e => finishedExplosions.Contains(e));
 
-        var computeList = rd.ComputeListBegin();
-        rd.ComputeListBindComputePipeline(computeList, explosionPipeline);
-        rd.ComputeListBindUniformSet(computeList, explodyUniformSet, 0);
-        int numGroupsX = Mathf.CeilToInt(activeExplosion.pixelData.Length / (float)16); // 16 = num thread groups x
-        rd.ComputeListDispatch(computeList, xGroups: (uint)numGroupsX, yGroups: 1, zGroups: 1);
-        rd.ComputeListEnd();
-
+        foreach (var explosion in activeExplosions)
+        {
+            var computeList = rd.ComputeListBegin();
+            rd.ComputeListBindComputePipeline(computeList, explosionPipeline);
+            rd.ComputeListBindUniformSet(computeList, explosion.explodyUniformSet, 0);
+            int numGroupsX = Mathf.CeilToInt(explosion.pixelData.Length / (float)16); // 16 = num thread groups x
+            rd.ComputeListDispatch(computeList, xGroups: (uint)numGroupsX, yGroups: 1, zGroups: 1);
+            rd.ComputeListEnd();
+        }
+        
         // force the GPU to start the commands
         rd.Submit();
         rd.Sync();
