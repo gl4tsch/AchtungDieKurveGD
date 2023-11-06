@@ -9,10 +9,23 @@ public class Snake
     public float MoveSpeed = 100f;
     public float TurnRate = 3f;
 
-    public int TurnSign{get; private set;} = 1; // 0 = straight, -1 = left, 1 = right
+    public int TurnSign{get; private set;} = 0; // 0 = straight, -1 = left, 1 = right
     public Vector2 Direction{get; private set;} = Vector2.Right;
     public Vector2 PxPosition{get; private set;} = Vector2.Zero;
     Vector2 pxPrevPos;
+
+    // Input
+    // possible alternative: InputAction
+    public Key TurnLeftKey = Key.A;
+    public Key TurnRightKey = Key.D;
+    public Key FireKey = Key.W;
+
+    SnakeComputer snakeComputer;
+
+    public Snake(SnakeComputer snakeComputer)
+    {
+        this.snakeComputer = snakeComputer;
+    }
 
     public void RandomizeStartPos(Vector2I arenaSize)
     {
@@ -20,6 +33,26 @@ public class Snake
         PxPosition = new Vector2(rng.RandfRange(0 + arenaSize.X / 4, arenaSize.X - arenaSize.X / 4), rng.RandfRange(0 + arenaSize.Y / 4, arenaSize.Y - arenaSize.Y / 4));
         Vector2 arenaCenter = arenaSize / 2;
         Direction = (arenaCenter - PxPosition).Normalized();
+    }
+
+    public void HandleInput(InputEventKey keyEvent)
+    {
+        // turn left
+        if (keyEvent.Keycode == TurnLeftKey)
+        {
+            TurnSign += keyEvent.IsPressed() ? -1 : 1;
+        }
+        // turn right
+        if (keyEvent.Keycode == TurnRightKey)
+        {
+            TurnSign += keyEvent.IsPressed() ? 1 : -1;
+        }
+        // fire
+        if (keyEvent.Keycode == FireKey && keyEvent.IsPressed())
+        {
+            GD.Print("Fire!");
+            snakeComputer.ExplosionTest();
+        }
     }
 
     public void Update(float delta)

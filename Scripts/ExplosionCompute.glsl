@@ -28,8 +28,8 @@ layout(set = 0, binding = 3, std430) restrict buffer Params
 }
 params;
 
-float pxMoveSpeed = 30.0;
-float pxSpeedDecay = 1; // percent lost per second (?)
+float pxMoveSpeed = 200.0;
+float pxSpeedDecay = 10; //
 float pxAlpha = 0.8;
 float pxEqualityThreshold = 0.01;
 

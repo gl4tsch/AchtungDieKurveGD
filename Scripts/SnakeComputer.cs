@@ -105,26 +105,30 @@ public partial class SnakeComputer : TextureRect
         snakes = new Snake[snakeCount];
         for (int i = 0; i < snakeCount; i++)
         {
-            snakes[i] = new Snake();
+            snakes[i] = new Snake(this);
             //snakes[i].Color = new Color(rng.RandfRange(0, 1), rng.RandfRange(0, 1), rng.RandfRange(0, 1), 1);
             snakes[i].RandomizeStartPos(new Vector2I((int)pxWidth, (int)pxHeight));
         }
         snakesData = new SnakeData[snakes.Length];
     }
 
+    // input events instead of polling
+    public override void _Input(InputEvent @event)
+    {
+        base._Input(@event);
+        if (@event is InputEventKey keyEvent && !keyEvent.IsEcho())
+        {
+            foreach (Snake snake in snakes)
+            {
+                // handle input per snake
+                snake.HandleInput(keyEvent);
+            }
+        }
+    }
+
     public override void _Process(double delta)
     {
         base._Process(delta);
-
-        timer += delta;
-        if (timer > 0.5)
-        {
-            timer = 0;
-            Vector2I center = new(200, 200);
-            int radius = 1000;
-            int[] pixels = pixelSelector.SelectPixels(center, radius);
-            explodeComputer.Explode(center, radius, pixels);
-        }
 
         UpdateSnakeData(delta);
         ComputeSnakesSync(snakesData);
@@ -139,6 +143,14 @@ public partial class SnakeComputer : TextureRect
             snakes[i].Update((float)delta);
             snakesData[i] = snakes[i].GetComputeData();
         }
+    }
+
+    public void ExplosionTest()
+    {
+        Vector2I center = new(200, 200);
+        int radius = 1000;
+        int[] pixels = pixelSelector.SelectPixels(center, radius);
+        explodeComputer.Explode(center, radius, pixels);
     }
 
     void ComputeSnakesSync(SnakeData[] snakesData)
