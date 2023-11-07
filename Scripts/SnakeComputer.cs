@@ -1,70 +1,32 @@
-using System.Linq.Expressions;
+
+using System.Collections.Generic;
 using System.Linq;
-using System.IO;
 using Godot;
 using Godot.Collections;
-using System;
-using System.Collections.Generic;
 
-public partial class SnakeComputer : TextureRect
+public class SnakeComputer
 {
-    [Export]
-    uint pxWidth = 512, pxHeight = 512;
-
     RenderingDevice rd;
+    Rid arenaTexRead, arenaTexWrite;
+    Arena arena;
+
     RDShaderFile snakeShaderFile;
     Rid snakeShader;
     Rid snakePipeline;
-    Rid arenaTexRead, arenaTexWrite;
     Rid snakeUniformSet;
     Rid snakeBuffer;
 
-    ExplodeComputer explodeComputer;
-    PixelSelector pixelSelector;
-
-    double tempTime = 0;
     Snake[] snakes;
     SnakeData[] snakesData;
-    double timer = 0;
 
-    public SnakeComputer()
+    public SnakeComputer(Arena arena, RenderingDevice rd, Rid arenaTexRead, Rid arenaTexWrite)
     {
-        InitializeSnakes(1);
-        InitArenaTextures();
+        this.arena = arena;
+        this.rd = rd;
+        this.arenaTexRead = arenaTexRead;
+        this.arenaTexWrite = arenaTexWrite;
+        InitializeSnakes(2);
         InitSnakeComputeShader();
-        explodeComputer = new ExplodeComputer(rd, arenaTexRead, arenaTexWrite);
-        pixelSelector = new PixelSelector(rd, arenaTexRead, arenaTexWrite, pxWidth, pxHeight);
-    }
-
-    void InitArenaTextures()
-    {
-        // create a local rendering device.
-        rd = RenderingServer.CreateLocalRenderingDevice();
-
-        // create arena read texture format
-        var arenaTexReadFormat = new RDTextureFormat();
-        arenaTexReadFormat.Format = RenderingDevice.DataFormat.R8G8B8A8Unorm;
-        arenaTexReadFormat.Width = pxWidth;
-        arenaTexReadFormat.Height = pxHeight;
-        arenaTexReadFormat.Depth = 1;
-        arenaTexReadFormat.UsageBits =
-            RenderingDevice.TextureUsageBits.StorageBit |
-            RenderingDevice.TextureUsageBits.CanUpdateBit;
-
-        // create arena write texture format
-        var arenaTexWriteFormat = new RDTextureFormat();
-        arenaTexWriteFormat.Format = RenderingDevice.DataFormat.R8G8B8A8Unorm;
-        arenaTexWriteFormat.Width = pxWidth;
-        arenaTexWriteFormat.Height = pxHeight;
-        arenaTexWriteFormat.Depth = 1;
-        arenaTexWriteFormat.UsageBits =
-            RenderingDevice.TextureUsageBits.CanCopyFromBit |
-            RenderingDevice.TextureUsageBits.StorageBit |
-            RenderingDevice.TextureUsageBits.CanUpdateBit;
-
-        // create arena textures
-        arenaTexRead = rd.TextureCreate(arenaTexReadFormat, new RDTextureView());
-        arenaTexWrite = rd.TextureCreate(arenaTexWriteFormat, new RDTextureView());
     }
 
     void InitSnakeComputeShader()
@@ -105,52 +67,34 @@ public partial class SnakeComputer : TextureRect
         snakes = new Snake[snakeCount];
         for (int i = 0; i < snakeCount; i++)
         {
-            snakes[i] = new Snake(this);
+            snakes[i] = new Snake(arena);
             //snakes[i].Color = new Color(rng.RandfRange(0, 1), rng.RandfRange(0, 1), rng.RandfRange(0, 1), 1);
-            snakes[i].RandomizeStartPos(new Vector2I((int)pxWidth, (int)pxHeight));
+            snakes[i].RandomizeStartPos(new Vector2I((int)arena.Width, (int)arena.Height));
         }
         snakesData = new SnakeData[snakes.Length];
     }
 
-    // input events instead of polling
-    public override void _Input(InputEvent @event)
+    public void HandleSnakeInput(InputEventKey keyEvent)
     {
-        base._Input(@event);
-        if (@event is InputEventKey keyEvent && !keyEvent.IsEcho())
+        foreach (Snake snake in snakes)
         {
-            foreach (Snake snake in snakes)
-            {
-                // handle input per snake
-                snake.HandleInput(keyEvent);
-            }
+            snake.HandleInput(keyEvent);
         }
     }
 
-    public override void _Process(double delta)
+    public void UpdateSnakes(double deltaT)
     {
-        base._Process(delta);
-
-        UpdateSnakeData(delta);
+        UpdateSnakeData(deltaT);
         ComputeSnakesSync(snakesData);
-        explodeComputer.UpdateExplosion((float)delta);
-        DisplayArena();
     }
 
-    void UpdateSnakeData(double delta)
+    void UpdateSnakeData(double deltaT)
     {
         for (int i = 0; i < snakes.Length; i++)
         {
-            snakes[i].Update((float)delta);
+            snakes[i].Update((float)deltaT);
             snakesData[i] = snakes[i].GetComputeData();
         }
-    }
-
-    public void ExplosionTest()
-    {
-        Vector2I center = new(200, 200);
-        int radius = 1000;
-        int[] pixels = pixelSelector.SelectPixels(center, radius);
-        explodeComputer.Explode(center, radius, pixels);
     }
 
     void ComputeSnakesSync(SnakeData[] snakesData)
@@ -173,19 +117,10 @@ public partial class SnakeComputer : TextureRect
         var computeList = rd.ComputeListBegin();
         rd.ComputeListBindComputePipeline(computeList, snakePipeline);
         rd.ComputeListBindUniformSet(computeList, snakeUniformSet, 0);
-        rd.ComputeListDispatch(computeList, xGroups: pxWidth / 8, yGroups: pxHeight / 8, zGroups: 1);
+        rd.ComputeListDispatch(computeList, xGroups: arena.Width / 8, yGroups: arena.Height / 8, zGroups: 1);
         rd.ComputeListEnd();
 
         // force the GPU to start the commands
         rd.Submit();
-    }
-
-    void DisplayArena()
-    {
-        var texBytes = rd.TextureGetData(arenaTexWrite, 0);
-        var arenaImg = Image.CreateFromData((int)pxWidth, (int)pxHeight, false, Image.Format.Rgba8, texBytes);
-        var displayTex = ImageTexture.CreateFromImage(arenaImg);
-        Texture = displayTex;
-        rd.TextureUpdate(arenaTexRead, 0, texBytes);
     }
 }

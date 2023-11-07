@@ -20,11 +20,11 @@ public class Snake
     public Key TurnRightKey = Key.D;
     public Key FireKey = Key.W;
 
-    SnakeComputer snakeComputer;
+    Arena arena;
 
-    public Snake(SnakeComputer snakeComputer)
+    public Snake(Arena arena)
     {
-        this.snakeComputer = snakeComputer;
+        this.arena = arena;
     }
 
     public void RandomizeStartPos(Vector2I arenaSize)
@@ -51,7 +51,7 @@ public class Snake
         if (keyEvent.Keycode == FireKey && keyEvent.IsPressed())
         {
             GD.Print("Fire!");
-            snakeComputer.ExplosionTest();
+            arena.ExplosionTest();
         }
     }
 
