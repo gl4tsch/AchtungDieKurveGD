@@ -27,7 +27,6 @@ namespace ADK
 
         public Snake()
         {
-            Ability = new EraserAbility();
             RandomizeColor();
         }
 

@@ -58,6 +58,7 @@ namespace ADK.UI
             {
                 return;
             }
+            // OnKeyDown
             else if (@event is InputEventKey keyEvent && keyEvent.IsPressed() && !keyEvent.IsEcho())
             {
                 if (!cancelRebindKeys.Contains(keyEvent.Keycode))
