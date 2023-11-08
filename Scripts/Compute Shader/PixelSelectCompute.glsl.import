@@ -1,0 +1,14 @@
+[remap]
+
+importer="glsl"
+type="RDShaderFile"
+uid="uid://bc6mdlhaudaom"
+path="res://.godot/imported/PixelSelectCompute.glsl-34629665a8ef392f3a9764b8b8745bb1.res"
+
+[deps]
+
+source_file="res://Scripts/Compute Shader/PixelSelectCompute.glsl"
+dest_files=["res://.godot/imported/PixelSelectCompute.glsl-34629665a8ef392f3a9764b8b8745bb1.res"]
+
+[params]
+

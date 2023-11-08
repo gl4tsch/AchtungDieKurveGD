@@ -1,0 +1,14 @@
+[remap]
+
+importer="glsl"
+type="RDShaderFile"
+uid="uid://boa3oge3w3fmx"
+path="res://.godot/imported/ExplosionCompute.glsl-d65dcb6a590a5dff4f16b5c18b0cfaa6.res"
+
+[deps]
+
+source_file="res://Scripts/Compute Shader/ExplosionCompute.glsl"
+dest_files=["res://.godot/imported/ExplosionCompute.glsl-d65dcb6a590a5dff4f16b5c18b0cfaa6.res"]
+
+[params]
+

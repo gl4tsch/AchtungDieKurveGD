@@ -1,0 +1,79 @@
+[gd_scene load_steps=2 format=3 uid="uid://ca7fqescjyftk"]
+
+[ext_resource type="Script" path="res://Scripts/UI Scripts/LobbySnake.cs" id="1_b56ky"]
+
+[node name="LobbySnake" type="HBoxContainer" node_paths=PackedStringArray("nameInput", "colorButton", "leftButton", "rightButton", "fireButton", "abilityDD")]
+size_flags_vertical = 4
+script = ExtResource("1_b56ky")
+nameInput = NodePath("Name")
+colorButton = NodePath("Color Button")
+leftButton = NodePath("Left Button")
+rightButton = NodePath("Right Button")
+fireButton = NodePath("Fire Button")
+abilityDD = NodePath("Ability")
+
+[node name="Name" type="LineEdit" parent="."]
+layout_mode = 2
+text = "Snake 1"
+expand_to_text_length = true
+flat = true
+caret_blink = true
+
+[node name="Color Button" type="Button" parent="."]
+layout_mode = 2
+focus_mode = 0
+text = "Color"
+
+[node name="VSeparator" type="VSeparator" parent="."]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="."]
+layout_mode = 2
+text = "Left:"
+vertical_alignment = 1
+
+[node name="Left Button" type="Button" parent="."]
+layout_mode = 2
+focus_mode = 0
+text = "A"
+
+[node name="Label2" type="Label" parent="."]
+layout_mode = 2
+text = "Right:"
+vertical_alignment = 1
+
+[node name="Right Button" type="Button" parent="."]
+layout_mode = 2
+focus_mode = 0
+text = "D"
+
+[node name="Label3" type="Label" parent="."]
+layout_mode = 2
+text = "Fire:"
+vertical_alignment = 1
+
+[node name="Fire Button" type="Button" parent="."]
+layout_mode = 2
+focus_mode = 0
+text = "W"
+
+[node name="Label4" type="Label" parent="."]
+layout_mode = 2
+text = "Ability:"
+vertical_alignment = 1
+
+[node name="Ability" type="OptionButton" parent="."]
+layout_mode = 2
+focus_mode = 0
+item_count = 2
+selected = 0
+popup/item_0/text = "blub"
+popup/item_0/id = 0
+popup/item_1/text = "bla"
+popup/item_1/id = 1
+
+[node name="Delete Button" type="Button" parent="."]
+layout_mode = 2
+focus_mode = 0
+text = "X"
+flat = true
