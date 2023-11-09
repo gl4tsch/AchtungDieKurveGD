@@ -16,7 +16,7 @@ namespace ADK
         Rid pixelSelectUniformSet;
         Rid pxFilterBuffer, selectedPixelsBuffer;
 
-        uint maxPixelsPerSelection = 1024 * 1024;
+        uint maxPixelsPerSelection = 512 * 512;
 
         public PixelSelector(RenderingDevice rd, RDShaderFile computeShader, Rid arenaTextureRead, Rid arenaTextureWrite, uint pxWidth, uint pxHeight)
         {

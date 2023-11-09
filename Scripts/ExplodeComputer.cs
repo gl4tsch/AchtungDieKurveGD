@@ -18,7 +18,7 @@ namespace ADK
         Rid paramsBuffer;
         List<Explosion> activeExplosions = new();
 
-        uint maxExplodingPixels = 1024 * 1024;
+        uint maxExplodingPixels = 512 * 512;
 
         public ExplodeComputer(RenderingDevice rd, RDShaderFile computeShader, Rid arenaTexRead, Rid arenaTexWrite)
         {
