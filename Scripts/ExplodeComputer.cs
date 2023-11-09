@@ -18,11 +18,12 @@ namespace ADK
         Rid paramsBuffer;
         List<Explosion> activeExplosions = new();
 
-        uint maxExplodingPixels = 512 * 512;
+        uint maxExplodingPixels = 1024 * 1024;
 
-        public ExplodeComputer(RenderingDevice rd, Rid arenaTexRead, Rid arenaTexWrite)
+        public ExplodeComputer(RenderingDevice rd, RDShaderFile computeShader, Rid arenaTexRead, Rid arenaTexWrite)
         {
             this.rd = rd;
+            explosionShaderFile = computeShader;
             this.arenaTexRead = arenaTexRead;
             this.arenaTexWrite = arenaTexWrite;
             InitExplodeComputeShader();
@@ -31,7 +32,7 @@ namespace ADK
         void InitExplodeComputeShader()
         {
             // load explosion GLSL shader
-            explosionShaderFile = GD.Load<RDShaderFile>("res://Scripts/ExplosionCompute.glsl");
+            // explosionShaderFile = GD.Load<RDShaderFile>("res://Scripts/ExplosionCompute.glsl");
             var explosionBytecode = explosionShaderFile.GetSpirV();
             explosionShader = rd.ShaderCreateFromSpirV(explosionBytecode);
             explosionPipeline = rd.ComputePipelineCreate(explosionShader);

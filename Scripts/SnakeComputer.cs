@@ -20,20 +20,21 @@ namespace ADK
         Snake[] snakes;
         SnakeData[] snakesData;
 
-        public SnakeComputer(Arena arena, RenderingDevice rd, Rid arenaTexRead, Rid arenaTexWrite)
+        public SnakeComputer(Arena arena, RenderingDevice rd, RDShaderFile computeShader, Rid arenaTexRead, Rid arenaTexWrite)
         {
             this.arena = arena;
             this.rd = rd;
+            snakeShaderFile = computeShader;
             this.arenaTexRead = arenaTexRead;
             this.arenaTexWrite = arenaTexWrite;
-            InitializeSnakes(2);
+            InitTestSnakes(1);
             InitSnakeComputeShader();
         }
 
         void InitSnakeComputeShader()
         {
             // load snake GLSL shader
-            snakeShaderFile = GD.Load<RDShaderFile>("res://Scripts/SnakeCompute.glsl");
+            // snakeShaderFile = GD.Load<RDShaderFile>("res://Scripts/SnakeCompute.glsl");
             var snakeBytecode = snakeShaderFile.GetSpirV();
             snakeShader = rd.ShaderCreateFromSpirV(snakeBytecode);
 
@@ -62,14 +63,16 @@ namespace ADK
             snakeUniformSet = rd.UniformSetCreate(new Array<RDUniform> { arenaUniform, snakeUniform }, snakeShader, 0);
         }
 
-        void InitializeSnakes(int snakeCount)
+        void InitTestSnakes(int snakeCount)
         {
             var rng = new RandomNumberGenerator();
             snakes = new Snake[snakeCount];
             for (int i = 0; i < snakeCount; i++)
             {
-                snakes[i] = new Snake();
-                //snakes[i].Color = new Color(rng.RandfRange(0, 1), rng.RandfRange(0, 1), rng.RandfRange(0, 1), 1);
+                snakes[i] = new Snake
+                {
+                    Arena = arena
+                };
                 snakes[i].RandomizeStartPos(new Vector2I((int)arena.Width, (int)arena.Height));
             }
             snakesData = new SnakeData[snakes.Length];

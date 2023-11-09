@@ -16,11 +16,12 @@ namespace ADK
         Rid pixelSelectUniformSet;
         Rid pxFilterBuffer, selectedPixelsBuffer;
 
-        uint maxPixelsPerSelection = 512 * 512;
+        uint maxPixelsPerSelection = 1024 * 1024;
 
-        public PixelSelector(RenderingDevice rd, Rid arenaTextureRead, Rid arenaTextureWrite, uint pxWidth, uint pxHeight)
+        public PixelSelector(RenderingDevice rd, RDShaderFile computeShader, Rid arenaTextureRead, Rid arenaTextureWrite, uint pxWidth, uint pxHeight)
         {
             this.rd = rd;
+            pixelSelectShaderFile = computeShader;
             arenaTexRead = arenaTextureRead;
             arenaTexWrite = arenaTextureWrite;
             this.pxWidth = pxWidth;
@@ -31,7 +32,7 @@ namespace ADK
         void InitPixelSelectComputeShader()
         {
             // load GLSL shader
-            pixelSelectShaderFile = GD.Load<RDShaderFile>("res://Scripts/PixelSelectCompute.glsl");
+            // pixelSelectShaderFile = GD.Load<RDShaderFile>("res://Scripts/PixelSelectCompute.glsl");
             var pxSelectBytecode = pixelSelectShaderFile.GetSpirV();
             pixelSelectShader = rd.ShaderCreateFromSpirV(pxSelectBytecode);
 

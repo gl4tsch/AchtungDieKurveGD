@@ -1,8 +1,11 @@
-[gd_scene load_steps=4 format=3 uid="uid://cyk1hxyvevajg"]
+[gd_scene load_steps=7 format=3 uid="uid://cyk1hxyvevajg"]
 
 [ext_resource type="Texture2D" uid="uid://dciaitfb1tg68" path="res://yipyip.png" id="1_r2uig"]
 [ext_resource type="Script" path="res://Scripts/Arena.cs" id="2_bjghd"]
+[ext_resource type="RDShaderFile" uid="uid://b6aumiyfp2u4y" path="res://Scripts/Compute Shader/SnakeCompute.glsl" id="3_6sgvj"]
+[ext_resource type="RDShaderFile" uid="uid://boa3oge3w3fmx" path="res://Scripts/Compute Shader/ExplosionCompute.glsl" id="3_effbv"]
 [ext_resource type="Script" path="res://Scripts/FPSLabel.cs" id="4_k7cqq"]
+[ext_resource type="RDShaderFile" uid="uid://bc6mdlhaudaom" path="res://Scripts/Compute Shader/PixelSelectCompute.glsl" id="5_yhj3w"]
 
 [node name="TextureRect" type="TextureRect"]
 texture_filter = 1
@@ -15,6 +18,9 @@ texture = ExtResource("1_r2uig")
 expand_mode = 1
 stretch_mode = 5
 script = ExtResource("2_bjghd")
+snakeComputeShader = ExtResource("3_6sgvj")
+explodeComputeShader = ExtResource("3_effbv")
+selectComputeShader = ExtResource("5_yhj3w")
 
 [node name="Label" type="Label" parent="."]
 layout_mode = 0

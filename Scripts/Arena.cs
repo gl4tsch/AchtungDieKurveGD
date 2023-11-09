@@ -9,6 +9,8 @@ namespace ADK
         public uint Width => pxWidth;
         public uint Height => pxHeight;
 
+        [Export] RDShaderFile snakeComputeShader, explodeComputeShader, selectComputeShader;
+
         RenderingDevice rd;
         Rid arenaTexRead, arenaTexWrite;
 
@@ -16,12 +18,12 @@ namespace ADK
         ExplodeComputer explodeComputer;
         PixelSelector pixelSelector;
 
-        public Arena()
+        public override void _Ready()
         {
             InitArenaTextures();
-            snakeComputer = new SnakeComputer(this, rd, arenaTexRead, arenaTexWrite);
-            explodeComputer = new ExplodeComputer(rd, arenaTexRead, arenaTexWrite);
-            pixelSelector = new PixelSelector(rd, arenaTexRead, arenaTexWrite, pxWidth, pxHeight);
+            snakeComputer = new SnakeComputer(this, rd, snakeComputeShader, arenaTexRead, arenaTexWrite);
+            explodeComputer = new ExplodeComputer(rd, explodeComputeShader, arenaTexRead, arenaTexWrite);
+            pixelSelector = new PixelSelector(rd, selectComputeShader, arenaTexRead, arenaTexWrite, pxWidth, pxHeight);
         }
 
         void InitArenaTextures()
@@ -30,25 +32,29 @@ namespace ADK
             rd = RenderingServer.CreateLocalRenderingDevice();
 
             // create arena read texture format
-            var arenaTexReadFormat = new RDTextureFormat();
-            arenaTexReadFormat.Format = RenderingDevice.DataFormat.R8G8B8A8Unorm;
-            arenaTexReadFormat.Width = pxWidth;
-            arenaTexReadFormat.Height = pxHeight;
-            arenaTexReadFormat.Depth = 1;
-            arenaTexReadFormat.UsageBits =
+            var arenaTexReadFormat = new RDTextureFormat
+            {
+                Format = RenderingDevice.DataFormat.R8G8B8A8Unorm,
+                Width = pxWidth,
+                Height = pxHeight,
+                Depth = 1,
+                UsageBits =
                 RenderingDevice.TextureUsageBits.StorageBit |
-                RenderingDevice.TextureUsageBits.CanUpdateBit;
+                RenderingDevice.TextureUsageBits.CanUpdateBit
+            };
 
             // create arena write texture format
-            var arenaTexWriteFormat = new RDTextureFormat();
-            arenaTexWriteFormat.Format = RenderingDevice.DataFormat.R8G8B8A8Unorm;
-            arenaTexWriteFormat.Width = pxWidth;
-            arenaTexWriteFormat.Height = pxHeight;
-            arenaTexWriteFormat.Depth = 1;
-            arenaTexWriteFormat.UsageBits =
+            var arenaTexWriteFormat = new RDTextureFormat
+            {
+                Format = RenderingDevice.DataFormat.R8G8B8A8Unorm,
+                Width = pxWidth,
+                Height = pxHeight,
+                Depth = 1,
+                UsageBits =
                 RenderingDevice.TextureUsageBits.CanCopyFromBit |
                 RenderingDevice.TextureUsageBits.StorageBit |
-                RenderingDevice.TextureUsageBits.CanUpdateBit;
+                RenderingDevice.TextureUsageBits.CanUpdateBit
+            };
 
             // create arena textures
             arenaTexRead = rd.TextureCreate(arenaTexReadFormat, new RDTextureView());
