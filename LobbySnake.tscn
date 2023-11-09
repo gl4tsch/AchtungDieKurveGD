@@ -2,7 +2,7 @@
 
 [ext_resource type="Script" path="res://Scripts/UI Scripts/LobbySnake.cs" id="1_b56ky"]
 
-[node name="LobbySnake" type="HBoxContainer" node_paths=PackedStringArray("nameInput", "colorButton", "leftButton", "rightButton", "fireButton", "abilityDD")]
+[node name="LobbySnake" type="HBoxContainer" node_paths=PackedStringArray("nameInput", "colorButton", "leftButton", "rightButton", "fireButton", "abilityDD", "deleteButton")]
 size_flags_vertical = 4
 script = ExtResource("1_b56ky")
 nameInput = NodePath("Name")
@@ -11,6 +11,7 @@ leftButton = NodePath("Left Button")
 rightButton = NodePath("Right Button")
 fireButton = NodePath("Fire Button")
 abilityDD = NodePath("Ability")
+deleteButton = NodePath("Delete Button")
 
 [node name="Name" type="LineEdit" parent="."]
 layout_mode = 2

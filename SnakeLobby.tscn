@@ -3,7 +3,7 @@
 [ext_resource type="Script" path="res://Scripts/UI Scripts/SnakeLobby.cs" id="1_r34mh"]
 [ext_resource type="PackedScene" uid="uid://ca7fqescjyftk" path="res://LobbySnake.tscn" id="2_xydee"]
 
-[node name="SnakeLobby" type="Control"]
+[node name="SnakeLobby" type="Control" node_paths=PackedStringArray("snakeContainer", "newSnakeButton")]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -11,30 +11,47 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_r34mh")
+lobbySnakePrefab = ExtResource("2_xydee")
+snakeContainer = NodePath("ScrollContainer/MarginContainer/VBoxContainer/VBoxContainer")
+newSnakeButton = NodePath("ScrollContainer/MarginContainer/VBoxContainer/New Button")
 
-[node name="VBoxContainer" type="VBoxContainer" parent="."]
+[node name="ScrollContainer" type="ScrollContainer" parent="."]
 layout_mode = 1
-anchors_preset = 14
-anchor_top = 0.5
+anchors_preset = -1
 anchor_right = 1.0
-anchor_bottom = 0.5
-offset_top = -13.0
-offset_bottom = 13.0
+anchor_bottom = 1.0
+offset_left = 10.0
+offset_top = 10.0
+offset_right = -10.0
+offset_bottom = -10.0
 grow_horizontal = 2
 grow_vertical = 2
+horizontal_scroll_mode = 0
 
-[node name="VBoxContainer" type="VBoxContainer" parent="VBoxContainer"]
+[node name="MarginContainer" type="MarginContainer" parent="ScrollContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/margin_left = 10
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 10
+theme_override_constants/margin_bottom = 10
+
+[node name="VBoxContainer" type="VBoxContainer" parent="ScrollContainer/MarginContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="VBoxContainer" type="VBoxContainer" parent="ScrollContainer/MarginContainer/VBoxContainer"]
 layout_mode = 2
 
-[node name="LobbySnake" parent="VBoxContainer/VBoxContainer" instance=ExtResource("2_xydee")]
+[node name="LobbySnake" parent="ScrollContainer/MarginContainer/VBoxContainer/VBoxContainer" instance=ExtResource("2_xydee")]
 layout_mode = 2
 
-[node name="LobbySnake2" parent="VBoxContainer/VBoxContainer" instance=ExtResource("2_xydee")]
+[node name="LobbySnake2" parent="ScrollContainer/MarginContainer/VBoxContainer/VBoxContainer" instance=ExtResource("2_xydee")]
 layout_mode = 2
 
-[node name="LobbySnake3" parent="VBoxContainer/VBoxContainer" instance=ExtResource("2_xydee")]
+[node name="LobbySnake3" parent="ScrollContainer/MarginContainer/VBoxContainer/VBoxContainer" instance=ExtResource("2_xydee")]
 layout_mode = 2
 
-[node name="New Button" type="Button" parent="VBoxContainer"]
+[node name="New Button" type="Button" parent="ScrollContainer/MarginContainer/VBoxContainer"]
 layout_mode = 2
 text = "+ New Snake"
