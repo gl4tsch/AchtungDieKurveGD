@@ -15,13 +15,17 @@ namespace ADK.UI
         public override void _Ready()
         {
             base._Ready();
+            newSnakeButton.Pressed += CreateNewSnake;
+            Init(GameManager.Instance.Snakes);
+        }
 
-            newSnakeButton.Pressed += AddNewSnake;
-
+        public void Init(List<Snake> snakes)
+        {
             ClearLobby();
-            AddNewSnake();
-            AddNewSnake();
-            AddNewSnake();
+            foreach (var snake in snakes)
+            {
+                AddSnakeToLobby(snake);
+            }
         }
 
         void ClearLobby()
@@ -33,9 +37,16 @@ namespace ADK.UI
             lobbySnakes.Clear();
         }
 
-        public void AddNewSnake()
+        public void CreateNewSnake()
         {
-            LobbySnake lobbySnake = lobbySnakePrefab.Instantiate<LobbySnake>();
+            Snake snake = new Snake();
+            GameManager.Instance.Snakes.Add(snake);
+            AddSnakeToLobby(snake);
+        }
+
+        public void AddSnakeToLobby(Snake snake)
+        {
+            LobbySnake lobbySnake = lobbySnakePrefab.Instantiate<LobbySnake>().Init(snake);
             lobbySnake.Lobby = this;
             lobbySnakes.Add(lobbySnake);
             snakeContainer.AddChild(lobbySnake);
@@ -45,6 +56,7 @@ namespace ADK.UI
         {
             snake.QueueFree();
             lobbySnakes.Remove(snake);
+            GameManager.Instance.Snakes.Remove(snake.Snake);
         }
     }
 }

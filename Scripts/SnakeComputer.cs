@@ -27,7 +27,8 @@ namespace ADK
             snakeShaderFile = computeShader;
             this.arenaTexRead = arenaTexRead;
             this.arenaTexWrite = arenaTexWrite;
-            InitTestSnakes(1);
+            //InitTestSnakes(1);
+            InitSnakes();
             InitSnakeComputeShader();
         }
 
@@ -65,15 +66,20 @@ namespace ADK
 
         void InitTestSnakes(int snakeCount)
         {
-            var rng = new RandomNumberGenerator();
             snakes = new Snake[snakeCount];
             for (int i = 0; i < snakeCount; i++)
             {
-                snakes[i] = new Snake
-                {
-                    Arena = arena
-                };
-                snakes[i].RandomizeStartPos(new Vector2I((int)arena.Width, (int)arena.Height));
+                snakes[i] = new Snake();
+            }
+            InitSnakes();
+        }
+
+        void InitSnakes()
+        {
+            snakes = GameManager.Instance.Snakes.ToArray();
+            foreach (Snake snake in snakes)
+            {
+                snake.RandomizeStartPos(new Vector2I((int)arena.Width, (int)arena.Height));
             }
             snakesData = new SnakeData[snakes.Length];
         }

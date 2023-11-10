@@ -1,6 +1,7 @@
 using Godot;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace ADK.UI
 {
@@ -13,8 +14,8 @@ namespace ADK.UI
         [Export] Button deleteButton;
 
         public SnakeLobby Lobby;
+        public Snake Snake{ get; private set; }
 
-        Snake snake;
         enum RebindKey
         {
             None,
@@ -23,16 +24,35 @@ namespace ADK.UI
             Fire
         }
         RebindKey awaitedRebindKey = RebindKey.None;
-        static readonly List<Key> cancelRebindKeys = new(){ Key.Escape };
+        static readonly List<Key> forbiddenControlKeys = new(){ Key.Escape };
+
+        // List<(string name, Func<Ability> creator)> abilityFactory = new()
+        // {
+        //     ("None", () => null),
+        //     (EraserAbility.DisplayName, () => new EraserAbility()),
+        //     (TBarAbility.DisplayName, () => new TBarAbility())
+        // };
+        List<Ability> allAbilities = new()
+        {
+            null,
+            new EraserAbility(),
+            new TBarAbility()
+        };
+
+        public LobbySnake Init(Snake snake)
+        {
+            this.Snake = snake;
+            return this;
+        }
 
         public override void _Ready()
         {
             base._Ready();
 
-            snake = new Snake()
+            if (Snake == null)
             {
-                Name = "Snake"
-            };
+                Init(new Snake());
+            }
 
             UpdateNameInputField();
             nameInput.TextChanged += OnSnakeNameInput;
@@ -45,9 +65,11 @@ namespace ADK.UI
             fireButton.Pressed += OnFireButtonClicked;
 
             abilityDD.Clear();
-            abilityDD.AddItem("None");
-            abilityDD.AddItem(EraserAbility.DisplayName);
-            abilityDD.AddItem(TBarAbility.DisplayName);
+            foreach (var ability in allAbilities) // (string ability in abilityFactory.Select(a => a.name))
+            {
+                abilityDD.AddItem(ability?.Name ?? "None");
+            }
+            UpdateDDValue();
             abilityDD.ItemSelected += OnAbilitySelected;
 
             deleteButton.Pressed += OnDeleteButtonClicked;
@@ -63,19 +85,19 @@ namespace ADK.UI
             // OnKeyDown
             else if (@event is InputEventKey keyEvent && keyEvent.IsPressed() && !keyEvent.IsEcho())
             {
-                if (!cancelRebindKeys.Contains(keyEvent.Keycode))
+                if (!forbiddenControlKeys.Contains(keyEvent.Keycode))
                 {
                     // rebind key attempt
                     switch (awaitedRebindKey)
                     {
                         case RebindKey.Left:
-                            snake.TurnLeftKey = keyEvent.Keycode;
+                            Snake.TurnLeftKey = keyEvent.Keycode;
                             break;
                         case RebindKey.Right:
-                            snake.TurnRightKey = keyEvent.Keycode;
+                            Snake.TurnRightKey = keyEvent.Keycode;
                             break;
                         case RebindKey.Fire:
-                            snake.FireKey = keyEvent.Keycode;
+                            Snake.FireKey = keyEvent.Keycode;
                             break;
                     }
                 }
@@ -86,19 +108,19 @@ namespace ADK.UI
 
         void UpdateNameInputField()
         {
-            nameInput.Text = snake.Name;
-            nameInput.AddThemeColorOverride("font_color", snake.Color);
+            nameInput.Text = Snake.Name;
+            nameInput.AddThemeColorOverride("font_color", Snake.Color);
         }
 
         void UpdateControlButtonLabels()
         {
-            leftButton.Text = snake.TurnLeftKey.ToString();
+            leftButton.Text = Snake.TurnLeftKey.ToString();
             SetControlButtonState(leftButton, awaitedRebindKey == RebindKey.Left);
 
-            rightButton.Text = snake.TurnRightKey.ToString();
+            rightButton.Text = Snake.TurnRightKey.ToString();
             SetControlButtonState(rightButton, awaitedRebindKey == RebindKey.Right);
 
-            fireButton.Text = snake.FireKey.ToString();
+            fireButton.Text = Snake.FireKey.ToString();
             SetControlButtonState(fireButton, awaitedRebindKey == RebindKey.Fire);
         }
 
@@ -116,14 +138,21 @@ namespace ADK.UI
             }
         }
 
+        void UpdateDDValue()
+        {
+            //var idx = abilityFactory.FindIndex(a => a.name == (Snake.Ability?.Name ?? "None"));
+            int idx = allAbilities.FindIndex(a => a?.Name == Snake.Ability?.Name);
+            abilityDD.Select(idx);
+        }
+
         void OnSnakeNameInput(string input)
         {
-            snake.Name = input;
+            Snake.Name = input;
         }
 
         void OnColorButtonClicked()
         {
-            snake.RandomizeColor();
+            Snake.RandomizeColor();
             UpdateNameInputField();
         }
 
@@ -149,15 +178,15 @@ namespace ADK.UI
         {
             if (ddIdx == 0)
             {
-                snake.Ability = null;
+                Snake.Ability = null;
             }
             else if (ddIdx == 1)
             {
-                snake.Ability = new EraserAbility();
+                Snake.Ability = new EraserAbility();
             }
             else if (ddIdx == 2)
             {
-                snake.Ability = new TBarAbility();
+                Snake.Ability = new TBarAbility();
             }
         }
 

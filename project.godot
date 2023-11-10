@@ -11,9 +11,13 @@ config_version=5
 [application]
 
 config/name="AchtungDieKurveGD"
-run/main_scene="res://ArenaRect.tscn"
+run/main_scene="res://LobbyScene.tscn"
 config/features=PackedStringArray("4.1", "C#", "Forward Plus")
 config/icon="res://icon.svg"
+
+[autoload]
+
+GameManager="*res://Scripts/GameManager.cs"
 
 [display]
 

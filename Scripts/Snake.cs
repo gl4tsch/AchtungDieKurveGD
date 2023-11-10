@@ -23,11 +23,15 @@ namespace ADK
         public Key FireKey = Key.W;
 
         public Ability Ability { get; set; }
-        public Arena Arena { get; set; }
 
         public Snake()
         {
             RandomizeColor();
+        }
+
+        public Snake(string name) : this()
+        {
+            Name = name;
         }
 
         public void RandomizeColor()
@@ -60,7 +64,6 @@ namespace ADK
             if (keyEvent.Keycode == FireKey && keyEvent.IsPressed())
             {
                 GD.Print("Fire!");
-                Arena?.ExplosionTest();
             }
         }
 

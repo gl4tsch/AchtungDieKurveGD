@@ -1,7 +1,7 @@
 [gd_scene load_steps=3 format=3 uid="uid://cheohotxldlmc"]
 
-[ext_resource type="Script" path="res://Scripts/UI Scripts/SnakeLobby.cs" id="1_r34mh"]
-[ext_resource type="PackedScene" uid="uid://ca7fqescjyftk" path="res://LobbySnake.tscn" id="2_xydee"]
+[ext_resource type="Script" path="res://Scripts/UI Scripts/SnakeLobby.cs" id="1_kh0jp"]
+[ext_resource type="PackedScene" uid="uid://ca7fqescjyftk" path="res://Prefabs/LobbySnake.tscn" id="2_5suqt"]
 
 [node name="SnakeLobby" type="Control" node_paths=PackedStringArray("snakeContainer", "newSnakeButton")]
 layout_mode = 3
@@ -10,8 +10,8 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-script = ExtResource("1_r34mh")
-lobbySnakePrefab = ExtResource("2_xydee")
+script = ExtResource("1_kh0jp")
+lobbySnakePrefab = ExtResource("2_5suqt")
 snakeContainer = NodePath("ScrollContainer/MarginContainer/VBoxContainer/VBoxContainer")
 newSnakeButton = NodePath("ScrollContainer/MarginContainer/VBoxContainer/New Button")
 
@@ -43,13 +43,13 @@ size_flags_horizontal = 3
 [node name="VBoxContainer" type="VBoxContainer" parent="ScrollContainer/MarginContainer/VBoxContainer"]
 layout_mode = 2
 
-[node name="LobbySnake" parent="ScrollContainer/MarginContainer/VBoxContainer/VBoxContainer" instance=ExtResource("2_xydee")]
+[node name="LobbySnake" parent="ScrollContainer/MarginContainer/VBoxContainer/VBoxContainer" instance=ExtResource("2_5suqt")]
 layout_mode = 2
 
-[node name="LobbySnake2" parent="ScrollContainer/MarginContainer/VBoxContainer/VBoxContainer" instance=ExtResource("2_xydee")]
+[node name="LobbySnake2" parent="ScrollContainer/MarginContainer/VBoxContainer/VBoxContainer" instance=ExtResource("2_5suqt")]
 layout_mode = 2
 
-[node name="LobbySnake3" parent="ScrollContainer/MarginContainer/VBoxContainer/VBoxContainer" instance=ExtResource("2_xydee")]
+[node name="LobbySnake3" parent="ScrollContainer/MarginContainer/VBoxContainer/VBoxContainer" instance=ExtResource("2_5suqt")]
 layout_mode = 2
 
 [node name="New Button" type="Button" parent="ScrollContainer/MarginContainer/VBoxContainer"]
