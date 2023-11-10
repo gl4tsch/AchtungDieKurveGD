@@ -64,6 +64,7 @@ namespace ADK
             if (keyEvent.Keycode == FireKey && keyEvent.IsPressed())
             {
                 GD.Print("Fire!");
+                Ability?.Activate();
             }
         }
 

@@ -10,7 +10,7 @@ namespace ADK
         
         public override void Activate()
         {
-            throw new NotImplementedException();
+            GD.Print("Activating " + Name);
         }
     }
 }
