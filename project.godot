@@ -26,3 +26,7 @@ window/vsync/vsync_mode=0
 [dotnet]
 
 project/assembly_name="AchtungDieKurveGD"
+
+[gui]
+
+theme/custom="res://Theme.tres"

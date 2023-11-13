@@ -54,4 +54,4 @@ layout_mode = 2
 
 [node name="New Button" type="Button" parent="ScrollContainer/MarginContainer/VBoxContainer"]
 layout_mode = 2
-text = "+ New Snake"
+text = "+ Add Player"

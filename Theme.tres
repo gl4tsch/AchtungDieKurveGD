@@ -1,0 +1,10 @@
+[gd_resource type="Theme" load_steps=3 format=3 uid="uid://kvafjbhelfan"]
+
+[ext_resource type="FontFile" uid="uid://bm8t7o1o114l5" path="res://Fonts/curve.ttf" id="1_byjel"]
+[ext_resource type="FontFile" uid="uid://2fntjq4xolqy" path="res://Fonts/chat.ttf" id="1_ijno4"]
+
+[resource]
+default_font = ExtResource("1_ijno4")
+BigButton/base_type = &"Button"
+BigButton/font_sizes/font_size = 30
+BigButton/fonts/font = ExtResource("1_byjel")

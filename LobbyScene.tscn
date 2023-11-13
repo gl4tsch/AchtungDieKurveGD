@@ -19,14 +19,16 @@ layout_mode = 1
 anchors_preset = 5
 anchor_left = 0.5
 anchor_right = 0.5
-offset_left = -51.5
+offset_left = -81.0
 offset_top = 10.0
-offset_right = 51.5
-offset_bottom = 41.0
+offset_right = 81.0
+offset_bottom = 78.0
 grow_horizontal = 2
-text = "Start Match!"
+focus_mode = 0
+theme_type_variation = &"BigButton"
+text = "Start"
 
 [node name="SnakeLobby" parent="." instance=ExtResource("2_lldim")]
 layout_mode = 1
 anchors_preset = -1
-offset_top = 50.0
+offset_top = 100.0
