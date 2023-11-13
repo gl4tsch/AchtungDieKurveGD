@@ -11,16 +11,20 @@ layout(r8, binding = 0) restrict uniform image2D arena;
 
 struct GLSLSnakeData
 {
-    int prevPosX, prevPosY, newPosX, newPosY;
-    int halfThickness;
+    float prevPosX, prevPosY, newPosX, newPosY;
+    float halfThickness;
     float colorR, colorG, colorB, colorA;
-    int collision; // bool
 };
 
-layout(set = 0, binding = 1, std430) restrict buffer SnakeBuffer
+layout(set = 0, binding = 1, std430) restrict readonly buffer SnakeBuffer
 {
     GLSLSnakeData[] snakes;
 } snakeBuffer;
+
+layout(set = 0, binding = 2, std430) restrict buffer CollisionBuffer
+{
+	int[] collisions;
+} collisionBuffer;
 
 float sdSegment( vec2 p, vec2 a, vec2 b )
 {
@@ -36,6 +40,7 @@ void main()
 	ivec2 dimensions = imageSize(arena);
 	vec4 pixel = imageLoad(arena, coords);
 
+	// SNAKES
 	for (int i = 0; i < snakeBuffer.snakes.length(); i++)
 	{
 		GLSLSnakeData snake = snakeBuffer.snakes[i];
@@ -46,6 +51,15 @@ void main()
 
 		if (distToSegment <= snake.halfThickness)
 		{
+			// if the pixel is not the end of same snake from previous frame && the pixel has a value already
+			float distToStart = length(prevPos - coords);
+            if (distToStart > snake.halfThickness && pixel.a > 0)
+            {
+                // COLLISION
+                collisionBuffer.collisions[i] = 1;
+            }
+
+			// draw pixel
 			imageStore(arena, coords, color);
 		}
 	}

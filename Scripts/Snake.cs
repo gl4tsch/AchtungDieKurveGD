@@ -76,30 +76,34 @@ namespace ADK
             PxPosition = pxPrevPos + Direction * MoveSpeed * delta;
         }
 
+        public void OnCollision()
+        {
+            GD.Print(Name + " had a collision!");
+        }
+
         public SnakeData GetComputeData()
         {
             return new SnakeData()
             {
-                prevPosX = Mathf.RoundToInt(pxPrevPos.X),
-                prevPosY = Mathf.RoundToInt(pxPrevPos.Y),
-                newPosX = Mathf.RoundToInt(PxPosition.X),
-                newPosY = Mathf.RoundToInt(PxPosition.Y),
-                halfThickness = Mathf.RoundToInt(PxThickness / 2),
+                prevPosX = pxPrevPos.X,
+                prevPosY = pxPrevPos.Y,
+                newPosX = PxPosition.X,
+                newPosY = PxPosition.Y,
+                halfThickness = PxThickness / 2f,
                 colorR = Color.R,
                 colorG = Color.G,
                 colorB = Color.B,
-                colorA = Color.A,
-                collision = 0
+                colorA = Color.A
             };
         }
     }
 
     public struct SnakeData
     {
-        public int prevPosX, prevPosY, newPosX, newPosY;
-        public int halfThickness;
+        public float prevPosX, prevPosY, newPosX, newPosY;
+        public float halfThickness;
         public float colorR, colorG, colorB, colorA;
-        public int collision; // bool
+        //public int collision; // bool
 
         //TODO: faster
         public byte[] ToByteArray()
@@ -116,11 +120,10 @@ namespace ADK
             writer.Write(colorG);
             writer.Write(colorB);
             writer.Write(colorA);
-            writer.Write(collision);
 
             return stream.ToArray();
         }
 
-        public static uint SizeInByte => sizeof(int) * 5 + sizeof(float) * 4 + sizeof(int);
+        public static uint SizeInByte => sizeof(float) * 4 + sizeof(float) + sizeof(float) * 4;
     }
 }

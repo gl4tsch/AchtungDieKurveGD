@@ -19,9 +19,9 @@ namespace ADK
         {
             Instance = this;
             // init default snakes
-            Snakes.Add(new Snake());
-            Snakes.Add(new Snake());
-            Snakes.Add(new Snake());
+            CreateNewSnake();
+            CreateNewSnake();
+            CreateNewSnake();
         }
 
         public override void _Ready()
@@ -40,6 +40,18 @@ namespace ADK
 
             Viewport root = GetTree().Root;
             CurrentScene = root.GetChild(root.GetChildCount() - 1);
+        }
+
+        public Snake CreateNewSnake()
+        {
+            var snake = new Snake($"Snake {Snakes.Count + 1}");
+            Snakes.Add(snake);
+            return snake;
+        }
+
+        public bool RemoveSnake(Snake snake)
+        {
+            return Snakes.Remove(snake);
         }
 
         public void GoToScene(GameScene scene)

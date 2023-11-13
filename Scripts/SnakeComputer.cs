@@ -1,7 +1,9 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Godot;
 using Godot.Collections;
+using Godot.NativeInterop;
 
 namespace ADK
 {
@@ -16,6 +18,7 @@ namespace ADK
         Rid snakePipeline;
         Rid snakeUniformSet;
         Rid snakeBuffer;
+        Rid collisionBuffer;
 
         Snake[] snakes;
         SnakeData[] snakesData;
@@ -30,38 +33,6 @@ namespace ADK
             //InitTestSnakes(1);
             InitSnakes();
             InitSnakeComputeShader();
-        }
-
-        void InitSnakeComputeShader()
-        {
-            // load snake GLSL shader
-            // snakeShaderFile = GD.Load<RDShaderFile>("res://Scripts/SnakeCompute.glsl");
-            var snakeBytecode = snakeShaderFile.GetSpirV();
-            snakeShader = rd.ShaderCreateFromSpirV(snakeBytecode);
-
-            // Create a compute pipelines
-            snakePipeline = rd.ComputePipelineCreate(snakeShader);
-
-            // arena input tex uniform
-            var arenaUniform = new RDUniform
-            {
-                UniformType = RenderingDevice.UniformType.Image,
-                Binding = 0 // the in tex
-            };
-            arenaUniform.AddId(arenaTexWrite);
-
-            // create snake buffer
-            snakeBuffer = rd.StorageBufferCreate(SnakeData.SizeInByte * (uint)snakes.Length);
-
-            // create a snake uniform to assign the snake buffer to the rendering device
-            var snakeUniform = new RDUniform
-            {
-                UniformType = RenderingDevice.UniformType.StorageBuffer,
-                Binding = 1
-            };
-            snakeUniform.AddId(snakeBuffer);
-
-            snakeUniformSet = rd.UniformSetCreate(new Array<RDUniform> { arenaUniform, snakeUniform }, snakeShader, 0);
         }
 
         void InitTestSnakes(int snakeCount)
@@ -84,6 +55,46 @@ namespace ADK
             snakesData = new SnakeData[snakes.Length];
         }
 
+        void InitSnakeComputeShader()
+        {
+            // load snake GLSL shader
+            // snakeShaderFile = GD.Load<RDShaderFile>("res://Scripts/SnakeCompute.glsl");
+            var snakeBytecode = snakeShaderFile.GetSpirV();
+            snakeShader = rd.ShaderCreateFromSpirV(snakeBytecode);
+
+            // Create a compute pipelines
+            snakePipeline = rd.ComputePipelineCreate(snakeShader);
+
+            // arena input tex uniform
+            var arenaUniform = new RDUniform
+            {
+                UniformType = RenderingDevice.UniformType.Image,
+                Binding = 0 // the in tex
+            };
+            arenaUniform.AddId(arenaTexWrite);
+
+            // create snake buffer
+            snakeBuffer = rd.StorageBufferCreate(SnakeData.SizeInByte * (uint)snakes.Length);
+            // create a snake uniform to assign the snake buffer to the rendering device
+            var snakeUniform = new RDUniform
+            {
+                UniformType = RenderingDevice.UniformType.StorageBuffer,
+                Binding = 1
+            };
+            snakeUniform.AddId(snakeBuffer);
+
+            // collision buffer
+            collisionBuffer = rd.StorageBufferCreate(sizeof(int) * (uint)snakes.Length);
+            var collisionUniform = new RDUniform
+            {
+                UniformType = RenderingDevice.UniformType.StorageBuffer,
+                Binding = 2
+            };
+            collisionUniform.AddId(collisionBuffer);
+
+            snakeUniformSet = rd.UniformSetCreate(new Array<RDUniform>{ arenaUniform, snakeUniform, collisionUniform }, snakeShader, 0);
+        }
+
         public void HandleSnakeInput(InputEventKey keyEvent)
         {
             foreach (Snake snake in snakes)
@@ -96,6 +107,7 @@ namespace ADK
         {
             UpdateSnakeData(deltaT);
             ComputeSnakesSync(snakesData);
+            CheckForCollisions();
         }
 
         void UpdateSnakeData(double deltaT)
@@ -115,14 +127,23 @@ namespace ADK
 
         void ComputeSnakesAsync(SnakeData[] snakesData)
         {
+            uint snakeCount = (uint)snakesData.Length;
+
             // update snake data buffer
             List<byte> snakesBytes = new List<byte>();
-
             foreach (var data in snakesData)
             {
                 snakesBytes.AddRange(data.ToByteArray());
             }
             rd.BufferUpdate(snakeBuffer, 0, (uint)snakesBytes.Count(), snakesBytes.ToArray());
+
+            // clear collision data buffer
+            byte[] collisionBytes = new byte[snakeCount * sizeof(int)];
+            for (int i = 0; i < collisionBytes.Length; i++)
+            {
+                collisionBytes[i] = 0;
+            }
+            rd.BufferUpdate(collisionBuffer, 0, (uint)collisionBytes.Length, collisionBytes);
 
             var computeList = rd.ComputeListBegin();
             rd.ComputeListBindComputePipeline(computeList, snakePipeline);
@@ -132,6 +153,21 @@ namespace ADK
 
             // force the GPU to start the commands
             rd.Submit();
+        }
+
+        void CheckForCollisions()
+        {
+            // get collision output
+            byte[] collisionData = rd.BufferGetData(collisionBuffer, 0, (uint)snakes.Length * sizeof(int));
+            int[] collisions = new int[collisionData.Length];
+            Buffer.BlockCopy(collisionData, 0, collisions, 0, collisionData.Length);
+            for (int i = 0; i < collisions.Length; i++)
+            {
+                if (collisions[i] != 0)
+                {
+                    snakes[i].OnCollision();
+                }
+            }
         }
     }
 }

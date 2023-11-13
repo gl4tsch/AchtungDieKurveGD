@@ -39,8 +39,7 @@ namespace ADK.UI
 
         public void CreateNewSnake()
         {
-            Snake snake = new Snake();
-            GameManager.Instance.Snakes.Add(snake);
+            Snake snake = GameManager.Instance.CreateNewSnake();
             AddSnakeToLobby(snake);
         }
 
@@ -56,7 +55,7 @@ namespace ADK.UI
         {
             snake.QueueFree();
             lobbySnakes.Remove(snake);
-            GameManager.Instance.Snakes.Remove(snake.Snake);
+            GameManager.Instance.RemoveSnake(snake.Snake);
         }
     }
 }

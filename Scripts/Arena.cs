@@ -89,6 +89,9 @@ namespace ADK
 
         void DisplayArena()
         {
+            // unfortunately there is no way to display a gpu texture
+            // other then fetch the data and create a cpu texture from it...
+            // https://github.com/godotengine/godot-demo-projects/pull/938
             var texBytes = rd.TextureGetData(arenaTexWrite, 0);
             var arenaImg = Image.CreateFromData((int)pxWidth, (int)pxHeight, false, Image.Format.Rgba8, texBytes);
             var displayTex = ImageTexture.CreateFromImage(arenaImg);
