@@ -21,7 +21,8 @@ namespace ADK
         Rid collisionBuffer;
 
         Snake[] snakes;
-        SnakeData[] snakesData;
+        List<Snake> aliveSnakes = new();
+        List<SnakeData> snakesData = new();
 
         public SnakeComputer(Arena arena, RenderingDevice rd, RDShaderFile computeShader, Rid arenaTexRead, Rid arenaTexWrite)
         {
@@ -50,9 +51,9 @@ namespace ADK
             snakes = GameManager.Instance.Snakes.ToArray();
             foreach (Snake snake in snakes)
             {
-                snake.RandomizeStartPos(new Vector2I((int)arena.Width, (int)arena.Height));
+                snake.Spawn(new Vector2I((int)arena.Width, (int)arena.Height));
+                aliveSnakes.Add(snake);
             }
-            snakesData = new SnakeData[snakes.Length];
         }
 
         void InitSnakeComputeShader()
@@ -105,17 +106,23 @@ namespace ADK
 
         public void UpdateSnakes(double deltaT)
         {
+            aliveSnakes.RemoveAll(s => !s.IsAlive);
+            if (aliveSnakes.Count == 0)
+            {
+                return;
+            }
             UpdateSnakeData(deltaT);
-            ComputeSnakesSync(snakesData);
+            ComputeSnakesSync(snakesData.ToArray());
             CheckForCollisions();
         }
 
         void UpdateSnakeData(double deltaT)
         {
-            for (int i = 0; i < snakes.Length; i++)
+            snakesData.Clear();
+            foreach (var aliveSnake in aliveSnakes)
             {
-                snakes[i].Update((float)deltaT);
-                snakesData[i] = snakes[i].GetComputeData();
+                aliveSnake.Update((float)deltaT);
+                snakesData.Add(aliveSnake.GetComputeData());
             }
         }
 
@@ -135,7 +142,7 @@ namespace ADK
             {
                 snakesBytes.AddRange(data.ToByteArray());
             }
-            rd.BufferUpdate(snakeBuffer, 0, (uint)snakesBytes.Count(), snakesBytes.ToArray());
+            rd.BufferUpdate(snakeBuffer, 0, (uint)snakesBytes.Count, snakesBytes.ToArray());
 
             // clear collision data buffer
             byte[] collisionBytes = new byte[snakeCount * sizeof(int)];
@@ -158,14 +165,16 @@ namespace ADK
         void CheckForCollisions()
         {
             // get collision output
-            byte[] collisionData = rd.BufferGetData(collisionBuffer, 0, (uint)snakes.Length * sizeof(int));
+            byte[] collisionData = rd.BufferGetData(collisionBuffer, 0, (uint)snakesData.Count * sizeof(int));
             int[] collisions = new int[collisionData.Length];
             Buffer.BlockCopy(collisionData, 0, collisions, 0, collisionData.Length);
             for (int i = 0; i < collisions.Length; i++)
             {
                 if (collisions[i] != 0)
                 {
-                    snakes[i].OnCollision();
+                    Snake snake = aliveSnakes[i];
+                    snake.OnCollision();
+                    arena.ExplodePixels((Vector2I)snake.PxPosition, Mathf.CeilToInt(snake.PxThickness));
                 }
             }
         }

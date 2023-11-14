@@ -23,6 +23,8 @@ namespace ADK
         public Key FireKey = Key.W;
 
         public Ability Ability { get; set; }
+        // TODO: make statemachine
+        public bool IsAlive { get; private set; } = false;
 
         public Snake()
         {
@@ -40,16 +42,23 @@ namespace ADK
             Color = Color.FromHsv(rng.Randf(), 1, 1);
         }
 
-        public void RandomizeStartPos(Vector2I arenaSize)
+        public void Spawn(Vector2I arenaSize)
         {
             var rng = new RandomNumberGenerator();
             PxPosition = new Vector2(rng.RandfRange(0 + arenaSize.X / 4, arenaSize.X - arenaSize.X / 4), rng.RandfRange(0 + arenaSize.Y / 4, arenaSize.Y - arenaSize.Y / 4));
             Vector2 arenaCenter = arenaSize / 2;
             Direction = (arenaCenter - PxPosition).Normalized();
+            TurnSign = 0;
+            IsAlive = true;
         }
 
         public void HandleInput(InputEventKey keyEvent)
         {
+            if (!IsAlive)
+            {
+                return;
+            }
+
             // turn left
             if (keyEvent.Keycode == TurnLeftKey)
             {
@@ -70,8 +79,12 @@ namespace ADK
 
         public void Update(float delta)
         {
-            Direction = Direction.Rotated(TurnSign * TurnRate * delta);
+            if (!IsAlive)
+            {
+                return;
+            }
 
+            Direction = Direction.Rotated(TurnSign * TurnRate * delta);
             pxPrevPos = PxPosition;
             PxPosition = pxPrevPos + Direction * MoveSpeed * delta;
         }
@@ -79,6 +92,7 @@ namespace ADK
         public void OnCollision()
         {
             GD.Print(Name + " had a collision!");
+            IsAlive = false;
         }
 
         public SnakeData GetComputeData()

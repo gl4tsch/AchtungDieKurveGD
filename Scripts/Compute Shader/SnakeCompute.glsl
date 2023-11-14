@@ -53,7 +53,7 @@ void main()
 		{
 			// if the pixel is not the end of same snake from previous frame && the pixel has a value already
 			float distToStart = length(prevPos - coords);
-            if (distToStart > snake.halfThickness && pixel.a > 0)
+            if (distToStart > snake.halfThickness && pixel.a == 1)
             {
                 // COLLISION
                 collisionBuffer.collisions[i] = 1;

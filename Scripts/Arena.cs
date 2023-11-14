@@ -79,10 +79,13 @@ namespace ADK
             DisplayArena();
         }
 
-        public void ExplosionTest()
+        public void ExplodeWholeScreen()
         {
-            Vector2I center = new(200, 200);
-            int radius = 1000;
+            ExplodePixels(new Vector2I((int)pxWidth / 2, (int)pxHeight / 2), (int)pxWidth + (int)pxHeight);
+        }
+
+        public void ExplodePixels(Vector2I center, int radius)
+        {
             int[] pixels = pixelSelector.SelectPixels(center, radius);
             explodeComputer.Explode(center, radius, pixels);
         }
