@@ -64,7 +64,7 @@ namespace ADK
             paramsUniform.AddId(paramsBuffer);
         }
 
-        public void Explode(Vector2I center, float radius, int[] pixels)
+        public void Explode(Vector2I center, float radius, Pixel[] pixels)
         {
             // create explody buffer
             var explodyBuffer = rd.StorageBufferCreate(ExplodyPixelData.SizeInByte * maxExplodingPixels);
@@ -84,21 +84,24 @@ namespace ADK
             var rng = new RandomNumberGenerator();
             List<byte> explodyPixels = new List<byte>();
 
-            for (int i = 0; i < pixels.Length; i += 2)
+            for (int i = 0; i < pixels.Length; i ++)
             {
-                var ePx = new ExplodyPixelData();
-                Vector2 pos = new Vector2(pixels[i], pixels[i + 1]);
-                //Vector2 dir = pos - center;
-                Vector2 dir = new Vector2(rng.RandfRange(-1, 1), rng.RandfRange(-1, 1));
+                Pixel px = pixels[i];
+                Vector2 pos = new Vector2(px.posX, px.posY);
+                Vector2 dir = pos - center;
+                //Vector2 dir = new Vector2(rng.RandfRange(-1, 1), rng.RandfRange(-1, 1));
                 dir = dir.Normalized();
                 dir *= rng.Randf();
-                ePx.xPos = pos.X;
-                ePx.yPos = pos.Y;
-                ePx.xDir = dir.X;
-                ePx.yDir = dir.Y;
-                ePx.r = 1f;
-                ePx.g = 0f;
-                ePx.b = 0f;
+                ExplodyPixelData ePx = new()
+                {
+                    xPos = pos.X,
+                    yPos = pos.Y,
+                    xDir = dir.X,
+                    yDir = dir.Y,
+                    r = px.r,
+                    g = px.g,
+                    b = px.b
+                };
                 explodyPixels.AddRange(ePx.ToByteArray());
             }
 

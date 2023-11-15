@@ -22,18 +22,18 @@ namespace ADK
 
         public byte[] ToByteArray()
         {
-            var stream = new MemoryStream();
-            var writer = new BinaryWriter(stream);
-
-            writer.Write(xPos);
-            writer.Write(yPos);
-            writer.Write(xDir);
-            writer.Write(yDir);
-            writer.Write(r);
-            writer.Write(g);
-            writer.Write(b);
-
-            return stream.ToArray();
+            using (MemoryStream stream = new())
+            using (BinaryWriter writer = new(stream))
+            {
+                writer.Write(xPos);
+                writer.Write(yPos);
+                writer.Write(xDir);
+                writer.Write(yDir);
+                writer.Write(r);
+                writer.Write(g);
+                writer.Write(b);
+                return stream.ToArray();
+            }
         }
     }
 }

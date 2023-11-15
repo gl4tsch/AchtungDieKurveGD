@@ -86,7 +86,7 @@ namespace ADK
 
         public void ExplodePixels(Vector2I center, int radius)
         {
-            int[] pixels = pixelSelector.SelectPixels(center, radius);
+            Pixel[] pixels = pixelSelector.SelectPixels(center, radius);
             explodeComputer.Explode(center, radius, pixels);
         }
 

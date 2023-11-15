@@ -17,11 +17,17 @@ layout(set = 0, binding = 1, std430) restrict buffer PixelFilter
 	// all colors with high enough alpha for now
 } pixelFilter;
 
+struct Pixel
+{
+	uint posX, posY;
+	float r, g, b;
+};
+
 // this gets filled with coordinates
 layout(set = 0, binding = 2, std430) restrict buffer PixelBuffer
 {
 	uint insertIdx;
-    int[] pixels;
+    Pixel[] pixels;
 } pixelBuffer;
 
 float sdSegment( vec2 p, vec2 a, vec2 b )
@@ -36,11 +42,11 @@ void main()
 	// Grab the current pixel's position from the ID of this specific invocation ("thread").
 	ivec2 coords = ivec2(gl_GlobalInvocationID.xy);
 	vec4 pixel = imageLoad(arena, coords);
-	if (pixel.w > 0.99 && distance(coords, pixelFilter.center) <= pixelFilter.radius)
+	if (pixel.w == 1 && distance(coords, pixelFilter.center) <= pixelFilter.radius)
 	{
-		uint idx = atomicAdd(pixelBuffer.insertIdx, 2);
-		pixelBuffer.pixels[idx] = coords.x;
-		pixelBuffer.pixels[++idx] = coords.y;
-		imageStore(arena, coords, vec4(pixel.xyz,0.8));
+		uint idx = atomicAdd(pixelBuffer.insertIdx, 1);
+		pixelBuffer.pixels[idx] = Pixel(uint(coords.x), uint(coords.y), float(pixel.r), float(pixel.g), float(pixel.b));
+		// disable collision for selected pixels here for now
+		imageStore(arena, coords, vec4(pixel.xyz, 0.8));
 	}
 }

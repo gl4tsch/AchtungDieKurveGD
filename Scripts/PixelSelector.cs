@@ -1,6 +1,9 @@
+using System.Net;
 using System;
 using Godot;
 using Godot.Collections;
+using System.IO;
+using System.Security.Cryptography;
 
 namespace ADK
 {
@@ -59,7 +62,7 @@ namespace ADK
             pxFilterUniform.AddId(pxFilterBuffer);
 
             // create output buffer
-            selectedPixelsBuffer = rd.StorageBufferCreate(sizeof(uint) + sizeof(int) * 2 * maxPixelsPerSelection);
+            selectedPixelsBuffer = rd.StorageBufferCreate(Pixel.SizeInByte * maxPixelsPerSelection);
 
             // create a uniform to assign the buffer to the rendering device
             var selectedPxUniform = new RDUniform
@@ -72,7 +75,7 @@ namespace ADK
             pixelSelectUniformSet = rd.UniformSetCreate(new Array<RDUniform> { arenaUniform, pxFilterUniform, selectedPxUniform }, pixelSelectShader, 0);
         }
 
-        public int[] SelectPixels(Vector2I center, float radius)
+        public Pixel[] SelectPixels(Vector2I center, float radius)
         {
             // select the pixels involved in the explosion
             var xBytes = BitConverter.GetBytes(center.X);
@@ -98,14 +101,48 @@ namespace ADK
             rd.Sync();
 
             byte[] byteSize = rd.BufferGetData(selectedPixelsBuffer, 0, sizeof(uint));
-            uint numCoords = BitConverter.ToUInt32(byteSize);
-            GD.Print("# exploding pixels: " + numCoords / 2);
+            uint pixelCount = BitConverter.ToUInt32(byteSize);
+            GD.Print("# exploding pixels: " + pixelCount);
 
-            // offset by insertion index size
-            var pixelData = rd.BufferGetData(selectedPixelsBuffer, sizeof(uint), sizeof(int) * numCoords);
-            int[] pixels = new int[numCoords];
-            Buffer.BlockCopy(pixelData, 0, pixels, 0, pixelData.Length);
+            // offset insertion index and one data entry (because atomic add off by one in compute shader)
+            var pixelData = rd.BufferGetData(selectedPixelsBuffer, sizeof(uint), Pixel.SizeInByte * pixelCount);
+            Pixel[] pixels = new Pixel[pixelCount];
+
+            using (MemoryStream pxStream = new(pixelData))
+            using (BinaryReader pxReader = new BinaryReader(pxStream))
+            {
+                for (int i = 0; i < pixelCount; i++)
+                {
+                    byte[] onePixel = pxReader.ReadBytes((int)Pixel.SizeInByte);
+                    pixels[i] = new Pixel(onePixel);
+                }
+            }
             return pixels;
+        }
+    }
+
+    public struct Pixel
+    {
+        public uint posX, posY;
+        public float r, g, b;
+        public static uint SizeInByte => sizeof(uint) * 2 + sizeof(float) * 3;
+
+        public Pixel(byte[] pixelData)
+        {
+            using (MemoryStream pxStream = new(pixelData))
+            using (BinaryReader pxReader = new BinaryReader(pxStream))
+            {
+                byte[] posXBytes = pxReader.ReadBytes(sizeof(uint));
+                posX = BitConverter.ToUInt32(posXBytes);
+                byte[] posYBytes = pxReader.ReadBytes(sizeof(uint));
+                posY = BitConverter.ToUInt32(posYBytes);
+                byte[] rBytes = pxReader.ReadBytes(sizeof(float));
+                r = BitConverter.ToSingle(rBytes);
+                byte[] gBytes = pxReader.ReadBytes(sizeof(float));
+                g = BitConverter.ToSingle(gBytes);
+                byte[] bBytes = pxReader.ReadBytes(sizeof(float));
+                b = BitConverter.ToSingle(bBytes);
+            }
         }
     }
 }
