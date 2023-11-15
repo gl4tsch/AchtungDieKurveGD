@@ -87,7 +87,10 @@ namespace ADK
         public void ExplodePixels(Vector2I center, int radius)
         {
             Pixel[] pixels = pixelSelector.SelectPixels(center, radius);
-            explodeComputer.Explode(center, radius, pixels);
+            if (pixels.Length > 0)
+            {
+                explodeComputer.Explode(center, radius, pixels);
+            }
         }
 
         void DisplayArena()
@@ -99,7 +102,7 @@ namespace ADK
             var arenaImg = Image.CreateFromData((int)pxWidth, (int)pxHeight, false, Image.Format.Rgba8, texBytes);
             var displayTex = ImageTexture.CreateFromImage(arenaImg);
             Texture = displayTex;
-            rd.TextureUpdate(arenaTexRead, 0, texBytes);
+            //rd.TextureUpdate(arenaTexRead, 0, texBytes);
         }
     }
 }

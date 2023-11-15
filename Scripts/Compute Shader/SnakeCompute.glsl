@@ -7,7 +7,7 @@ layout(local_size_x = 8, local_size_y = 8, local_size_z = 1) in;
 // Prepare memory for the image, which will be both read and written to
 // `restrict` is used to tell the compiler that the memory will only be accessed
 // by this variable.
-layout(r8, binding = 0) restrict uniform image2D arena;
+layout(r8, binding = 0) uniform image2D arena;
 
 struct GLSLSnakeData
 {

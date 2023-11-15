@@ -77,7 +77,7 @@ namespace ADK
             };
             explodyUniform.AddId(explodyBuffer);
 
-            var explodyUniformSet = rd.UniformSetCreate(new Array<RDUniform> { arenaInUniform, arenaOutUniform, explodyUniform, paramsUniform }, explosionShader, 0);
+            var explodyUniformSet = rd.UniformSetCreate(new Array<RDUniform> { arenaOutUniform, explodyUniform, paramsUniform }, explosionShader, 0);
 
             //GD.Print(pixels[0] + " " + pixels[1] + " " + pixels[2] + " " + pixels[3] + " " + pixels[4]);
 

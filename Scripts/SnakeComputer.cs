@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Godot;
 using Godot.Collections;
 using Godot.NativeInterop;
@@ -174,6 +175,8 @@ namespace ADK
                 {
                     Snake snake = aliveSnakes[i];
                     snake.OnCollision();
+                    // maybe explode later to avoid draw race condition?
+                    // did not work in quick test
                     arena.ExplodePixels((Vector2I)snake.PxPosition, Mathf.CeilToInt(snake.PxThickness));
                 }
             }
