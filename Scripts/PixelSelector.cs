@@ -51,7 +51,7 @@ namespace ADK
             arenaUniform.AddId(arenaTexWrite);
 
             // create filter buffer
-            pxFilterBuffer = rd.StorageBufferCreate(sizeof(int) * 2 + sizeof(float));
+            pxFilterBuffer = rd.StorageBufferCreate(LineFilter.SizeInByte);
 
             // create a uniform to assign the buffer to the rendering device
             var pxFilterUniform = new RDUniform
@@ -77,16 +77,31 @@ namespace ADK
 
         public Pixel[] SelectPixels(Vector2I center, float radius)
         {
-            // select the pixels involved in the explosion
-            var xBytes = BitConverter.GetBytes(center.X);
-            var yBytes = BitConverter.GetBytes(center.Y);
-            var rBytes = BitConverter.GetBytes(radius);
-            var data = new byte[xBytes.Length + yBytes.Length + rBytes.Length];
-            xBytes.CopyTo(data, 0);
-            yBytes.CopyTo(data, xBytes.Length);
-            rBytes.CopyTo(data, xBytes.Length + yBytes.Length);
+            return SelectPixels(center, center, radius);
+        }
 
-            rd.BufferUpdate(pxFilterBuffer, 0, sizeof(int) * 2 + sizeof(float), data);
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="startPos"></param>
+        /// <param name="endPos"></param>
+        /// <param name="halfThickness"></param>
+        /// <param name="clipMode">0 = no clipping; 1 = circle around start; 2 = circlie around end; 3 = circle around both;</param>
+        /// <returns></returns>
+        public Pixel[] SelectPixels(Vector2 startPos, Vector2 endPos, float halfThickness, int clipMode = 0)
+        {
+            // select the pixels involved in the explosion
+            LineFilter filter = new()
+            {
+                startPosX = startPos.X,
+                startPosY = startPos.Y,
+                endPosX = endPos.X,
+                endPosY = endPos.Y,
+                halfThickness = halfThickness,
+                clipMode = clipMode
+            };
+
+            rd.BufferUpdate(pxFilterBuffer, 0, LineFilter.SizeInByte, filter.ToByteArray());
             // reset the array insertion index
             rd.BufferUpdate(selectedPixelsBuffer, 0, sizeof(uint), BitConverter.GetBytes((uint)0));
 
@@ -143,6 +158,33 @@ namespace ADK
                 byte[] bBytes = pxReader.ReadBytes(sizeof(float));
                 b = BitConverter.ToSingle(bBytes);
             }
+        }
+    }
+
+    public struct LineFilter
+    {
+        public float startPosX, startPosY, endPosX, endPosY;
+        public float halfThickness;
+        /// <summary>
+        /// 0 = no clip; 1 = circle around a; 2 = circle around b; 3 = circle around both
+        /// </summary>
+        public int clipMode;
+
+        public static uint SizeInByte => sizeof(float) * 5 + sizeof(int);
+
+        public byte[] ToByteArray()
+        {
+            using MemoryStream stream = new();
+            using BinaryWriter writer = new(stream);
+
+            writer.Write(startPosX);
+            writer.Write(startPosY);
+            writer.Write(endPosX);
+            writer.Write(endPosY);
+            writer.Write(halfThickness);
+            writer.Write(clipMode);
+
+            return stream.ToArray();
         }
     }
 }

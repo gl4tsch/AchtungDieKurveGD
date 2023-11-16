@@ -131,6 +131,11 @@ namespace ADK
         {
             injectionDrawBuffer.AddRange(lineDrawData);
         }
+
+        public void RequestExplosion(Vector2 startPos, Vector2 endPos, float halfThickness)
+        {
+            
+        }
     }
 
     public struct LineData
@@ -147,8 +152,8 @@ namespace ADK
         //TODO: check for faster ways to do this
         public byte[] ToByteArray()
         {
-            var stream = new MemoryStream();
-            var writer = new BinaryWriter(stream);
+            using MemoryStream stream = new();
+            using BinaryWriter writer = new(stream);
 
             writer.Write(prevPosX);
             writer.Write(prevPosY);

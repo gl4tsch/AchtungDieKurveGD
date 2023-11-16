@@ -9,11 +9,12 @@ layout(local_size_x = 8, local_size_y = 8, local_size_z = 1) in;
 // by this variable.
 layout(r8, binding = 0) uniform image2D arena;
 
-// select pixels in circle at center with radius
+// select pixels in in a line segment
 layout(set = 0, binding = 1, std430) restrict buffer PixelFilter
 {
-	ivec2 center;
-	float radius;
+	float startPosX, startPosY, endPosX, endPosY;
+	float halfThickness;
+	int clipMode;
 	// all colors with high enough alpha for now
 } pixelFilter;
 
@@ -42,11 +43,18 @@ void main()
 	// Grab the current pixel's position from the ID of this specific invocation ("thread").
 	ivec2 coords = ivec2(gl_GlobalInvocationID.xy);
 	vec4 pixel = imageLoad(arena, coords);
-	if (pixel.a > 0.98 && distance(coords, pixelFilter.center) <= pixelFilter.radius)
+	vec2 posA = vec2(pixelFilter.startPosX, pixelFilter.startPosY);
+	vec2 posB = vec2(pixelFilter.endPosX, pixelFilter.endPosY);
+	if (pixel.a > 0.98 && sdSegment(coords, posA, posB) <= pixelFilter.halfThickness)
 	{
-		uint idx = atomicAdd(pixelBuffer.insertIdx, 1);
-		pixelBuffer.pixels[idx] = Pixel(uint(coords.x), uint(coords.y), float(pixel.r), float(pixel.g), float(pixel.b));
-		// disable collision for selected pixels here for now
-		imageStore(arena, coords, vec4(pixel.xyz, 0.8));
+		bool clipA = (pixelFilter.clipMode == 1 || pixelFilter.clipMode == 3) && length(posA - coords) <= pixelFilter.halfThickness;
+		bool clipB = (pixelFilter.clipMode == 2 || pixelFilter.clipMode == 3) && length(posB - coords) <= pixelFilter.halfThickness;
+		if (!clipA && !clipB)
+		{
+			uint idx = atomicAdd(pixelBuffer.insertIdx, 1);
+			pixelBuffer.pixels[idx] = Pixel(uint(coords.x), uint(coords.y), float(pixel.r), float(pixel.g), float(pixel.b));
+			// disable collision for selected pixels here for now
+			imageStore(arena, coords, vec4(pixel.xyz, 0.8));
+		}
 	}
 }

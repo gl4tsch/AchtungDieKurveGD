@@ -93,6 +93,15 @@ namespace ADK
             }
         }
 
+        public void ExplodePixels(Vector2 startPos, Vector2 endPos, float halfThickness)
+        {
+            Pixel[] pixels = pixelSelector.SelectPixels(startPos, endPos, halfThickness, 1);
+            if (pixels.Length > 0)
+            {
+                explodeComputer.Explode((Vector2I)startPos, halfThickness, pixels);
+            }
+        }
+
         void DisplayArena()
         {
             // unfortunately there is no way to display a gpu texture
