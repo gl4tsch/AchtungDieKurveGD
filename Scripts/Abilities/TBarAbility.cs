@@ -5,10 +5,10 @@ namespace ADK
 {
     public class TBarAbility : Ability
     {
-        public static string DisplayName => "TBar";
+        public static string DisplayName => "T-Bar";
         public override string Name => DisplayName;
 
-        float halfBarLength = 60;
+        float halfBarLength = 80;
         
         public override void Activate(Snake snake)
         {

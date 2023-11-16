@@ -26,18 +26,21 @@ namespace ADK.UI
         RebindKey awaitedRebindKey = RebindKey.None;
         static readonly List<Key> forbiddenControlKeys = new(){ Key.Escape };
 
-        // List<(string name, Func<Ability> creator)> abilityFactory = new()
-        // {
-        //     ("None", () => null),
-        //     (EraserAbility.DisplayName, () => new EraserAbility()),
-        //     (TBarAbility.DisplayName, () => new TBarAbility())
-        // };
-        List<Ability> allAbilities = new()
+        static string noAbilityDisplayName = "None";
+        List<(string name, Func<Ability> creator)> abilityFactory = new()
         {
-            null,
-            new EraserAbility(),
-            new TBarAbility()
+            (noAbilityDisplayName, () => null),
+            (EraserAbility.DisplayName, () => new EraserAbility()),
+            (TBarAbility.DisplayName, () => new TBarAbility()),
+            (VBarAbility.DisplayName, () => new VBarAbility())
         };
+        // List<Ability> allAbilities = new()
+        // {
+        //     null,
+        //     new EraserAbility(),
+        //     new TBarAbility(),
+        //     new VBarAbility()
+        // };
 
         public LobbySnake Init(Snake snake)
         {
@@ -65,9 +68,9 @@ namespace ADK.UI
             fireButton.Pressed += OnFireButtonClicked;
 
             abilityDD.Clear();
-            foreach (var ability in allAbilities) // (string ability in abilityFactory.Select(a => a.name))
+            foreach (var ability in abilityFactory)
             {
-                abilityDD.AddItem(ability?.Name ?? "None");
+                abilityDD.AddItem(ability.name);
             }
             UpdateDDValue();
             abilityDD.ItemSelected += OnAbilitySelected;
@@ -140,8 +143,8 @@ namespace ADK.UI
 
         void UpdateDDValue()
         {
-            //var idx = abilityFactory.FindIndex(a => a.name == (Snake.Ability?.Name ?? "None"));
-            int idx = allAbilities.FindIndex(a => a?.Name == Snake.Ability?.Name);
+            var idx = abilityFactory.FindIndex(a => a.name == (Snake.Ability?.Name ?? noAbilityDisplayName));
+            //int idx = allAbilities.FindIndex(a => a?.Name == Snake.Ability?.Name);
             abilityDD.Select(idx);
         }
 
@@ -176,18 +179,8 @@ namespace ADK.UI
 
         void OnAbilitySelected(long ddIdx)
         {
-            if (ddIdx == 0)
-            {
-                Snake.Ability = null;
-            }
-            else if (ddIdx == 1)
-            {
-                Snake.Ability = new EraserAbility();
-            }
-            else if (ddIdx == 2)
-            {
-                Snake.Ability = new TBarAbility();
-            }
+            int idx = (int)ddIdx;
+            Snake.Ability = abilityFactory[idx].creator();
         }
 
         void OnDeleteButtonClicked()
