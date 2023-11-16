@@ -1,4 +1,5 @@
 using Godot;
+using System.Collections.Generic;
 using System.IO;
 
 namespace ADK
@@ -25,6 +26,8 @@ namespace ADK
         public Ability Ability { get; set; }
         // TODO: make statemachine
         public bool IsAlive { get; private set; } = false;
+
+        List<LineData> injectionDrawBuffer = new();
 
         public Snake()
         {
@@ -73,7 +76,7 @@ namespace ADK
             if (keyEvent.Keycode == FireKey && keyEvent.IsPressed())
             {
                 GD.Print("Fire!");
-                Ability?.Activate();
+                Ability?.Activate(this);
             }
         }
 
@@ -95,9 +98,9 @@ namespace ADK
             IsAlive = false;
         }
 
-        public SnakeData GetComputeData()
+        public LineData GetSnakeDrawData()
         {
-            return new SnakeData()
+            return new LineData()
             {
                 prevPosX = pxPrevPos.X,
                 prevPosY = pxPrevPos.Y,
@@ -107,19 +110,41 @@ namespace ADK
                 colorR = Color.R,
                 colorG = Color.G,
                 colorB = Color.B,
-                colorA = Color.A
+                colorA = Color.A,
+                clipMode = 0
             };
+        }
+
+        /// <summary>
+        /// gaps and abilities and the like
+        /// </summary>
+        /// <returns>draw data no collision checks should be done with</returns>
+        public List<LineData> GetLineDrawData()
+        {
+            List<LineData> data = new();
+            data.AddRange(injectionDrawBuffer);
+            injectionDrawBuffer.Clear();
+            return data;
+        }
+
+        public void InjectDrawData(List<LineData> lineDrawData)
+        {
+            injectionDrawBuffer.AddRange(lineDrawData);
         }
     }
 
-    public struct SnakeData
+    public struct LineData
     {
         public float prevPosX, prevPosY, newPosX, newPosY;
         public float halfThickness;
         public float colorR, colorG, colorB, colorA;
-        //public int collision; // bool
 
-        //TODO: faster
+        /// <summary>
+        /// 0 = no clip; 1 = circle around a; 2 = circle around b; 3 = circle around both
+        /// </summary>
+        public int clipMode;
+
+        //TODO: check for faster ways to do this
         public byte[] ToByteArray()
         {
             var stream = new MemoryStream();
@@ -134,10 +159,11 @@ namespace ADK
             writer.Write(colorG);
             writer.Write(colorB);
             writer.Write(colorA);
+            writer.Write(clipMode);
 
             return stream.ToArray();
         }
 
-        public static uint SizeInByte => sizeof(float) * 4 + sizeof(float) + sizeof(float) * 4;
+        public static uint SizeInByte => sizeof(float) * 4 + sizeof(float) + sizeof(float) * 4 + sizeof(int);
     }
 }

@@ -7,6 +7,6 @@ namespace ADK
     public abstract class Ability
     {
         public abstract string Name {get;}
-        public abstract void Activate();
+        public abstract void Activate(Snake snake);
     }
 }

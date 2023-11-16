@@ -20,10 +20,14 @@ namespace ADK
         Rid snakeUniformSet;
         Rid snakeBuffer;
         Rid collisionBuffer;
+        Rid lineBuffer;
 
         Snake[] snakes;
         List<Snake> aliveSnakes = new();
-        List<SnakeData> snakesData = new();
+
+        // gradually dequeued and drawn each frame
+        Queue<LineData> lineDrawDataBuffer = new();
+        uint maxAdditionalLinesPerSnakePerFrame = 3;
 
         public SnakeComputer(Arena arena, RenderingDevice rd, RDShaderFile computeShader, Rid arenaTexRead, Rid arenaTexWrite)
         {
@@ -76,7 +80,7 @@ namespace ADK
             arenaUniform.AddId(arenaTexWrite);
 
             // create snake buffer
-            snakeBuffer = rd.StorageBufferCreate(SnakeData.SizeInByte * (uint)snakes.Length);
+            snakeBuffer = rd.StorageBufferCreate(LineData.SizeInByte * (uint)snakes.Length);
             // create a snake uniform to assign the snake buffer to the rendering device
             var snakeUniform = new RDUniform
             {
@@ -94,7 +98,15 @@ namespace ADK
             };
             collisionUniform.AddId(collisionBuffer);
 
-            snakeUniformSet = rd.UniformSetCreate(new Array<RDUniform>{ arenaUniform, snakeUniform, collisionUniform }, snakeShader, 0);
+            // line buffer
+            lineBuffer = rd.StorageBufferCreate(LineData.SizeInByte * (uint)snakes.Length * maxAdditionalLinesPerSnakePerFrame);
+            var lineUniform = new RDUniform{
+                UniformType = RenderingDevice.UniformType.StorageBuffer,
+                Binding = 3
+            };
+            lineUniform.AddId(lineBuffer);
+
+            snakeUniformSet = rd.UniformSetCreate(new Array<RDUniform>{ arenaUniform, snakeUniform, collisionUniform, lineUniform }, snakeShader, 0);
         }
 
         public void HandleSnakeInput(InputEventKey keyEvent)
@@ -112,36 +124,54 @@ namespace ADK
             {
                 return;
             }
-            UpdateSnakeData(deltaT);
-            ComputeSnakesSync(snakesData.ToArray());
+            List<LineData> snakesDrawData = GenerateSnakeDrawData(deltaT);
+            ComputeSnakesSync(snakesDrawData.ToArray());
             CheckForCollisions();
         }
 
-        void UpdateSnakeData(double deltaT)
+        // this also fills lineDrawBuffer with lines from gaps and abilities and the like
+        List<LineData> GenerateSnakeDrawData(double deltaT)
         {
-            snakesData.Clear();
-            foreach (var aliveSnake in aliveSnakes)
+            List<LineData> snakesDrawData = new();
+            foreach (var snake in aliveSnakes)
             {
-                aliveSnake.Update((float)deltaT);
-                snakesData.Add(aliveSnake.GetComputeData());
+                snake.Update((float)deltaT);
+                // snake draw data
+                snakesDrawData.Add(snake.GetSnakeDrawData());
+                // fill line draw buffer
+                foreach (var line in snake.GetLineDrawData())
+                {
+                    lineDrawDataBuffer.Enqueue(line);
+                }
             }
+            return snakesDrawData;
         }
 
-        void ComputeSnakesSync(SnakeData[] snakesData)
+        void ComputeSnakesSync(LineData[] snakesData)
         {
             ComputeSnakesAsync(snakesData);
             rd.Sync();
         }
 
-        void ComputeSnakesAsync(SnakeData[] snakesData)
+        void ComputeSnakesAsync(LineData[] snakesData)
         {
             uint snakeCount = (uint)snakesData.Length;
 
-            // update snake data buffer
-            List<byte> snakesBytes = new List<byte>();
+            // update snake data buffer and drain line buffer
+            List<byte> snakesBytes = new();
+            List<LineData> lineDrawData = new();
             foreach (var data in snakesData)
             {
                 snakesBytes.AddRange(data.ToByteArray());
+                // drain line buffer
+                for (int i = 0; i < maxAdditionalLinesPerSnakePerFrame; i++)
+                {
+                    if (!lineDrawDataBuffer.TryDequeue(out LineData line))
+                    {
+                        break;
+                    }
+                    lineDrawData.Add(line);
+                }
             }
             rd.BufferUpdate(snakeBuffer, 0, (uint)snakesBytes.Count, snakesBytes.ToArray());
 
@@ -152,6 +182,14 @@ namespace ADK
                 collisionBytes[i] = 0;
             }
             rd.BufferUpdate(collisionBuffer, 0, (uint)collisionBytes.Length, collisionBytes);
+
+            // line draw data
+            List<byte> lineBytes = new();
+            foreach (var line in lineDrawData)
+            {
+                lineBytes.AddRange(line.ToByteArray());
+            }
+            rd.BufferUpdate(lineBuffer, 0, (uint)lineBytes.Count, lineBytes.ToArray());
 
             var computeList = rd.ComputeListBegin();
             rd.ComputeListBindComputePipeline(computeList, snakePipeline);
@@ -166,7 +204,7 @@ namespace ADK
         void CheckForCollisions()
         {
             // get collision output
-            byte[] collisionData = rd.BufferGetData(collisionBuffer, 0, (uint)snakesData.Count * sizeof(int));
+            byte[] collisionData = rd.BufferGetData(collisionBuffer, 0, (uint)aliveSnakes.Count * sizeof(int));
             int[] collisions = new int[collisionData.Length];
             Buffer.BlockCopy(collisionData, 0, collisions, 0, collisionData.Length);
             for (int i = 0; i < collisions.Length; i++)

@@ -9,22 +9,31 @@ layout(local_size_x = 8, local_size_y = 8, local_size_z = 1) in;
 // by this variable.
 layout(r8, binding = 0) uniform image2D arena;
 
-struct GLSLSnakeData
+struct LineData
 {
     float prevPosX, prevPosY, newPosX, newPosY;
     float halfThickness;
     float colorR, colorG, colorB, colorA;
+	int clipMode;
 };
 
+// snake draw data inpt
 layout(set = 0, binding = 1, std430) restrict readonly buffer SnakeBuffer
 {
-    GLSLSnakeData[] snakes;
+    LineData[] snakes;
 } snakeBuffer;
 
-layout(set = 0, binding = 2, std430) restrict buffer CollisionBuffer
+// collision output
+layout(set = 0, binding = 2, std430) restrict writeonly buffer CollisionBuffer
 {
 	int[] collisions;
 } collisionBuffer;
+
+// additional line draw data input
+layout(set = 0, binding = 3, std430) restrict readonly buffer LineBuffer
+{
+	LineData[] lines;
+} lineBuffer;
 
 float sdSegment( vec2 p, vec2 a, vec2 b )
 {
@@ -43,7 +52,7 @@ void main()
 	// SNAKES
 	for (int i = 0; i < snakeBuffer.snakes.length(); i++)
 	{
-		GLSLSnakeData snake = snakeBuffer.snakes[i];
+		LineData snake = snakeBuffer.snakes[i];
 		vec2 prevPos = vec2(snake.prevPosX, snake.prevPosY);
 		vec2 newPos = vec2(snake.newPosX, snake.newPosY);
 		vec4 color = vec4(snake.colorR, snake.colorG, snake.colorB, snake.colorA);
@@ -60,6 +69,33 @@ void main()
             }
 
 			// draw pixel
+			imageStore(arena, coords, color);
+		}
+	}
+
+	// LINES
+	for (int i = 0; i < lineBuffer.lines.length(); i++)
+	{
+		LineData line = lineBuffer.lines[i];
+		vec2 posA = vec2(line.prevPosX, line.prevPosY);
+		vec2 posB = vec2(line.newPosX, line.newPosY);
+		vec4 color = vec4(line.colorR, line.colorG, line.colorB, line.colorA);
+		float distToSegment = sdSegment(coords, posA, posB);
+
+		if (distToSegment <= line.halfThickness)
+		{
+			// clip ends
+			// clip a
+			if ((line.clipMode == 1 || line.clipMode == 3) && length(posA - coords) <= line.halfThickness)
+			{
+				continue;
+			}
+			if ((line.clipMode == 2 || line.clipMode == 3) && length(posB - coords) <= line.halfThickness)
+			{
+				continue;
+			}
+
+			// fill pixel
 			imageStore(arena, coords, color);
 		}
 	}
