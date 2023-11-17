@@ -31,6 +31,8 @@ namespace ADK.UI
         {
             (noAbilityDisplayName, () => null),
             (EraserAbility.DisplayName, () => new EraserAbility()),
+            (SpeedAbility.DisplayName, () => new SpeedAbility()),
+            (TeleportAbility.DisplayName, () => new TeleportAbility()),
             (TBarAbility.DisplayName, () => new TBarAbility()),
             (VBarAbility.DisplayName, () => new VBarAbility())
         };
@@ -73,6 +75,8 @@ namespace ADK.UI
                 abilityDD.AddItem(ability.name);
             }
             UpdateDDValue();
+            // create fresh ability
+            OnAbilitySelected(abilityDD.Selected);
             abilityDD.ItemSelected += OnAbilitySelected;
 
             deleteButton.Pressed += OnDeleteButtonClicked;

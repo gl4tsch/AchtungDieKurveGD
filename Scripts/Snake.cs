@@ -7,13 +7,22 @@ namespace ADK
 {
     public class Snake
     {
+        // base stats
         public string Name { get; set; } = "Snake";
         public Color Color { get; private set; } = new Color(1, 0, 0, 1);
-        public float PxThickness = 10f;
-        public float MoveSpeed = 100f;
-        public float TurnRate = 3f;
+        public float PxThickness { get; private set; } = 10f;
+        public float MoveSpeed { get; private set; } = 100f;
+        public float TurnRate {get; private set; } = 3f;
+
+        // stat modifier
+        public float MoveSpeedModifier { get; set; } = 1f;
+        public float TurnRateModifier { get; set; } = 1f;
+        public float ThicknessModifier { get; set; } = 1f;
 
         public int TurnSign { get; private set; } = 0; // 0 = straight, -1 = left, 1 = right
+        /// <summary>
+        /// this is always normalized
+        /// </summary>
         public Vector2 Direction { get; private set; } = Vector2.Right;
         public Vector2 PxPosition { get; private set; } = Vector2.Zero;
         Vector2 pxPrevPos;
@@ -60,7 +69,13 @@ namespace ADK
             PxPosition = new Vector2(rng.RandfRange(0 + arenaSize.X / 4, arenaSize.X - arenaSize.X / 4), rng.RandfRange(0 + arenaSize.Y / 4, arenaSize.Y - arenaSize.Y / 4));
             Vector2 arenaCenter = arenaSize / 2;
             Direction = (arenaCenter - PxPosition).Normalized();
+            
+            // reset modifier
             TurnSign = 0;
+            MoveSpeedModifier = 1f;
+            TurnRateModifier = 1f;
+            ThicknessModifier = 1f;
+
             IsAlive = true;
         }
 
@@ -89,18 +104,19 @@ namespace ADK
             }
         }
 
-        public void Update(float delta)
+        public void Update(float deltaT)
         {
             if (!IsAlive)
             {
                 return;
             }
             
-            Direction = Direction.Rotated(TurnSign * TurnRate * delta);
+            Direction = Direction.Rotated(TurnSign * TurnRate * TurnRateModifier * deltaT);
             pxPrevPos = PxPosition;
-            PxPosition = pxPrevPos + Direction * MoveSpeed * delta;
+            PxPosition = pxPrevPos + Direction * MoveSpeed * MoveSpeedModifier * deltaT;
 
             UpdateGap();
+            Ability?.Tick(deltaT);
         }
 
         void UpdateGap()
@@ -116,7 +132,7 @@ namespace ADK
                     prevPosY = pxPrevPos.Y,
                     newPosX = PxPosition.X,
                     newPosY = PxPosition.Y,
-                    halfThickness = PxThickness / 2,
+                    halfThickness = PxThickness * ThicknessModifier / 2,
                     colorR = 0,
                     colorG = 0,
                     colorB = 0,
@@ -168,7 +184,7 @@ namespace ADK
                 startPosY = PxPosition.Y,
                 endPosX = PxPosition.X,
                 endPosY = PxPosition.Y,
-                halfThickness = PxThickness,
+                halfThickness = PxThickness * ThicknessModifier,
                 clipMode = 0
             });
             IsAlive = false;
@@ -182,7 +198,7 @@ namespace ADK
                 prevPosY = pxPrevPos.Y,
                 newPosX = PxPosition.X,
                 newPosY = PxPosition.Y,
-                halfThickness = PxThickness / 2f,
+                halfThickness = PxThickness * ThicknessModifier / 2f,
                 colorR = Color.R,
                 colorG = Color.G,
                 colorB = Color.B,
@@ -219,6 +235,12 @@ namespace ADK
         public void RequestExplosion(LineFilter pixels)
         {
             explosionBuffer.Add(pixels);
+        }
+
+        public void Teleport(Vector2 position)
+        {
+            pxPrevPos = position;
+            PxPosition = position;
         }
     }
 

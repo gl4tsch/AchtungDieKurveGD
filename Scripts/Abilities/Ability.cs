@@ -8,5 +8,8 @@ namespace ADK
     {
         public abstract string Name {get;}
         public abstract void Activate(Snake snake);
+
+        /// <param name="deltaT">time since last tick in seconds</param>
+        public virtual void Tick(float deltaT){}
     }
 }
