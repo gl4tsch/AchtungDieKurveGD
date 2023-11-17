@@ -123,6 +123,7 @@ namespace ADK
             if (aliveSnakes.Count == 0)
             {
                 arena.StartNewRound();
+                return;
             }
             List<LineData> snakesDrawData = GenerateSnakeDrawData(deltaT);
             ComputeSnakesSync(snakesDrawData.ToArray());
