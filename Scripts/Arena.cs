@@ -12,7 +12,8 @@ namespace ADK
         [Export] RDShaderFile snakeComputeShader, explodeComputeShader, selectComputeShader;
 
         RenderingDevice rd;
-        Rid arenaTexRead, arenaTexWrite;
+        Rid arenaTexRead; // unused
+        Rid arenaTexWrite;
 
         SnakeComputer snakeComputer;
         ExplodeComputer explodeComputer;
@@ -65,10 +66,16 @@ namespace ADK
         public override void _Input(InputEvent @event)
         {
             base._Input(@event);
+            // pass keyboard inputs to snakeComputer
             if (@event is InputEventKey keyEvent && !keyEvent.IsEcho())
             {
                 snakeComputer.HandleSnakeInput(keyEvent);
             }
+        }
+
+        public void StartNewRound()
+        {
+            _Ready();
         }
 
         public override void _Process(double delta)

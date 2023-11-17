@@ -122,7 +122,7 @@ namespace ADK
             aliveSnakes.RemoveAll(s => !s.IsAlive);
             if (aliveSnakes.Count == 0)
             {
-                return;
+                arena.StartNewRound();
             }
             List<LineData> snakesDrawData = GenerateSnakeDrawData(deltaT);
             ComputeSnakesSync(snakesDrawData.ToArray());

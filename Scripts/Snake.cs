@@ -70,8 +70,12 @@ namespace ADK
             Vector2 arenaCenter = arenaSize / 2;
             Direction = (arenaCenter - PxPosition).Normalized();
             
-            // reset modifier
-            TurnSign = 0;
+            // poll input for turn sign initialization
+            bool left = Input.IsKeyPressed(TurnLeftKey);
+            bool right = Input.IsKeyPressed(TurnRightKey);
+            TurnSign = left && !right ? -1 : right && !left ? 1 : 0;
+
+            // reset modifiers
             MoveSpeedModifier = 1f;
             TurnRateModifier = 1f;
             ThicknessModifier = 1f;
