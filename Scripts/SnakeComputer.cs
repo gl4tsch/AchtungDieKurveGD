@@ -80,7 +80,7 @@ namespace ADK
             arenaUniform.AddId(arenaTexWrite);
 
             // create snake buffer
-            snakeBuffer = rd.StorageBufferCreate(LineData.SizeInByte * (uint)snakes.Length);
+            snakeBuffer = rd.StorageBufferCreate(sizeof(uint) + LineData.SizeInByte * (uint)snakes.Length);
             // create a snake uniform to assign the snake buffer to the rendering device
             var snakeUniform = new RDUniform
             {
@@ -99,7 +99,7 @@ namespace ADK
             collisionUniform.AddId(collisionBuffer);
 
             // line buffer
-            lineBuffer = rd.StorageBufferCreate(LineData.SizeInByte * (uint)snakes.Length * maxAdditionalLinesPerSnakePerFrame);
+            lineBuffer = rd.StorageBufferCreate(sizeof(uint) + LineData.SizeInByte * (uint)snakes.Length * maxAdditionalLinesPerSnakePerFrame);
             var lineUniform = new RDUniform{
                 UniformType = RenderingDevice.UniformType.StorageBuffer,
                 Binding = 3
@@ -173,7 +173,10 @@ namespace ADK
                     lineDrawData.Add(line);
                 }
             }
-            rd.BufferUpdate(snakeBuffer, 0, (uint)snakesBytes.Count, snakesBytes.ToArray());
+            // snake count
+            rd.BufferUpdate(snakeBuffer, 0, sizeof(uint), BitConverter.GetBytes(snakeCount));
+            // snake data
+            rd.BufferUpdate(snakeBuffer, sizeof(uint), (uint)snakesBytes.Count, snakesBytes.ToArray());
 
             // clear collision data buffer
             byte[] collisionBytes = new byte[snakeCount * sizeof(int)];
@@ -189,7 +192,10 @@ namespace ADK
             {
                 lineBytes.AddRange(line.ToByteArray());
             }
-            rd.BufferUpdate(lineBuffer, 0, (uint)lineBytes.Count, lineBytes.ToArray());
+            // line count
+            rd.BufferUpdate(lineBuffer, 0, sizeof(uint), BitConverter.GetBytes((uint)lineDrawData.Count));
+            // line data
+            rd.BufferUpdate(lineBuffer, sizeof(uint), (uint)lineBytes.Count, lineBytes.ToArray());
 
             var computeList = rd.ComputeListBegin();
             rd.ComputeListBindComputePipeline(computeList, snakePipeline);
@@ -213,8 +219,6 @@ namespace ADK
                 {
                     Snake snake = aliveSnakes[i];
                     snake.OnCollision();
-                    // maybe explode later to avoid draw race condition?
-                    // did not work in quick test
                     arena.ExplodePixels((Vector2I)snake.PxPosition, Mathf.CeilToInt(snake.PxThickness));
                 }
             }

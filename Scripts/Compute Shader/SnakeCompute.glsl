@@ -20,6 +20,7 @@ struct LineData
 // snake draw data inpt
 layout(set = 0, binding = 1, std430) restrict readonly buffer SnakeBuffer
 {
+	uint snakeCount;
     LineData[] snakes;
 } snakeBuffer;
 
@@ -32,6 +33,7 @@ layout(set = 0, binding = 2, std430) restrict writeonly buffer CollisionBuffer
 // additional line draw data input
 layout(set = 0, binding = 3, std430) restrict readonly buffer LineBuffer
 {
+	uint lineCount;
 	LineData[] lines;
 } lineBuffer;
 
@@ -50,7 +52,7 @@ void main()
 	vec4 pixel = imageLoad(arena, coords);
 
 	// SNAKES
-	for (int i = 0; i < snakeBuffer.snakes.length(); i++)
+	for (int i = 0; i < snakeBuffer.snakeCount; i++)
 	{
 		LineData snake = snakeBuffer.snakes[i];
 		vec2 prevPos = vec2(snake.prevPosX, snake.prevPosY);
@@ -74,7 +76,7 @@ void main()
 	}
 
 	// LINES
-	for (int i = 0; i < lineBuffer.lines.length(); i++)
+	for (int i = 0; i < lineBuffer.lineCount; i++)
 	{
 		LineData line = lineBuffer.lines[i];
 		vec2 posA = vec2(line.prevPosX, line.prevPosY);
