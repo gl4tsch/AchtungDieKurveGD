@@ -127,6 +127,7 @@ namespace ADK
             List<LineData> snakesDrawData = GenerateSnakeDrawData(deltaT);
             ComputeSnakesSync(snakesDrawData.ToArray());
             CheckForCollisions();
+            HandleSnakeExplosionRequests();
         }
 
         // this also fills lineDrawBuffer with lines from gaps and abilities and the like
@@ -219,8 +220,20 @@ namespace ADK
                 {
                     Snake snake = aliveSnakes[i];
                     snake.OnCollision();
-                    arena.ExplodePixels((Vector2I)snake.PxPosition, Mathf.CeilToInt(snake.PxThickness));
                 }
+            }
+        }
+
+        void HandleSnakeExplosionRequests()
+        {
+            List<LineFilter> explosionData = new();
+            foreach (var snake in snakes)
+            {
+                explosionData.AddRange(snake.GetExplosionData());
+            }
+            foreach (var line in explosionData)
+            {
+                arena.ExplodePixels(line);
             }
         }
     }

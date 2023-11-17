@@ -102,6 +102,15 @@ namespace ADK
             }
         }
 
+        public void ExplodePixels(LineFilter pixelFilter)
+        {
+            Pixel[] pixels = pixelSelector.SelectPixels(pixelFilter);
+            if (pixels.Length > 0)
+            {
+                explodeComputer.Explode(new Vector2I((int)pixelFilter.startPosX, (int)pixelFilter.startPosY), pixelFilter.halfThickness, pixels);
+            }
+        }
+
         void DisplayArena()
         {
             // unfortunately there is no way to display a gpu texture

@@ -1,9 +1,7 @@
-using System.Net;
 using System;
 using Godot;
 using Godot.Collections;
 using System.IO;
-using System.Security.Cryptography;
 
 namespace ADK
 {
@@ -101,6 +99,11 @@ namespace ADK
                 clipMode = clipMode
             };
 
+            return SelectPixels(filter);
+        }
+
+        public Pixel[] SelectPixels(LineFilter filter)
+        {
             rd.BufferUpdate(pxFilterBuffer, 0, LineFilter.SizeInByte, filter.ToByteArray());
             // reset the array insertion index
             rd.BufferUpdate(selectedPixelsBuffer, 0, sizeof(uint), BitConverter.GetBytes((uint)0));

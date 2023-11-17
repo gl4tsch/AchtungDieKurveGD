@@ -8,13 +8,14 @@ namespace ADK
         public static string DisplayName => "Eraser";
         public override string Name => DisplayName;
 
-        float eraserLength = 80;
+        float eraserLength = 160;
         
         public override void Activate(Snake snake)
         {
             GD.Print("Activating " + Name);
 
             Vector2 eraseTarget = snake.PxPosition + snake.Direction * eraserLength;
+
             LineData eraseLine = new()
             {
                 prevPosX = snake.PxPosition.X,
@@ -28,7 +29,18 @@ namespace ADK
                 colorA = 0,
                 clipMode = 1
             };
-            snake.InjectDrawData(new(){ eraseLine });
+            snake.InjectDrawData(new() { eraseLine });
+            return;
+
+            snake.RequestExplosion(new LineFilter()
+            {
+                startPosX = snake.PxPosition.X,
+                startPosY = snake.PxPosition.Y,
+                endPosX = eraseTarget.X,
+                endPosY = eraseTarget.Y,
+                halfThickness = snake.PxThickness / 2,
+                clipMode = 1
+            });
         }
     }
 }

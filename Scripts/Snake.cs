@@ -28,6 +28,7 @@ namespace ADK
         public bool IsAlive { get; private set; } = false;
 
         List<LineData> injectionDrawBuffer = new();
+        List<LineFilter> explosionBuffer = new();
 
         public Snake()
         {
@@ -95,6 +96,15 @@ namespace ADK
         public void OnCollision()
         {
             GD.Print(Name + " had a collision!");
+            RequestExplosion(new LineFilter()
+            {
+                startPosX = PxPosition.X,
+                startPosY = PxPosition.Y,
+                endPosX = PxPosition.X,
+                endPosY = PxPosition.Y,
+                halfThickness = PxThickness,
+                clipMode = 0
+            });
             IsAlive = false;
         }
 
@@ -127,14 +137,22 @@ namespace ADK
             return data;
         }
 
+        public List<LineFilter> GetExplosionData()
+        {
+            List<LineFilter> data = new();
+            data.AddRange(explosionBuffer);
+            explosionBuffer.Clear();
+            return data;
+        }
+
         public void InjectDrawData(List<LineData> lineDrawData)
         {
             injectionDrawBuffer.AddRange(lineDrawData);
         }
 
-        public void RequestExplosion(Vector2 startPos, Vector2 endPos, float halfThickness)
+        public void RequestExplosion(LineFilter pixels)
         {
-            
+            explosionBuffer.Add(pixels);
         }
     }
 
