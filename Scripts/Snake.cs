@@ -1,6 +1,7 @@
 using Godot;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 
 namespace ADK
 {
@@ -29,6 +30,13 @@ namespace ADK
 
         List<LineData> injectionDrawBuffer = new();
         List<LineFilter> explosionBuffer = new();
+
+        // gap
+        // turnSign is used to combine segments if possible
+        Stack<(int turnSign, LineData segment)> gapSegmentBuffer = new();
+        float distSinceLastGap = 0;
+        float gapFrequency = 400;
+        float gapWidth => PxThickness * 3;
 
         public Snake()
         {
@@ -87,10 +95,68 @@ namespace ADK
             {
                 return;
             }
-
+            
             Direction = Direction.Rotated(TurnSign * TurnRate * delta);
             pxPrevPos = PxPosition;
             PxPosition = pxPrevPos + Direction * MoveSpeed * delta;
+
+            UpdateGap();
+        }
+
+        void UpdateGap()
+        {
+            distSinceLastGap += (PxPosition - pxPrevPos).Length();
+
+            // add to gap buffer
+            if (distSinceLastGap > gapFrequency)
+            {
+                LineData gapSegment = new()
+                {
+                    prevPosX = pxPrevPos.X,
+                    prevPosY = pxPrevPos.Y,
+                    newPosX = PxPosition.X,
+                    newPosY = PxPosition.Y,
+                    halfThickness = PxThickness / 2,
+                    colorR = 0,
+                    colorG = 0,
+                    colorB = 0,
+                    colorA = 0,
+                    clipMode = 1
+                };
+
+                // check if data can be combined
+                if (gapSegmentBuffer.Count > 0)
+                {
+                    var lastSegment = gapSegmentBuffer.Peek();
+                    // can only combine if going straight for now
+                    if (lastSegment.turnSign == 0 && TurnSign == 0)
+                    {
+                        // discard old segment
+                        gapSegmentBuffer.Pop();
+                        // add to current segment
+                        gapSegment.prevPosX = lastSegment.segment.prevPosX;
+                        gapSegment.prevPosY = lastSegment.segment.prevPosY;
+                    }
+                }
+
+                // add to buffer
+                gapSegmentBuffer.Push((TurnSign, gapSegment));
+            }
+
+            // gap end
+            if (distSinceLastGap > gapFrequency + gapWidth)
+            {
+                // clip end of gap
+                var lastSegment = gapSegmentBuffer.Pop();
+                lastSegment.segment.clipMode = 3;
+                gapSegmentBuffer.Push(lastSegment);
+
+                List<LineData> gapData = gapSegmentBuffer.Select(gs => gs.segment).ToList();
+                InjectDrawData(gapData);
+
+                gapSegmentBuffer.Clear();
+                distSinceLastGap -= gapFrequency + gapWidth;
+            }
         }
 
         public void OnCollision()
