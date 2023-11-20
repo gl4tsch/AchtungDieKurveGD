@@ -1,0 +1,19 @@
+[gd_scene format=3 uid="uid://kg54o5ip628t"]
+
+[node name="VolumeHBox" type="HBoxContainer"]
+
+[node name="Label" type="Label" parent="."]
+layout_mode = 2
+text = "Master Volume"
+
+[node name="Button" type="Button" parent="."]
+visible = false
+layout_mode = 2
+
+[node name="HSlider" type="HSlider" parent="."]
+custom_minimum_size = Vector2(200, 0)
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 4
+value = 100.0
+scrollable = false

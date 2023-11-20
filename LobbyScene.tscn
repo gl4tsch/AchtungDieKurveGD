@@ -1,9 +1,10 @@
-[gd_scene load_steps=3 format=3 uid="uid://m6uwqstddv83"]
+[gd_scene load_steps=4 format=3 uid="uid://m6uwqstddv83"]
 
 [ext_resource type="Script" path="res://Scripts/LobbyScene.cs" id="1_lyy22"]
 [ext_resource type="PackedScene" uid="uid://cheohotxldlmc" path="res://Prefabs/SnakeLobby.tscn" id="2_lldim"]
+[ext_resource type="PackedScene" uid="uid://dskpv0ggh8o4b" path="res://SettingsWindow.tscn" id="3_7ccn4"]
 
-[node name="LobbyScene" type="Control" node_paths=PackedStringArray("startButton", "snakeLobby")]
+[node name="LobbyScene" type="Control" node_paths=PackedStringArray("startButton", "settingsButton", "snakeLobby", "settingsWindow")]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -12,7 +13,9 @@ grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_lyy22")
 startButton = NodePath("Start Button")
+settingsButton = NodePath("Settings Button")
 snakeLobby = NodePath("SnakeLobby")
+settingsWindow = NodePath("SettingsWindow")
 
 [node name="Start Button" type="Button" parent="."]
 layout_mode = 1
@@ -28,7 +31,23 @@ focus_mode = 0
 theme_type_variation = &"BigButton"
 text = "Start"
 
+[node name="Settings Button" type="Button" parent="."]
+layout_mode = 1
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -89.0
+offset_top = 19.0
+offset_right = -16.0
+offset_bottom = 50.0
+grow_horizontal = 0
+text = "Settings"
+
 [node name="SnakeLobby" parent="." instance=ExtResource("2_lldim")]
 layout_mode = 1
 anchors_preset = -1
 offset_top = 100.0
+
+[node name="SettingsWindow" parent="." instance=ExtResource("3_7ccn4")]
+visible = false
+layout_mode = 1

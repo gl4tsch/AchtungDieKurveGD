@@ -1,0 +1,91 @@
+[gd_scene load_steps=3 format=3 uid="uid://dskpv0ggh8o4b"]
+
+[ext_resource type="Script" path="res://Scripts/SettingsWindow.cs" id="1_tbell"]
+[ext_resource type="PackedScene" uid="uid://kg54o5ip628t" path="res://Prefabs/VolumeSetting.tscn" id="2_agcc6"]
+
+[node name="SettingsWindow" type="Control" node_paths=PackedStringArray("backButton", "masterVolumeSlider", "musicVolumeSlider", "soundVolumeSlider")]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_tbell")
+backButton = NodePath("Back Button")
+masterVolumeSlider = NodePath("ScrollContainer/SettingsVBox/AudioSettingsVBox/VolumeHBox/HSlider")
+musicVolumeSlider = NodePath("ScrollContainer/SettingsVBox/AudioSettingsVBox/VolumeHBox2/HSlider")
+soundVolumeSlider = NodePath("ScrollContainer/SettingsVBox/AudioSettingsVBox/VolumeHBox3/HSlider")
+
+[node name="ColorRect" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0, 0, 0, 1)
+
+[node name="SettingsLabel" type="Label" parent="."]
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+offset_top = 20.0
+offset_bottom = 60.0
+grow_horizontal = 2
+size_flags_vertical = 0
+theme_type_variation = &"BigHeader"
+text = "Settings"
+horizontal_alignment = 1
+
+[node name="Back Button" type="Button" parent="."]
+layout_mode = 1
+offset_left = 13.0
+offset_top = 11.0
+offset_right = 34.0
+offset_bottom = 42.0
+theme_override_font_sizes/font_size = 40
+text = " < "
+
+[node name="ScrollContainer" type="ScrollContainer" parent="."]
+layout_mode = 1
+anchors_preset = -1
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 20.0
+offset_top = 86.0
+offset_right = -20.0
+offset_bottom = -20.0
+grow_horizontal = 2
+grow_vertical = 2
+horizontal_scroll_mode = 0
+
+[node name="SettingsVBox" type="VBoxContainer" parent="ScrollContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="AudioSettingsVBox" type="VBoxContainer" parent="ScrollContainer/SettingsVBox"]
+layout_mode = 2
+
+[node name="AudioHeader" type="Label" parent="ScrollContainer/SettingsVBox/AudioSettingsVBox"]
+layout_mode = 2
+theme_type_variation = &"MediumHeader"
+text = "Audio"
+
+[node name="VolumeHBox" parent="ScrollContainer/SettingsVBox/AudioSettingsVBox" instance=ExtResource("2_agcc6")]
+layout_mode = 2
+
+[node name="VolumeHBox2" parent="ScrollContainer/SettingsVBox/AudioSettingsVBox" instance=ExtResource("2_agcc6")]
+layout_mode = 2
+
+[node name="Label" parent="ScrollContainer/SettingsVBox/AudioSettingsVBox/VolumeHBox2" index="0"]
+text = "Music Volume"
+
+[node name="VolumeHBox3" parent="ScrollContainer/SettingsVBox/AudioSettingsVBox" instance=ExtResource("2_agcc6")]
+layout_mode = 2
+
+[node name="Label" parent="ScrollContainer/SettingsVBox/AudioSettingsVBox/VolumeHBox3" index="0"]
+text = "SoundFX Volume"
+
+[editable path="ScrollContainer/SettingsVBox/AudioSettingsVBox/VolumeHBox"]
+[editable path="ScrollContainer/SettingsVBox/AudioSettingsVBox/VolumeHBox2"]
+[editable path="ScrollContainer/SettingsVBox/AudioSettingsVBox/VolumeHBox3"]

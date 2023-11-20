@@ -19,8 +19,11 @@ namespace ADK
         [Export] AudioStream speedAbilitySound;
         [Export] AudioStream eraserAbilitySound;
 
-        StringName musicBus = "Musc Bus";
-        StringName soundBus = "Sound Bus";
+        int masterBusIdx = 0;
+        StringName musicBus = "Music Bus";
+        int musicBusIdx => AudioServer.GetBusIndex(musicBus);
+        StringName soundBus = "SoundFX Bus";
+        int soundBusIdx => AudioServer.GetBusIndex(soundBus);
 
         Dictionary<Music, AudioStream> musicFiles;
         Dictionary<SFX, AudioStream> soundFiles;
@@ -30,6 +33,19 @@ namespace ADK
 
         float minDb = -60;
         float maxDb = 0;
+
+        /// <summary>
+        /// [0, 100]
+        /// </summary>
+        public float MasterVolume => AudioServer.GetBusVolumeDb(masterBusIdx).Map(minDb, maxDb, 0, 100);
+        /// <summary>
+        /// [0, 100]
+        /// </summary>
+        public float MusicVolume => AudioServer.GetBusVolumeDb(musicBusIdx).Map(minDb, maxDb, 0, 100);
+        /// <summary>
+        /// [0, 100]
+        /// </summary>
+        public float SoundVolume => AudioServer.GetBusVolumeDb(soundBusIdx).Map(minDb, maxDb, 0, 100);
 
         public AudioManager()
         {
@@ -137,37 +153,37 @@ namespace ADK
             }
         }
 
-        /// <param name="volume">[0, 1]</param>
+        /// <param name="volume">[0, 100]</param>
         public void SetMasterVolume(float volume)
         {
-            AudioServer.SetBusVolumeDb(0, volume.Map(0,1,minDb, maxDb));
+            AudioServer.SetBusVolumeDb(masterBusIdx, volume.Map(0,100,minDb, maxDb));
         }
 
-        /// <param name="volume">[0, 1]</param>
+        /// <param name="volume">[0, 100]</param>
         public void SetMusicVolume(float volume)
         {
-            AudioServer.SetBusVolumeDb(AudioServer.GetBusIndex(musicBus), volume.Map(0, 1, minDb, maxDb));
+            AudioServer.SetBusVolumeDb(musicBusIdx, volume.Map(0, 100, minDb, maxDb));
         }
 
-        /// <param name="volume">[0, 1]</param>
+        /// <param name="volume">[0, 100]</param>
         public void SetSoundVolume(float volume)
         {
-            AudioServer.SetBusVolumeDb(AudioServer.GetBusIndex(soundBus), volume.Map(0, 1, minDb, maxDb));
+            AudioServer.SetBusVolumeDb(soundBusIdx, volume.Map(0, 100, minDb, maxDb));
         }
 
         public void MuteMaster(bool mute)
         {
-            AudioServer.SetBusMute(0, mute);
+            AudioServer.SetBusMute(masterBusIdx, mute);
         }
 
         public void MuteMusic(bool mute)
         {
-            AudioServer.SetBusMute(AudioServer.GetBusIndex(musicBus), mute);
+            AudioServer.SetBusMute(musicBusIdx, mute);
         }
 
         public void MuteSounds(bool mute)
         {
-            AudioServer.SetBusMute(AudioServer.GetBusIndex(soundBus), mute);
+            AudioServer.SetBusMute(soundBusIdx, mute);
         }
     }
 

@@ -9,11 +9,15 @@ namespace ADK
         [Export] Button startButton;
         [Export] Button settingsButton;
         [Export] SnakeLobby snakeLobby;
+        [Export] SettingsWindow settingsWindow;
 
         public override void _Ready()
         {
             base._Ready();
+
             startButton.Pressed += OnStartButtonClicked;
+            settingsButton.Pressed += OnSettingsButtonClicked;
+
             AudioManager.Instance?.PlayMusic(Music.LobbyTheme);
         }
 
@@ -21,6 +25,11 @@ namespace ADK
         {
             // change to arena scene
             GameManager.Instance.GoToScene(GameScene.Arena);
+        }
+
+        void OnSettingsButtonClicked()
+        {
+            settingsWindow.Visible = true;
         }
     }
 }
