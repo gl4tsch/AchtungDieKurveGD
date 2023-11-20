@@ -30,6 +30,7 @@ namespace ADK
                 clipMode = 1
             };
             snake.InjectDrawData(new() { eraseLine });
+            AudioManager.Instance?.PlaySound(SFX.EraserAbility);
             return;
 
             snake.RequestExplosion(new LineFilter()

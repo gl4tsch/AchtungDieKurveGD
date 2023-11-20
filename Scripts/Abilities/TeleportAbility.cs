@@ -11,6 +11,7 @@ namespace ADK
         public override void Activate(Snake snake)
         {
             snake.Teleport(snake.PxPosition + snake.Direction * teleportDistance);
+            AudioManager.Instance?.PlaySound(SFX.TeleportAbility);
         }
     }
 }

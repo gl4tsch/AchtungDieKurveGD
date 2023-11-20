@@ -1,0 +1,20 @@
+[gd_scene load_steps=9 format=3 uid="uid://bckwucveog1oc"]
+
+[ext_resource type="Script" path="res://Scripts/AudioManager.cs" id="1_t2pds"]
+[ext_resource type="AudioStream" uid="uid://chvh2hrqwspb3" path="res://Audio/Chill Buster (From 'Deltarune') ~ Lofi Hip Hop Remix.mp3" id="2_oi8ib"]
+[ext_resource type="AudioStream" uid="uid://ysctqsw868ys" path="res://Audio/Super Mario World - Koopa Castle (OC remix).mp3" id="3_m05du"]
+[ext_resource type="AudioStream" uid="uid://1bbu83xq4qgj" path="res://Audio/smb_breakblock.wav" id="4_3yxtp"]
+[ext_resource type="AudioStream" uid="uid://dlrnuxmxtxsk0" path="res://Audio/smb_bump.wav" id="5_32j5p"]
+[ext_resource type="AudioStream" uid="uid://dhl30nk53ycbv" path="res://Audio/smb_jump-small.wav" id="6_ts674"]
+[ext_resource type="AudioStream" uid="uid://dbxnc1x0rp6t2" path="res://Audio/smb_powerup.wav" id="7_mcx6i"]
+[ext_resource type="AudioStream" uid="uid://c103ukaw56k42" path="res://Audio/smw_thud.wav" id="8_jvl8e"]
+
+[node name="AudioManager" type="Node"]
+script = ExtResource("1_t2pds")
+lobbyMusic = ExtResource("2_oi8ib")
+battleMusic = ExtResource("3_m05du")
+snakeDeathExplosionSound = ExtResource("4_3yxtp")
+barAbilitySound = ExtResource("5_32j5p")
+teleportAbilitySound = ExtResource("6_ts674")
+speedAbilitySound = ExtResource("7_mcx6i")
+eraserAbilitySound = ExtResource("8_jvl8e")

@@ -191,6 +191,7 @@ namespace ADK
                 halfThickness = PxThickness * ThicknessModifier,
                 clipMode = 0
             });
+            AudioManager.Instance?.PlaySound(SFX.SnakeDeathExplosion);
             IsAlive = false;
         }
 

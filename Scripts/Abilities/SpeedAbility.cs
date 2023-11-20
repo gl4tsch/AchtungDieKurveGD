@@ -31,6 +31,7 @@ namespace ADK
             snake.MoveSpeedModifier += speedModifier;
             snake.TurnRateModifier += turnRateModifier;
             startedTimers.Add(new Countdown(duration));
+            AudioManager.Instance?.PlaySound(SFX.SpeedAbility);
         }
 
         public override void Tick(float deltaT)

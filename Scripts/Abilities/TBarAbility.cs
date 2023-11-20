@@ -30,6 +30,7 @@ namespace ADK
                 clipMode = 0
             };
             snake.InjectDrawData(new(){bar});
+            AudioManager.Instance?.PlaySound(SFX.BarAbility);
         }
     }
 }

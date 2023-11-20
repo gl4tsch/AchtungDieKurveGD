@@ -14,6 +14,7 @@ namespace ADK
         {
             base._Ready();
             startButton.Pressed += OnStartButtonClicked;
+            AudioManager.Instance?.PlayMusic(Music.LobbyTheme);
         }
 
         void OnStartButtonClicked()
