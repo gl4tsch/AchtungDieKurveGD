@@ -28,6 +28,9 @@ namespace ADK
         AudioStreamPlayer musicPlayer;
         Dictionary<SFX, AudioStreamPlayer> soundPlayers = new();
 
+        float minDb = -60;
+        float maxDb = 0;
+
         public AudioManager()
         {
             Instance = this;
@@ -132,6 +135,39 @@ namespace ADK
             {
                 GD.PrintErr("No sound found for " + sound);
             }
+        }
+
+        /// <param name="volume">[0, 1]</param>
+        public void SetMasterVolume(float volume)
+        {
+            AudioServer.SetBusVolumeDb(0, volume.Map(0,1,minDb, maxDb));
+        }
+
+        /// <param name="volume">[0, 1]</param>
+        public void SetMusicVolume(float volume)
+        {
+            AudioServer.SetBusVolumeDb(AudioServer.GetBusIndex(musicBus), volume.Map(0, 1, minDb, maxDb));
+        }
+
+        /// <param name="volume">[0, 1]</param>
+        public void SetSoundVolume(float volume)
+        {
+            AudioServer.SetBusVolumeDb(AudioServer.GetBusIndex(soundBus), volume.Map(0, 1, minDb, maxDb));
+        }
+
+        public void MuteMaster(bool mute)
+        {
+            AudioServer.SetBusMute(0, mute);
+        }
+
+        public void MuteMusic(bool mute)
+        {
+            AudioServer.SetBusMute(AudioServer.GetBusIndex(musicBus), mute);
+        }
+
+        public void MuteSounds(bool mute)
+        {
+            AudioServer.SetBusMute(AudioServer.GetBusIndex(soundBus), mute);
         }
     }
 
