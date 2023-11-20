@@ -21,6 +21,12 @@ namespace ADK
 
         public override void _Ready()
         {
+            GameManager.Instance.ActiveArenaScene.BattleStateChanged += OnBattleStateChanged;
+            ResetArena();
+        }
+
+        void ResetArena()
+        {
             InitArenaTextures();
             snakeComputer = new SnakeComputer(this, rd, snakeComputeShader, arenaTexRead, arenaTexWrite);
             explodeComputer = new ExplodeComputer(rd, explodeComputeShader, arenaTexRead, arenaTexWrite);
@@ -73,17 +79,26 @@ namespace ADK
             }
         }
 
-        public void StartNewRound()
-        {
-            _Ready();
-        }
-
         public override void _Process(double delta)
         {
             base._Process(delta);
             snakeComputer.UpdateSnakes(delta);
             explodeComputer.UpdateExplosions((float)delta);
             DisplayArena();
+        }
+
+        void OnBattleStateChanged(ArenaScene.BattleState battleState)
+        {
+            if (battleState == ArenaScene.BattleState.StartOfRound)
+            {
+                ResetArena();
+                return;
+            }
+            else if (battleState == ArenaScene.BattleState.EndOfRound)
+            {
+                //EndRound();
+                return;
+            }
         }
 
         public void ExplodeWholeScreen()

@@ -9,6 +9,8 @@ namespace ADK
         public static GameManager Instance { get; private set; }
 
         public Node CurrentScene { get; private set; }
+        public LobbyScene ActiveLobbyScene => CurrentScene as LobbyScene;
+        public ArenaScene ActiveArenaScene => CurrentScene as ArenaScene;
 
         string lobbyScenePath = "res://LobbyScene.tscn";
         string arenaScenePath = "res://ArenaScene.tscn";

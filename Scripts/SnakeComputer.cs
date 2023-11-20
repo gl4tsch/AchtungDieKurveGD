@@ -120,9 +120,14 @@ namespace ADK
         public void UpdateSnakes(double deltaT)
         {
             aliveSnakes.RemoveAll(s => !s.IsAlive);
+            // we have a winner
+            if (aliveSnakes.Count <= 1)
+            {
+                GameManager.Instance?.ActiveArenaScene?.EndRound();
+            }
+            // but the last player may still move while the round ends
             if (aliveSnakes.Count == 0)
             {
-                arena.StartNewRound();
                 return;
             }
             List<LineData> snakesDrawData = GenerateSnakeDrawData(deltaT);
