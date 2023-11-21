@@ -22,7 +22,7 @@ namespace ADK
         Rid collisionBuffer;
         Rid lineBuffer;
 
-        Snake[] snakes;
+        List<Snake> snakes;
         List<Snake> aliveSnakes = new();
 
         // gradually dequeued and drawn each frame
@@ -43,7 +43,7 @@ namespace ADK
 
         void InitTestSnakes(int snakeCount)
         {
-            snakes = new Snake[snakeCount];
+            snakes = new();
             for (int i = 0; i < snakeCount; i++)
             {
                 snakes[i] = new Snake();
@@ -53,11 +53,12 @@ namespace ADK
 
         void InitSnakes()
         {
-            snakes = GameManager.Instance.Snakes.ToArray();
+            snakes = GameManager.Instance.Snakes;
             foreach (Snake snake in snakes)
             {
                 snake.Spawn(new Vector2I((int)arena.Width, (int)arena.Height));
                 aliveSnakes.Add(snake);
+                snake.Died += s => aliveSnakes.Remove(s);
             }
         }
 
@@ -80,7 +81,7 @@ namespace ADK
             arenaUniform.AddId(arenaTexWrite);
 
             // create snake buffer
-            snakeBuffer = rd.StorageBufferCreate(sizeof(uint) + LineData.SizeInByte * (uint)snakes.Length);
+            snakeBuffer = rd.StorageBufferCreate(sizeof(uint) + LineData.SizeInByte * (uint)snakes.Count);
             // create a snake uniform to assign the snake buffer to the rendering device
             var snakeUniform = new RDUniform
             {
@@ -90,7 +91,7 @@ namespace ADK
             snakeUniform.AddId(snakeBuffer);
 
             // collision buffer
-            collisionBuffer = rd.StorageBufferCreate(sizeof(int) * (uint)snakes.Length);
+            collisionBuffer = rd.StorageBufferCreate(sizeof(int) * (uint)snakes.Count);
             var collisionUniform = new RDUniform
             {
                 UniformType = RenderingDevice.UniformType.StorageBuffer,
@@ -99,7 +100,7 @@ namespace ADK
             collisionUniform.AddId(collisionBuffer);
 
             // line buffer
-            lineBuffer = rd.StorageBufferCreate(sizeof(uint) + LineData.SizeInByte * (uint)snakes.Length * maxAdditionalLinesPerSnakePerFrame);
+            lineBuffer = rd.StorageBufferCreate(sizeof(uint) + LineData.SizeInByte * (uint)snakes.Count * maxAdditionalLinesPerSnakePerFrame);
             var lineUniform = new RDUniform{
                 UniformType = RenderingDevice.UniformType.StorageBuffer,
                 Binding = 3
@@ -220,13 +221,18 @@ namespace ADK
             byte[] collisionData = rd.BufferGetData(collisionBuffer, 0, (uint)aliveSnakes.Count * sizeof(int));
             int[] collisions = new int[collisionData.Length];
             Buffer.BlockCopy(collisionData, 0, collisions, 0, collisionData.Length);
+            List<Snake> collidedSnakes = new();
             for (int i = 0; i < collisions.Length; i++)
             {
                 if (collisions[i] != 0)
                 {
-                    Snake snake = aliveSnakes[i];
-                    snake.OnCollision();
+                    collidedSnakes.Add(aliveSnakes[i]);
                 }
+            }
+            // work on separate list because OnCollision removes snake from aliveSnakes
+            foreach (var snake in collidedSnakes)
+            {
+                snake.OnCollision();
             }
         }
 

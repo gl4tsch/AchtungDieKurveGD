@@ -1,7 +1,7 @@
 using Godot;
 using System;
 
-namespace ADK
+namespace ADK.UI
 {
     public partial class SettingsWindow : Control
     {

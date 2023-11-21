@@ -1,5 +1,6 @@
 using Godot;
 using System;
+using System.Linq;
 
 namespace ADK
 {
@@ -33,6 +34,11 @@ namespace ADK
                 }
                 if (keyEvent.Keycode == Key.Enter && CurrentBattleState == BattleState.EndOfRound)
                 {
+                    // kill the last remaining snake if there is one to update score
+                    foreach (var aliveSnake in GameManager.Instance.Snakes.Where(s => s.IsAlive))
+                    {
+                        aliveSnake.Kill();
+                    }
                     StartNewRound();
                 }
             }

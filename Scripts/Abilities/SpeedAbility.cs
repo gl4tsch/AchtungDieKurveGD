@@ -23,7 +23,7 @@ namespace ADK
             public float t;
         }
 
-        public override void Activate(Snake snake)
+        protected override void Perform(Snake snake)
         {
             GD.Print("Mopsgeschwindigkeit!");
 

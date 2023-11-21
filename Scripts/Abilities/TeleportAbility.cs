@@ -8,7 +8,7 @@ namespace ADK
 
         float teleportDistance = 80;
 
-        public override void Activate(Snake snake)
+        protected override void Perform(Snake snake)
         {
             snake.Teleport(snake.PxPosition + snake.Direction * teleportDistance);
             AudioManager.Instance?.PlaySound(SFX.TeleportAbility);

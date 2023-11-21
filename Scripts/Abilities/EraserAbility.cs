@@ -10,7 +10,7 @@ namespace ADK
 
         float eraserLength = 160;
         
-        public override void Activate(Snake snake)
+        protected override void Perform(Snake snake)
         {
             GD.Print("Activating " + Name);
 

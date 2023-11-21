@@ -1,6 +1,6 @@
 [gd_scene load_steps=3 format=3 uid="uid://dskpv0ggh8o4b"]
 
-[ext_resource type="Script" path="res://Scripts/SettingsWindow.cs" id="1_tbell"]
+[ext_resource type="Script" path="res://Scripts/UI Scripts/SettingsWindow.cs" id="1_7rjke"]
 [ext_resource type="PackedScene" uid="uid://kg54o5ip628t" path="res://Prefabs/VolumeSetting.tscn" id="2_agcc6"]
 
 [node name="SettingsWindow" type="Control" node_paths=PackedStringArray("backButton", "masterVolumeSlider", "musicVolumeSlider", "soundVolumeSlider")]
@@ -10,7 +10,7 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-script = ExtResource("1_tbell")
+script = ExtResource("1_7rjke")
 backButton = NodePath("Back Button")
 masterVolumeSlider = NodePath("ScrollContainer/SettingsVBox/AudioSettingsVBox/VolumeHBox/HSlider")
 musicVolumeSlider = NodePath("ScrollContainer/SettingsVBox/AudioSettingsVBox/VolumeHBox2/HSlider")

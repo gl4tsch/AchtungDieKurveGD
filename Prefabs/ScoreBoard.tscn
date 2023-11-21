@@ -1,0 +1,31 @@
+[gd_scene load_steps=3 format=3 uid="uid://tytbc3qfkstf"]
+
+[ext_resource type="Script" path="res://Scripts/UI Scripts/ScoreBoard.cs" id="1_gq2bu"]
+[ext_resource type="PackedScene" uid="uid://skaum7nbawek" path="res://Prefabs/ScoreBoardEntry.tscn" id="2_2b3sw"]
+
+[node name="Score Board" type="Control" node_paths=PackedStringArray("snakeScoreContainer")]
+custom_minimum_size = Vector2(100, 0)
+layout_mode = 3
+anchors_preset = 11
+anchor_left = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = 20.0
+offset_right = -20.0
+offset_bottom = -20.0
+grow_horizontal = 0
+grow_vertical = 2
+script = ExtResource("1_gq2bu")
+snakeScorePrefab = ExtResource("2_2b3sw")
+snakeScoreContainer = NodePath("VBoxContainer")
+
+[node name="VBoxContainer" type="VBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Score Board Entry" parent="VBoxContainer" instance=ExtResource("2_2b3sw")]
+layout_mode = 2

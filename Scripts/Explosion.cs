@@ -7,7 +7,7 @@ namespace ADK
     {
         public Vector2I center;
         public float radius;
-        public float duration = 5; // [s]
+        public float duration = 2; // [s]
         public float elapsedTime = 0;
         public byte[] pixelData;
         public Rid explodyUniformSet;

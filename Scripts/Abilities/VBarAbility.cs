@@ -10,7 +10,7 @@ namespace ADK
 
         float halfBarLength = 80;
 
-        public override void Activate(Snake snake)
+        protected override void Perform(Snake snake)
         {
             GD.Print("Activating " + Name);
             Vector2 barCenter = snake.PxPosition - snake.Direction * snake.PxThickness * 2f;

@@ -1,9 +1,12 @@
-[gd_scene load_steps=3 format=3 uid="uid://cui1you3xjgtb"]
+[gd_scene load_steps=4 format=3 uid="uid://cui1you3xjgtb"]
 
 [ext_resource type="Script" path="res://Scripts/ArenaScene.cs" id="1_4erib"]
 [ext_resource type="PackedScene" uid="uid://cyk1hxyvevajg" path="res://Prefabs/ArenaRect.tscn" id="2_qbl2j"]
+[ext_resource type="PackedScene" uid="uid://tytbc3qfkstf" path="res://Prefabs/ScoreBoard.tscn" id="3_c5uxr"]
 
 [node name="ArenaScene" type="Node"]
 script = ExtResource("1_4erib")
 
 [node name="TextureRect" parent="." instance=ExtResource("2_qbl2j")]
+
+[node name="Score Board" parent="." instance=ExtResource("3_c5uxr")]

@@ -30,16 +30,6 @@ namespace ADK
         {
             base._Ready();
 
-            // // avoid for now because of
-            // // "Autoloads must not be removed using free() or queue_free() at runtime,
-            // // or the engine will crash."
-            // if (Instance != null && Instance != this)
-            // {
-            //     Free();
-            //     return;
-            // }
-            // Instance = this;
-
             Viewport root = GetTree().Root;
             CurrentScene = root.GetChild(root.GetChildCount() - 1);
         }

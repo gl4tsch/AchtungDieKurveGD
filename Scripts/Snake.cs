@@ -1,4 +1,5 @@
 using Godot;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -36,6 +37,7 @@ namespace ADK
         public Ability Ability { get; set; }
         // TODO: make statemachine
         public bool IsAlive { get; private set; } = false;
+        public event Action<Snake> Died;
 
         List<LineData> injectionDrawBuffer = new();
         List<LineFilter> explosionBuffer = new();
@@ -192,7 +194,13 @@ namespace ADK
                 clipMode = 0
             });
             AudioManager.Instance?.PlaySound(SFX.SnakeDeathExplosion);
+            Kill();
+        }
+
+        public void Kill()
+        {
             IsAlive = false;
+            Died?.Invoke(this);
         }
 
         public LineData GetSnakeDrawData()
