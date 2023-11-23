@@ -22,6 +22,8 @@ AudioManager="*res://AudioManager.tscn"
 
 [display]
 
+window/stretch/mode="canvas_items"
+window/stretch/aspect="expand"
 window/vsync/vsync_mode=0
 
 [dotnet]
@@ -30,4 +32,4 @@ project/assembly_name="AchtungDieKurveGD"
 
 [gui]
 
-theme/custom="res://Theme.tres"
+theme/custom="res://Style/Theme.tres"

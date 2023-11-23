@@ -91,6 +91,15 @@ namespace ADK
                 AddChild(sfxPlayer);
                 soundPlayers.Add(soundFile.Key, sfxPlayer);
             }
+
+            ApplySettings(GameManager.Instance.Settings.AudioSettings);
+        }
+
+        void ApplySettings(AudioSettings settings)
+        {
+            SetMasterVolume(settings.MasterVolume);
+            SetMusicVolume(settings.MusicVolume);
+            SetSoundVolume(settings.SoundVolume);
         }
 
         public void PlayMusic(Music music)

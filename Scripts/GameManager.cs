@@ -1,3 +1,4 @@
+using System.Reflection;
 using Godot;
 using System;
 using System.Collections.Generic;
@@ -15,11 +16,15 @@ namespace ADK
         string lobbyScenePath = "res://LobbyScene.tscn";
         string arenaScenePath = "res://ArenaScene.tscn";
 
+        public Settings Settings { get; private set; }
         public List<Snake> Snakes = new();
 
         public GameManager()
         {
             Instance = this;
+            // load settings
+            Settings = new();
+            Settings.LoadSettings();
             // init default snakes
             CreateNewSnake();
             CreateNewSnake();
@@ -36,7 +41,8 @@ namespace ADK
 
         public Snake CreateNewSnake()
         {
-            var snake = new Snake($"Snake {Snakes.Count + 1}");
+            var snakeSettings = Settings.SnakeSettings;
+            var snake = new Snake($"Snake {Snakes.Count + 1}", snakeSettings);
             Snakes.Add(snake);
             return snake;
         }
@@ -44,6 +50,14 @@ namespace ADK
         public bool RemoveSnake(Snake snake)
         {
             return Snakes.Remove(snake);
+        }
+
+        public void ApplySnakeSettings(SnakeSettings settings)
+        {
+            foreach (var snake in Snakes)
+            {
+                snake.ApplySettings(settings);
+            }
         }
 
         public void GoToScene(GameScene scene)

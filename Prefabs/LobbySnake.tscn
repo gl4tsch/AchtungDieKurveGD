@@ -4,6 +4,7 @@
 
 [node name="LobbySnake" type="HBoxContainer" node_paths=PackedStringArray("nameInput", "colorButton", "leftButton", "rightButton", "fireButton", "abilityDD", "deleteButton")]
 size_flags_vertical = 4
+alignment = 1
 script = ExtResource("1_b56ky")
 nameInput = NodePath("Name")
 colorButton = NodePath("Color Button")

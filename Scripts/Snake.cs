@@ -14,6 +14,9 @@ namespace ADK
         public float PxThickness { get; private set; } = 10f;
         public float MoveSpeed { get; private set; } = 100f;
         public float TurnRate {get; private set; } = 3f;
+        public float GapFrequency { get; private set; } = 400;
+        public float GapWidthRelToThickness { get; private set; } = 3;
+        public float GapWidth => PxThickness * GapWidthRelToThickness;
 
         // stat modifier
         public float MoveSpeedModifier { get; set; } = 1f;
@@ -46,8 +49,6 @@ namespace ADK
         // turnSign is used to combine segments if possible
         Stack<(int turnSign, LineData segment)> gapSegmentBuffer = new();
         float distSinceLastGap = 0;
-        float gapFrequency = 400;
-        float gapWidth => PxThickness * 3;
 
         public Snake()
         {
@@ -57,6 +58,20 @@ namespace ADK
         public Snake(string name) : this()
         {
             Name = name;
+        }
+
+        public Snake(string name, SnakeSettings settings) : this(name)
+        {
+            ApplySettings(settings);
+        }
+
+        public void ApplySettings(SnakeSettings settings)
+        {
+            PxThickness = settings.Thickness;
+            MoveSpeed = settings.MoveSpeed;
+            TurnRate = settings.TurnRate;
+            GapFrequency = settings.GapFrequency;
+            GapWidthRelToThickness = settings.GapWidthRelToThickness;
         }
 
         public void RandomizeColor()
@@ -130,7 +145,7 @@ namespace ADK
             distSinceLastGap += (PxPosition - pxPrevPos).Length();
 
             // add to gap buffer
-            if (distSinceLastGap > gapFrequency)
+            if (distSinceLastGap > GapFrequency)
             {
                 LineData gapSegment = new()
                 {
@@ -166,7 +181,7 @@ namespace ADK
             }
 
             // gap end
-            if (distSinceLastGap > gapFrequency + gapWidth)
+            if (distSinceLastGap > GapFrequency + GapWidth)
             {
                 // clip end of gap
                 var lastSegment = gapSegmentBuffer.Pop();
@@ -177,7 +192,7 @@ namespace ADK
                 InjectDrawData(gapData);
 
                 gapSegmentBuffer.Clear();
-                distSinceLastGap -= gapFrequency + gapWidth;
+                distSinceLastGap -= GapFrequency + GapWidth;
             }
         }
 

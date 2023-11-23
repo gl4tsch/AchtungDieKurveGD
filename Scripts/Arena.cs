@@ -5,7 +5,7 @@ namespace ADK
     public partial class Arena : TextureRect
     {
         [Export]
-        uint pxWidth = 512, pxHeight = 512;
+        uint pxWidth = 1024, pxHeight = 1024;
         public uint Width => pxWidth;
         public uint Height => pxHeight;
 
@@ -21,6 +21,8 @@ namespace ADK
 
         public override void _Ready()
         {
+            pxWidth = (uint)GameManager.Instance.Settings.ArenaSettings.PxWidth;
+            pxHeight = (uint)GameManager.Instance.Settings.ArenaSettings.PxHeight;
             GameManager.Instance.ActiveArenaScene.BattleStateChanged += OnBattleStateChanged;
             ResetArena();
         }
