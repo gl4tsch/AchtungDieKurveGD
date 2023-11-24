@@ -1,7 +1,8 @@
-[gd_scene load_steps=3 format=3 uid="uid://dskpv0ggh8o4b"]
+[gd_scene load_steps=4 format=3 uid="uid://dskpv0ggh8o4b"]
 
 [ext_resource type="Script" path="res://Scripts/UI Scripts/SettingsWindow.cs" id="1_7rjke"]
 [ext_resource type="PackedScene" uid="uid://kg54o5ip628t" path="res://Prefabs/VolumeSetting.tscn" id="2_agcc6"]
+[ext_resource type="PackedScene" uid="uid://csollhlqroe" path="res://Prefabs/NumberFieldEntry.tscn" id="3_32ntc"]
 
 [node name="SettingsWindow" type="Control" node_paths=PackedStringArray("confirmButton", "cancelButton", "masterVolumeSlider", "musicVolumeSlider", "soundVolumeSlider")]
 layout_mode = 3
@@ -105,7 +106,7 @@ layout_mode = 2
 theme_type_variation = &"MediumHeader"
 text = "Arena"
 
-[node name="Settings Entry" type="Control" parent="ScrollContainer/SettingsVBox/ArenaSettingsVBox"]
+[node name="Number Field Entry" parent="ScrollContainer/SettingsVBox/ArenaSettingsVBox" instance=ExtResource("3_32ntc")]
 layout_mode = 2
 
 [editable path="ScrollContainer/SettingsVBox/AudioSettingsVBox/VolumeHBox"]
