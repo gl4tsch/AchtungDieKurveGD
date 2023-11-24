@@ -3,7 +3,7 @@
 [ext_resource type="Script" path="res://Scripts/UI Scripts/SettingsWindow.cs" id="1_7rjke"]
 [ext_resource type="PackedScene" uid="uid://kg54o5ip628t" path="res://Prefabs/VolumeSetting.tscn" id="2_agcc6"]
 
-[node name="SettingsWindow" type="Control" node_paths=PackedStringArray("backButton", "masterVolumeSlider", "musicVolumeSlider", "soundVolumeSlider")]
+[node name="SettingsWindow" type="Control" node_paths=PackedStringArray("confirmButton", "cancelButton", "masterVolumeSlider", "musicVolumeSlider", "soundVolumeSlider")]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -11,7 +11,8 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_7rjke")
-backButton = NodePath("Back Button")
+confirmButton = NodePath("Confirm Button")
+cancelButton = NodePath("Cancel Button")
 masterVolumeSlider = NodePath("ScrollContainer/SettingsVBox/AudioSettingsVBox/VolumeHBox/HSlider")
 musicVolumeSlider = NodePath("ScrollContainer/SettingsVBox/AudioSettingsVBox/VolumeHBox2/HSlider")
 soundVolumeSlider = NodePath("ScrollContainer/SettingsVBox/AudioSettingsVBox/VolumeHBox3/HSlider")
@@ -37,15 +38,23 @@ theme_type_variation = &"BigHeader"
 text = "Settings"
 horizontal_alignment = 1
 
-[node name="Back Button" type="Button" parent="."]
+[node name="Confirm Button" type="Button" parent="."]
 layout_mode = 1
 offset_left = 13.0
 offset_top = 11.0
 offset_right = 34.0
 offset_bottom = 42.0
-theme_override_font_sizes/font_size = 40
-text = " < "
-flat = true
+theme_override_colors/font_color = Color(0, 1, 0, 1)
+text = "Confirm"
+
+[node name="Cancel Button" type="Button" parent="."]
+layout_mode = 1
+offset_left = 93.0
+offset_top = 11.0
+offset_right = 165.0
+offset_bottom = 42.0
+theme_override_colors/font_color = Color(1, 0, 0, 1)
+text = "Cancel"
 
 [node name="ScrollContainer" type="ScrollContainer" parent="."]
 layout_mode = 1
@@ -63,6 +72,7 @@ horizontal_scroll_mode = 0
 [node name="SettingsVBox" type="VBoxContainer" parent="ScrollContainer"]
 layout_mode = 2
 size_flags_horizontal = 3
+theme_override_constants/separation = 10
 
 [node name="AudioSettingsVBox" type="VBoxContainer" parent="ScrollContainer/SettingsVBox"]
 layout_mode = 2
@@ -86,6 +96,17 @@ layout_mode = 2
 
 [node name="Label" parent="ScrollContainer/SettingsVBox/AudioSettingsVBox/VolumeHBox3" index="0"]
 text = "SoundFX Volume"
+
+[node name="ArenaSettingsVBox" type="VBoxContainer" parent="ScrollContainer/SettingsVBox"]
+layout_mode = 2
+
+[node name="Arena Header" type="Label" parent="ScrollContainer/SettingsVBox/ArenaSettingsVBox"]
+layout_mode = 2
+theme_type_variation = &"MediumHeader"
+text = "Arena"
+
+[node name="Settings Entry" type="Control" parent="ScrollContainer/SettingsVBox/ArenaSettingsVBox"]
+layout_mode = 2
 
 [editable path="ScrollContainer/SettingsVBox/AudioSettingsVBox/VolumeHBox"]
 [editable path="ScrollContainer/SettingsVBox/AudioSettingsVBox/VolumeHBox2"]

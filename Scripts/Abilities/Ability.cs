@@ -19,6 +19,14 @@ namespace ADK
         }
         public Action<int> UsesChanged;
 
+        public Ability(AbilitySettings settings)
+        {
+            ApplySettings(settings);
+        }
+
+        public abstract void ApplySettings(AbilitySettings settings);
+        //public abstract List<(string key, Variant setting)> GetDefaultSettings();
+
         public void Activate(Snake snake)
         {
             if (Uses <= 0)
@@ -33,7 +41,5 @@ namespace ADK
 
         /// <param name="deltaT">time since last tick in seconds</param>
         public virtual void Tick(float deltaT){}
-        
-        //public abstract void ApplySettings(AbilitySettings settings);
     }
 }

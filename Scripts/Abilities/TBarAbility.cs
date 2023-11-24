@@ -1,5 +1,6 @@
 using Godot;
 using System;
+using System.Collections.Generic;
 
 namespace ADK
 {
@@ -8,8 +9,24 @@ namespace ADK
         public static string DisplayName => "T-Bar";
         public override string Name => DisplayName;
 
+        static string lengthSettingKey => $"{DisplayName}_{nameof(halfBarLength)}";
         float halfBarLength = 80;
-        
+
+        public TBarAbility(AbilitySettings settings) : base(settings){}
+
+        public static List<(string key, Variant setting)> DefaultSettings => new List<(string key, Variant setting)>
+        {
+            (lengthSettingKey, 80)
+        };
+
+        public override void ApplySettings(AbilitySettings settings)
+        {
+            if (settings.Settings.TryGetValue(lengthSettingKey, out Variant lengthSetting))
+            {
+                halfBarLength = (float)lengthSetting;
+            }
+        }
+
         protected override void Perform(Snake snake)
         {
             GD.Print("Activating " + Name);

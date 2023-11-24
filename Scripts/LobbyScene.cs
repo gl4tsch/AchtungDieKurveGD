@@ -9,7 +9,7 @@ namespace ADK
         [Export] Button startButton;
         [Export] Button settingsButton;
         [Export] SnakeLobby snakeLobby;
-        [Export] SettingsWindow settingsWindow;
+        [Export] PackedScene settingsWindowPrefab;
 
         public override void _Ready()
         {
@@ -29,7 +29,8 @@ namespace ADK
 
         void OnSettingsButtonClicked()
         {
-            settingsWindow.Visible = true;
+            var settingsWindow = settingsWindowPrefab.Instantiate<SettingsWindow>();
+            AddChild(settingsWindow);
         }
     }
 }

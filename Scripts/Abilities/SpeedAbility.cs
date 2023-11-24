@@ -8,6 +8,10 @@ namespace ADK
         public static string DisplayName = "Speed";
         public override string Name => DisplayName;
 
+        static string speedSettingKey => $"{DisplayName}_{nameof(speedModifier)}";
+        static string turnSettingKey => $"{DisplayName}_{nameof(turnRateModifier)}";
+        static string durationSettingKey => $"{DisplayName}_{nameof(duration)}";
+
         float speedModifier = 1.5f;
         float turnRateModifier = 1.5f;
         float duration = 1.5f; // [s]
@@ -21,6 +25,31 @@ namespace ADK
                 this.t = t;
             }
             public float t;
+        }
+
+        public SpeedAbility(AbilitySettings settings) : base(settings){}
+
+        public static List<(string key, Variant setting)> DefaultSettings => new List<(string key, Variant setting)>
+        {
+            (speedSettingKey, 1.5f),
+            (turnSettingKey, 1.5f),
+            (durationSettingKey, 1.5f)
+        };
+
+        public override void ApplySettings(AbilitySettings settings)
+        {
+            if (settings.Settings.TryGetValue(speedSettingKey, out Variant speedSetting))
+            {
+                speedModifier = (float)speedSetting;
+            }
+            if (settings.Settings.TryGetValue(turnSettingKey, out Variant turnSetting))
+            {
+                turnRateModifier = (float)turnSetting;
+            }
+            if (settings.Settings.TryGetValue(durationSettingKey, out Variant durationSetting))
+            {
+                duration = (float)durationSetting;
+            }
         }
 
         protected override void Perform(Snake snake)

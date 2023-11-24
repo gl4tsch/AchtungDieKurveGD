@@ -4,7 +4,7 @@
 [ext_resource type="PackedScene" uid="uid://cheohotxldlmc" path="res://Prefabs/SnakeLobby.tscn" id="2_lldim"]
 [ext_resource type="PackedScene" uid="uid://dskpv0ggh8o4b" path="res://SettingsWindow.tscn" id="3_7ccn4"]
 
-[node name="LobbyScene" type="Control" node_paths=PackedStringArray("startButton", "settingsButton", "snakeLobby", "settingsWindow")]
+[node name="LobbyScene" type="Control" node_paths=PackedStringArray("startButton", "settingsButton", "snakeLobby")]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -15,7 +15,7 @@ script = ExtResource("1_lyy22")
 startButton = NodePath("Start Button")
 settingsButton = NodePath("Settings Button")
 snakeLobby = NodePath("SnakeLobby")
-settingsWindow = NodePath("SettingsWindow")
+settingsWindowPrefab = ExtResource("3_7ccn4")
 
 [node name="BG" type="ColorRect" parent="."]
 layout_mode = 1
@@ -58,7 +58,3 @@ icon_alignment = 1
 layout_mode = 1
 anchors_preset = -1
 offset_top = 100.0
-
-[node name="SettingsWindow" parent="." instance=ExtResource("3_7ccn4")]
-visible = false
-layout_mode = 1

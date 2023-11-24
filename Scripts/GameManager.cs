@@ -25,6 +25,7 @@ namespace ADK
             // load settings
             Settings = new();
             Settings.LoadSettings();
+            ApplySettings(Settings);
             // init default snakes
             CreateNewSnake();
             CreateNewSnake();
@@ -52,11 +53,40 @@ namespace ADK
             return Snakes.Remove(snake);
         }
 
-        public void ApplySnakeSettings(SnakeSettings settings)
+        public void ApplySettings(Settings settings)
+        {
+            Settings = settings;
+            ApplyAudioSettings();
+            ApplyArenaSettings();
+            ApplySnakeSettings();
+            ApplyAbilitySettings();
+        }
+
+        public void ApplyAudioSettings()
+        {
+            AudioManager.Instance?.SetMasterVolume(Settings.AudioSettings.MasterVolume);
+            AudioManager.Instance?.SetMusicVolume(Settings.AudioSettings.MusicVolume);
+            AudioManager.Instance?.SetSoundVolume(Settings.AudioSettings.SoundVolume);
+        }
+
+        public void ApplyArenaSettings()
+        {
+            // nothing to do, as arena settings are read directly by the Arena every time
+        }
+
+        public void ApplySnakeSettings()
         {
             foreach (var snake in Snakes)
             {
-                snake.ApplySettings(settings);
+                snake.ApplySettings(Settings.SnakeSettings);
+            }
+        }
+
+        public void ApplyAbilitySettings()
+        {
+            foreach (var snake in Snakes)
+            {
+                snake.Ability?.ApplySettings(Settings.AbilitySettings);
             }
         }
 

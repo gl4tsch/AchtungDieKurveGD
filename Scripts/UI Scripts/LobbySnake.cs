@@ -26,16 +26,9 @@ namespace ADK.UI
         RebindKey awaitedRebindKey = RebindKey.None;
         static readonly List<Key> forbiddenControlKeys = new(){ Key.Escape };
 
+        AbilitySettings abilitySettings => GameManager.Instance.Settings.AbilitySettings;
         static string noAbilityDisplayName = "None";
-        List<(string name, Func<Ability> creator)> abilityFactory = new()
-        {
-            (noAbilityDisplayName, () => null),
-            (EraserAbility.DisplayName, () => new EraserAbility()),
-            (SpeedAbility.DisplayName, () => new SpeedAbility()),
-            (TeleportAbility.DisplayName, () => new TeleportAbility()),
-            (TBarAbility.DisplayName, () => new TBarAbility()),
-            (VBarAbility.DisplayName, () => new VBarAbility())
-        };
+        List<(string name, Func<Ability> creator)> abilityFactory;
         // List<Ability> allAbilities = new()
         // {
         //     null,
@@ -43,6 +36,19 @@ namespace ADK.UI
         //     new TBarAbility(),
         //     new VBarAbility()
         // };
+
+        public LobbySnake()
+        {
+            abilityFactory = new()
+            {
+                (noAbilityDisplayName, () => null),
+                (EraserAbility.DisplayName, () => new EraserAbility(abilitySettings)),
+                (SpeedAbility.DisplayName, () => new SpeedAbility(abilitySettings)),
+                (TeleportAbility.DisplayName, () => new TeleportAbility(abilitySettings)),
+                (TBarAbility.DisplayName, () => new TBarAbility(abilitySettings)),
+                (VBarAbility.DisplayName, () => new VBarAbility(abilitySettings))
+            };
+        }
 
         public LobbySnake Init(Snake snake)
         {
