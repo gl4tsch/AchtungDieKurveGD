@@ -1,11 +1,12 @@
-[gd_scene load_steps=2 format=3 uid="uid://csollhlqroe"]
+[gd_scene load_steps=3 format=3 uid="uid://csollhlqroe"]
 
 [ext_resource type="Script" path="res://Scripts/UI Scripts/NumberSettingInputField.cs" id="1_bk10t"]
 
-[node name="Number Field Entry" type="HBoxContainer" node_paths=PackedStringArray("inputField", "settingLabel")]
+[sub_resource type="CompressedTexture2D" id="CompressedTexture2D_1kxkf"]
+
+[node name="Number Field Entry" type="HBoxContainer" node_paths=PackedStringArray("inputField")]
 script = ExtResource("1_bk10t")
 inputField = NodePath("SpinBox")
-settingLabel = NodePath("Label")
 
 [node name="Label" type="Label" parent="."]
 layout_mode = 2
@@ -13,3 +14,7 @@ text = "Setting Name"
 
 [node name="SpinBox" type="SpinBox" parent="."]
 layout_mode = 2
+theme_override_icons/updown = SubResource("CompressedTexture2D_1kxkf")
+step = 0.0
+update_on_text_changed = true
+custom_arrow_step = 0.1

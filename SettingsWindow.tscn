@@ -25,6 +25,7 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+focus_mode = 1
 color = Color(0, 0, 0, 1)
 
 [node name="SettingsLabel" type="Label" parent="."]
@@ -108,6 +109,11 @@ text = "Arena"
 
 [node name="Number Field Entry" parent="ScrollContainer/SettingsVBox/ArenaSettingsVBox" instance=ExtResource("3_32ntc")]
 layout_mode = 2
+Title = "bbb"
+
+[node name="Number Field Entry2" parent="ScrollContainer/SettingsVBox/ArenaSettingsVBox" node_paths=PackedStringArray("inputField") instance=ExtResource("3_32ntc")]
+layout_mode = 2
+inputField = NodePath("../Number Field Entry/SpinBox")
 
 [editable path="ScrollContainer/SettingsVBox/AudioSettingsVBox/VolumeHBox"]
 [editable path="ScrollContainer/SettingsVBox/AudioSettingsVBox/VolumeHBox2"]

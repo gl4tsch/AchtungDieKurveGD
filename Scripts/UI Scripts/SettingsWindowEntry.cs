@@ -5,7 +5,20 @@ namespace ADK.UI
 {
     public partial class SettingsWindowEntry : Control
     {
-        [Export] protected Label settingLabel;
+        [Export] public string Title
+        {
+            get => settingLabel?.Text;
+            set
+            {
+                // this does not seem to work in the editor
+                GD.Print(settingLabel);
+                if (settingLabel != null)
+                {
+                    settingLabel.Text = value;
+                }
+            }
+        }
+        protected Label settingLabel => GetNode("Label") as Label;
 
         Variant value;
         Variant.Type valueType;
