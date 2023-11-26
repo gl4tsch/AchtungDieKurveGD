@@ -1,4 +1,5 @@
 using Godot;
+using Godot.Collections;
 
 namespace ADK
 {
@@ -9,51 +10,41 @@ namespace ADK
         public uint Width => pxWidth;
         public uint Height => pxHeight;
 
-        [Export] RDShaderFile snakeComputeShader, explodeComputeShader, selectComputeShader;
+        [Export] RDShaderFile snakeComputeShader, explodeComputeShader, selectComputeShader, clearTextureComputeShader;
 
         RenderingDevice rd;
-        Rid arenaTexRead; // unused
-        Rid arenaTexWrite;
+        Rid arenaTexReadWrite;
 
         SnakeComputer snakeComputer;
         ExplodeComputer explodeComputer;
         PixelSelector pixelSelector;
+
+        Rid texClearShader;
+        Rid texClearPipeline;
+        Rid texClearUniformSet;
 
         public override void _Ready()
         {
             pxWidth = (uint)GameManager.Instance.Settings.ArenaSettings.PxWidth;
             pxHeight = (uint)GameManager.Instance.Settings.ArenaSettings.PxHeight;
             GameManager.Instance.ActiveArenaScene.BattleStateChanged += OnBattleStateChanged;
-            ResetArena();
-        }
 
-        void ResetArena()
-        {
             InitArenaTextures();
-            snakeComputer = new SnakeComputer(this, rd, snakeComputeShader, arenaTexRead, arenaTexWrite);
-            explodeComputer = new ExplodeComputer(rd, explodeComputeShader, arenaTexRead, arenaTexWrite);
-            pixelSelector = new PixelSelector(rd, selectComputeShader, arenaTexRead, arenaTexWrite, pxWidth, pxHeight);
+
+            snakeComputer = new SnakeComputer(this, rd, snakeComputeShader, arenaTexReadWrite);
+            explodeComputer = new ExplodeComputer(rd, explodeComputeShader, arenaTexReadWrite);
+            pixelSelector = new PixelSelector(rd, selectComputeShader, arenaTexReadWrite, pxWidth, pxHeight);
+
+            ResetArena();
         }
 
         void InitArenaTextures()
         {
             // create a local rendering device.
-            rd = RenderingServer.CreateLocalRenderingDevice();
-
-            // create arena read texture format
-            var arenaTexReadFormat = new RDTextureFormat
-            {
-                Format = RenderingDevice.DataFormat.R8G8B8A8Unorm,
-                Width = pxWidth,
-                Height = pxHeight,
-                Depth = 1,
-                UsageBits =
-                RenderingDevice.TextureUsageBits.StorageBit |
-                RenderingDevice.TextureUsageBits.CanUpdateBit
-            };
+            rd ??= RenderingServer.CreateLocalRenderingDevice();
 
             // create arena write texture format
-            var arenaTexWriteFormat = new RDTextureFormat
+            var arenaTexReadWriteFormat = new RDTextureFormat
             {
                 Format = RenderingDevice.DataFormat.R8G8B8A8Unorm,
                 Width = pxWidth,
@@ -66,8 +57,50 @@ namespace ADK
             };
 
             // create arena textures
-            arenaTexRead = rd.TextureCreate(arenaTexReadFormat, new RDTextureView());
-            arenaTexWrite = rd.TextureCreate(arenaTexWriteFormat, new RDTextureView());
+            arenaTexReadWrite = rd.TextureCreate(arenaTexReadWriteFormat, new RDTextureView());
+            InitArenaClearComputeShader();
+            ClearArenaTextures();
+        }
+
+        void InitArenaClearComputeShader()
+        {
+            // load shader
+            var texClearShaderFile = clearTextureComputeShader.GetSpirV();
+            texClearShader = rd.ShaderCreateFromSpirV(texClearShaderFile);
+
+            // Create a compute pipeline
+            texClearPipeline = rd.ComputePipelineCreate(texClearShader);
+
+            // arena tex uniform
+            var arenaUniform = new RDUniform
+            {
+                UniformType = RenderingDevice.UniformType.Image,
+                Binding = 0
+            };
+            arenaUniform.AddId(arenaTexReadWrite);
+
+            texClearUniformSet = rd.UniformSetCreate(new Array<RDUniform>{ arenaUniform }, texClearShader, 0);
+        }
+
+        void ClearArenaTextures()
+        {
+            var computeList = rd.ComputeListBegin();
+            rd.ComputeListBindComputePipeline(computeList, texClearPipeline);
+            rd.ComputeListBindUniformSet(computeList, texClearUniformSet, 0);
+            rd.ComputeListDispatch(computeList, xGroups: pxWidth / 8, yGroups: pxHeight / 8, zGroups: 1);
+            rd.ComputeListEnd();
+
+            // force the GPU to start the commands
+            rd.Submit();
+            // wait for GPU
+            rd.Sync();
+        }
+
+        void ResetArena()
+        {
+            ClearArenaTextures();
+            snakeComputer.Reset();
+            explodeComputer.Reset();
         }
 
         // input events instead of polling
@@ -142,7 +175,7 @@ namespace ADK
             // https://github.com/godotengine/godot-demo-projects/pull/938
             // https://docs.godotengine.org/de/4.x/classes/class_texture2drd.html
             // coming in GODOT 4.2 (?)
-            var texBytes = rd.TextureGetData(arenaTexWrite, 0);
+            var texBytes = rd.TextureGetData(arenaTexReadWrite, 0);
             var arenaImg = Image.CreateFromData((int)pxWidth, (int)pxHeight, false, Image.Format.Rgba8, texBytes);
             var displayTex = ImageTexture.CreateFromImage(arenaImg);
             Texture = displayTex;

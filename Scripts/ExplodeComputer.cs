@@ -9,22 +9,21 @@ namespace ADK
     public class ExplodeComputer
     {
         RenderingDevice rd;
-        Rid arenaTexRead, arenaTexWrite;
+        Rid arenaTexWrite;
 
         RDShaderFile explosionShaderFile;
         Rid explosionShader;
         Rid explosionPipeline;
-        RDUniform arenaInUniform, arenaOutUniform, paramsUniform;
+        RDUniform arenaOutUniform, paramsUniform;
         Rid paramsBuffer;
         List<Explosion> activeExplosions = new();
 
         uint maxExplodingPixels = 512 * 512;
 
-        public ExplodeComputer(RenderingDevice rd, RDShaderFile computeShader, Rid arenaTexRead, Rid arenaTexWrite)
+        public ExplodeComputer(RenderingDevice rd, RDShaderFile computeShader, Rid arenaTexWrite)
         {
             this.rd = rd;
             explosionShaderFile = computeShader;
-            this.arenaTexRead = arenaTexRead;
             this.arenaTexWrite = arenaTexWrite;
             InitExplodeComputeShader();
         }
@@ -36,14 +35,6 @@ namespace ADK
             var explosionBytecode = explosionShaderFile.GetSpirV();
             explosionShader = rd.ShaderCreateFromSpirV(explosionBytecode);
             explosionPipeline = rd.ComputePipelineCreate(explosionShader);
-
-            // arena input tex uniform
-            arenaInUniform = new RDUniform
-            {
-                UniformType = RenderingDevice.UniformType.Image,
-                Binding = 0 // the in tex
-            };
-            arenaInUniform.AddId(arenaTexRead);
 
             // arena output tex uniform
             arenaOutUniform = new RDUniform
@@ -62,6 +53,11 @@ namespace ADK
                 Binding = 3
             };
             paramsUniform.AddId(paramsBuffer);
+        }
+
+        public void Reset()
+        {
+            activeExplosions.Clear();
         }
 
         public void Explode(Vector2I center, float radius, Pixel[] pixels)

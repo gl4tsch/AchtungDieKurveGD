@@ -97,6 +97,10 @@ namespace ADK
             TurnRateModifier = 1f;
             ThicknessModifier = 1f;
 
+            // reset gap
+            distSinceLastGap = 0;
+            gapSegmentBuffer.Clear();
+
             IsAlive = true;
         }
 

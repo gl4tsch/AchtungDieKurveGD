@@ -11,7 +11,7 @@ namespace ADK
     public class SnakeComputer
     {
         RenderingDevice rd;
-        Rid arenaTexRead, arenaTexWrite;
+        Rid arenaTexWrite;
         Arena arena;
 
         RDShaderFile snakeShaderFile;
@@ -29,12 +29,11 @@ namespace ADK
         Queue<LineData> lineDrawDataBuffer = new();
         uint maxAdditionalLinesPerSnakePerFrame = 3;
 
-        public SnakeComputer(Arena arena, RenderingDevice rd, RDShaderFile computeShader, Rid arenaTexRead, Rid arenaTexWrite)
+        public SnakeComputer(Arena arena, RenderingDevice rd, RDShaderFile computeShader, Rid arenaTexWrite)
         {
             this.arena = arena;
             this.rd = rd;
             snakeShaderFile = computeShader;
-            this.arenaTexRead = arenaTexRead;
             this.arenaTexWrite = arenaTexWrite;
             //InitTestSnakes(1);
             InitSnakes();
@@ -108,6 +107,16 @@ namespace ADK
             lineUniform.AddId(lineBuffer);
 
             snakeUniformSet = rd.UniformSetCreate(new Array<RDUniform>{ arenaUniform, snakeUniform, collisionUniform, lineUniform }, snakeShader, 0);
+        }
+
+        public void Reset()
+        {
+            aliveSnakes.Clear();
+            foreach (Snake snake in snakes)
+            {
+                snake.Spawn(new Vector2I((int)arena.Width, (int)arena.Height));
+                aliveSnakes.Add(snake);
+            }
         }
 
         public void HandleSnakeInput(InputEventKey keyEvent)

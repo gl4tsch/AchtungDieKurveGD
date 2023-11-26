@@ -8,7 +8,7 @@ namespace ADK
     public class PixelSelector
     {
         RenderingDevice rd;
-        Rid arenaTexRead, arenaTexWrite;
+        Rid arenaTexWrite;
         uint pxWidth, pxHeight;
 
         RDShaderFile pixelSelectShaderFile;
@@ -19,11 +19,10 @@ namespace ADK
 
         uint maxPixelsPerSelection = 512 * 512;
 
-        public PixelSelector(RenderingDevice rd, RDShaderFile computeShader, Rid arenaTextureRead, Rid arenaTextureWrite, uint pxWidth, uint pxHeight)
+        public PixelSelector(RenderingDevice rd, RDShaderFile computeShader, Rid arenaTextureWrite, uint pxWidth, uint pxHeight)
         {
             this.rd = rd;
             pixelSelectShaderFile = computeShader;
-            arenaTexRead = arenaTextureRead;
             arenaTexWrite = arenaTextureWrite;
             this.pxWidth = pxWidth;
             this.pxHeight = pxHeight;
