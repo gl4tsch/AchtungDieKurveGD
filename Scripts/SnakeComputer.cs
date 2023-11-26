@@ -40,6 +40,38 @@ namespace ADK
             InitSnakeComputeShader();
         }
 
+        ~SnakeComputer()
+        {
+            if (rd.TextureIsValid(arenaTexWrite))
+            {
+                rd.FreeRid(arenaTexWrite);
+            }
+            if (snakeShader.IsValid)
+            {
+                rd.FreeRid(snakeShader);
+            }
+            if (rd.RenderPipelineIsValid(snakePipeline))
+            {
+                rd.FreeRid(snakePipeline);
+            }
+            if (rd.UniformSetIsValid(snakeUniformSet))
+            {
+                rd.FreeRid(snakeUniformSet);
+            }
+            if (snakeBuffer.IsValid)
+            {
+                rd.FreeRid(snakeBuffer);
+            }
+            if (collisionBuffer.IsValid)
+            {
+                rd.FreeRid(collisionBuffer);
+            }
+            if (lineBuffer.IsValid)
+            {
+                rd.FreeRid(lineBuffer);
+            }
+        }
+
         void InitTestSnakes(int snakeCount)
         {
             snakes = new();
@@ -230,6 +262,7 @@ namespace ADK
             byte[] collisionData = rd.BufferGetData(collisionBuffer, 0, (uint)aliveSnakes.Count * sizeof(int));
             int[] collisions = new int[collisionData.Length];
             Buffer.BlockCopy(collisionData, 0, collisions, 0, collisionData.Length);
+
             List<Snake> collidedSnakes = new();
             for (int i = 0; i < collisions.Length; i++)
             {
@@ -238,11 +271,21 @@ namespace ADK
                     collidedSnakes.Add(aliveSnakes[i]);
                 }
             }
+
+            // out of bounds fallback
+            foreach (var snake in aliveSnakes.Except(collidedSnakes))
+            {
+                if (snake.PxPosition.X < 0 || snake.PxPosition.X >= arena.Width || snake.PxPosition.Y < 0 || snake.PxPosition.Y >= arena.Height)
+                {
+                    collidedSnakes.Add(snake);
+                }
+            }
+
             // work on separate list because OnCollision removes snake from aliveSnakes
             foreach (var snake in collidedSnakes)
             {
                 snake.OnCollision();
-            }
+            }            
         }
 
         void HandleSnakeExplosionRequests()

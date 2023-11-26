@@ -28,6 +28,26 @@ namespace ADK
             InitExplodeComputeShader();
         }
 
+        ~ExplodeComputer()
+        {
+            if (rd.TextureIsValid(arenaTexWrite))
+            {
+                rd.FreeRid(arenaTexWrite);
+            }
+            if (explosionShader.IsValid)
+            {
+                rd.FreeRid(explosionShader);
+            }
+            if (rd.RenderPipelineIsValid(explosionPipeline))
+            {
+                rd.FreeRid(explosionPipeline);
+            }
+            if (paramsBuffer.IsValid)
+            {
+                rd.FreeRid(paramsBuffer);
+            }
+        }
+
         void InitExplodeComputeShader()
         {
             // load explosion GLSL shader
@@ -63,7 +83,7 @@ namespace ADK
         public void Explode(Vector2I center, float radius, Pixel[] pixels)
         {
             // create explody buffer
-            var explodyBuffer = rd.StorageBufferCreate(ExplodyPixelData.SizeInByte * maxExplodingPixels);
+            Rid explodyBuffer = rd.StorageBufferCreate(ExplodyPixelData.SizeInByte * maxExplodingPixels);
 
             // create an explody uniform to assign the explody buffer to the rendering device
             var explodyUniform = new RDUniform

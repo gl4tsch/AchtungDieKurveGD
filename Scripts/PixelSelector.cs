@@ -29,6 +29,34 @@ namespace ADK
             InitPixelSelectComputeShader();
         }
 
+        ~PixelSelector()
+        {
+            if (rd.TextureIsValid(arenaTexWrite))
+            {
+                rd.FreeRid(arenaTexWrite);
+            }
+            if (pixelSelectShader.IsValid)
+            {
+                rd.FreeRid(pixelSelectShader);
+            }
+            if (rd.RenderPipelineIsValid(pixelSelectPipeline))
+            {
+                rd.FreeRid(pixelSelectPipeline);
+            }
+            if (rd.UniformSetIsValid(pixelSelectUniformSet))
+            {
+                rd.FreeRid(pixelSelectUniformSet);
+            }
+            if (pxFilterBuffer.IsValid)
+            {
+                rd.FreeRid(pxFilterBuffer);
+            }
+            if (selectedPixelsBuffer.IsValid)
+            {
+                rd.FreeRid(selectedPixelsBuffer);
+            }
+        }
+
         void InitPixelSelectComputeShader()
         {
             // load GLSL shader

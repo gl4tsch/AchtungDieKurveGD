@@ -25,6 +25,8 @@ namespace ADK
 
         public override void _Ready()
         {
+            base._Ready();
+
             pxWidth = (uint)GameManager.Instance.Settings.ArenaSettings.PxWidth;
             pxHeight = (uint)GameManager.Instance.Settings.ArenaSettings.PxHeight;
             GameManager.Instance.ActiveArenaScene.BattleStateChanged += OnBattleStateChanged;
@@ -36,6 +38,28 @@ namespace ADK
             pixelSelector = new PixelSelector(rd, selectComputeShader, arenaTexReadWrite, pxWidth, pxHeight);
 
             ResetArena();
+        }
+
+        public override void _ExitTree()
+        {
+            base._ExitTree();
+
+            if (rd.TextureIsValid(arenaTexReadWrite))
+            {
+                rd.FreeRid(arenaTexReadWrite);
+            }
+            if (texClearShader.IsValid)
+            {
+                rd.FreeRid(texClearShader);
+            }
+            if (rd.RenderPipelineIsValid(texClearPipeline))
+            {
+                rd.FreeRid(texClearPipeline);
+            }
+            if (rd.UniformSetIsValid(texClearUniformSet))
+            {
+                rd.FreeRid(texClearUniformSet);
+            }
         }
 
         void InitArenaTextures()
