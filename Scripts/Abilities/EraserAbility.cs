@@ -12,14 +12,14 @@ namespace ADK
         static string lengthSettingKey => $"{DisplayName}_{nameof(eraserLength)}";
         float eraserLength = 160;
 
-        public EraserAbility(AbilitySettings settings) : base(settings){}
+        public EraserAbility(SettingsSection settings) : base(settings){}
 
-        public static List<(string key, Variant setting)> DefaultSettings => new List<(string key, Variant setting)>
+        public static Dictionary<string, Variant> DefaultSettings => new()
         {
-            (lengthSettingKey, 160) 
+            {lengthSettingKey, 160}
         };
 
-        public override void ApplySettings(AbilitySettings settings)
+        public override void ApplySettings(SettingsSection settings)
         {
             if (settings.Settings.TryGetValue(lengthSettingKey, out Variant lengthSetting))
             {

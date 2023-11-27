@@ -27,16 +27,16 @@ namespace ADK
             public float t;
         }
 
-        public SpeedAbility(AbilitySettings settings) : base(settings){}
+        public SpeedAbility(SettingsSection settings) : base(settings){}
 
-        public static List<(string key, Variant setting)> DefaultSettings => new List<(string key, Variant setting)>
+        public static Dictionary<string, Variant> DefaultSettings => new()
         {
-            (speedSettingKey, 1.5f),
-            (turnSettingKey, 1.5f),
-            (durationSettingKey, 1.5f)
+            {speedSettingKey, 1.5f},
+            {turnSettingKey, 1.5f},
+            {durationSettingKey, 1.5f}
         };
 
-        public override void ApplySettings(AbilitySettings settings)
+        public override void ApplySettings(SettingsSection settings)
         {
             if (settings.Settings.TryGetValue(speedSettingKey, out Variant speedSetting))
             {

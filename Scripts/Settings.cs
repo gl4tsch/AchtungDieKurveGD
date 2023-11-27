@@ -1,31 +1,43 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using Godot;
 
 namespace ADK
 {
     public class Settings
     {
-        string settingsFilePath = "user://settings.cfg";
+        static readonly string settingsFileName = "settings.cfg";
+        static readonly string settingsFilePathRelative = $"user://{settingsFileName}";
+        static readonly string settingsFilePathAbsolute = Path.Combine(OS.GetUserDataDir(), settingsFileName);
         ConfigFile config = new();
 
-        public AudioSettings AudioSettings { get; private set; }
-        public ArenaSettings ArenaSettings { get; private set; }
-        public SnakeSettings SnakeSettings { get; private set; }
-        public AbilitySettings AbilitySettings { get; private set; }
+        public string AudioSectionName => "Audio";
+        public string ArenaSectionName => "Arena";
+        public string SnakeSectionName => "Snake";
+        public string AbilitySectionName => "Abilities";
+
+        public SettingsSection AudioSettings { get; private set; }
+        public SettingsSection ArenaSettings { get; private set; }
+        public SettingsSection SnakeSettings { get; private set; }
+        public SettingsSection AbilitySettings { get; private set; }
 
         /// <summary>
         /// loads settings from settings.cfg file
         /// </summary>
         public void LoadSettings()
         {
-            var error = config.Load(settingsFilePath);
+            var error = config.Load(settingsFilePathRelative);
             GD.Print($"Settings File Loading: {error}");
-            AudioSettings = new(config);
-            ArenaSettings = new(config);
-            SnakeSettings = new(config);
-            AbilitySettings = new(config);
+            AudioSettings = new(AudioSectionName, AudioManager.DefaultSettings);
+            AudioSettings.LoadFromConfig(config);
+            ArenaSettings = new(ArenaSectionName, Arena.DefaultSettings);
+            ArenaSettings.LoadFromConfig(config);
+            SnakeSettings = new(SnakeSectionName, Snake.DefaultSettings);
+            SnakeSettings.LoadFromConfig(config);
+            AbilitySettings = new(AbilitySectionName, Ability.AllDefaultAbilitySettings);
+            AbilitySettings.LoadFromConfig(config);
         }
 
         /// <summary>
@@ -38,8 +50,22 @@ namespace ADK
             SnakeSettings.SaveToConfig(config);
             AbilitySettings.SaveToConfig(config);
             // save to file
-            var error = config.Save(settingsFilePath);
+            var error = config.Save(settingsFilePathRelative);
             GD.Print($"Settings File Saving: {error}");
+        }
+
+        public void WipeSettings()
+        {
+            if (File.Exists(settingsFilePathAbsolute))
+            {
+                File.WriteAllText(settingsFilePathAbsolute, string.Empty);
+                LoadSettings();
+                SaveSettings();
+            }
+            else
+            {
+                GD.PrintErr("Config file not found at " + settingsFilePathAbsolute);
+            }
         }
 
         /// <summary>
@@ -55,93 +81,35 @@ namespace ADK
         }
     }
 
-    public class AudioSettings
+    public class SettingsSection
     {
-        static readonly string ConfigSectionName = "Audio";
-        public float MasterVolume { get; set; }
-        public float MusicVolume { get; set; }
-        public float SoundVolume { get; set; }
+        string ConfigSectionName;
 
-        public AudioSettings(ConfigFile config)
-        {
-            MasterVolume = (float)config.GetValue(ConfigSectionName, nameof(MasterVolume), 100);
-            MusicVolume = (float)config.GetValue(ConfigSectionName, nameof(MusicVolume), 100);
-            SoundVolume = (float)config.GetValue(ConfigSectionName, nameof(SoundVolume), 100);
-        }
-
-        public void SaveToConfig(ConfigFile config)
-        {
-            config.SetValue(ConfigSectionName, nameof(MasterVolume), MasterVolume);
-            config.SetValue(ConfigSectionName, nameof(MusicVolume), MusicVolume);
-            config.SetValue(ConfigSectionName, nameof(SoundVolume), SoundVolume);
-        }
-    }
-
-    public class ArenaSettings
-    {
-        static readonly string ConfigSectionName = "Arena";
-        public int PxWidth { get; set; }
-        public int PxHeight { get; set; }
-
-        public ArenaSettings(ConfigFile config)
-        {
-            PxWidth = (int)config.GetValue(ConfigSectionName, nameof(PxWidth), 1024);
-            PxHeight = (int)config.GetValue(ConfigSectionName, nameof(PxHeight), 1024);
-        }
-
-        public void SaveToConfig(ConfigFile config)
-        {
-            config.SetValue(ConfigSectionName, nameof(PxWidth), PxWidth);
-            config.SetValue(ConfigSectionName, nameof(PxHeight), PxHeight);
-        }
-    }
-
-    public class SnakeSettings
-    {
-        public static readonly string ConfigSectionName = "Snake";
-        public float Thickness { get; private set; }
-        public float MoveSpeed { get; private set; }
-        public float TurnRate { get; private set; }
-        public float GapFrequency { get; private set; }
-        public float GapWidthRelToThickness { get; private set; }
-
-        public SnakeSettings(ConfigFile config)
-        {
-            Thickness = (float)config.GetValue(ConfigSectionName, nameof(Thickness), 10);
-            MoveSpeed = (float)config.GetValue(ConfigSectionName, nameof(MoveSpeed), 100);
-            TurnRate = (float)config.GetValue(ConfigSectionName, nameof(TurnRate), 3);
-            GapFrequency = (float)config.GetValue(ConfigSectionName, nameof(GapFrequency), 400);
-            GapWidthRelToThickness = (float)config.GetValue(ConfigSectionName, nameof(GapWidthRelToThickness), 3);
-        }
-
-        public void SaveToConfig(ConfigFile config)
-        {
-            config.SetValue(ConfigSectionName, nameof(Thickness), Thickness);
-            config.SetValue(ConfigSectionName, nameof(MoveSpeed), MoveSpeed);
-            config.SetValue(ConfigSectionName, nameof(TurnRate), TurnRate);
-            config.SetValue(ConfigSectionName, nameof(GapFrequency), GapFrequency);
-            config.SetValue(ConfigSectionName, nameof(GapWidthRelToThickness), GapWidthRelToThickness);
-        }
-    }
-
-    public class AbilitySettings
-    {
-        public static readonly string ConfigSectionName = "Abilities";
         /// <summary>
-        /// Ability settings with their config file key
+        /// settings with their config file key
         /// </summary>
         public Dictionary<string, Variant> Settings = new();
 
-        public AbilitySettings(ConfigFile config)
+        public SettingsSection(string sectionName, Dictionary<string, Variant> defaultSettings)
         {
-            // either: handle it like this and have each Ability look for its settings in the dict
-            // or: pass the ConfigFile directly to each Ability and let them handle saving and loading
-            // with their own Section Name
+            ConfigSectionName = sectionName;
+            Settings = defaultSettings;
+        }
+
+        public void LoadFromConfig(ConfigFile config)
+        {
             if (config.HasSection(ConfigSectionName))
             {
                 foreach (var key in config.GetSectionKeys(ConfigSectionName))
                 {
-                    Settings.Add(key, config.GetValue(ConfigSectionName, key));
+                    if (Settings.ContainsKey(key))
+                    {
+                        Settings[key] = config.GetValue(ConfigSectionName, key);
+                    }
+                    else
+                    {
+                        Settings.Add(key, config.GetValue(ConfigSectionName, key));
+                    }
                 }
             }
         }

@@ -26,7 +26,7 @@ namespace ADK.UI
         RebindKey awaitedRebindKey = RebindKey.None;
         static readonly List<Key> forbiddenControlKeys = new(){ Key.Escape };
 
-        AbilitySettings abilitySettings => GameManager.Instance.Settings.AbilitySettings;
+        SettingsSection abilitySettings => GameManager.Instance.Settings.AbilitySettings;
         static string noAbilityDisplayName = "None";
         List<(string name, Func<Ability> creator)> abilityFactory;
         // List<Ability> allAbilities = new()

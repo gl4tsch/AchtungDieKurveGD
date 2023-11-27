@@ -4,7 +4,7 @@
 [ext_resource type="PackedScene" uid="uid://kg54o5ip628t" path="res://Prefabs/VolumeSetting.tscn" id="2_agcc6"]
 [ext_resource type="PackedScene" uid="uid://csollhlqroe" path="res://Prefabs/NumberFieldEntry.tscn" id="3_32ntc"]
 
-[node name="SettingsWindow" type="Control" node_paths=PackedStringArray("confirmButton", "cancelButton", "masterVolumeSlider", "musicVolumeSlider", "soundVolumeSlider")]
+[node name="SettingsWindow" type="Control" node_paths=PackedStringArray("confirmButton", "cancelButton", "wipeButton", "masterVolumeSlider", "musicVolumeSlider", "soundVolumeSlider", "arenaSettingsContainer", "snakeSettingsContainer", "abilitySettingsContainer")]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -14,9 +14,14 @@ grow_vertical = 2
 script = ExtResource("1_7rjke")
 confirmButton = NodePath("Confirm Button")
 cancelButton = NodePath("Cancel Button")
+wipeButton = NodePath("Wipe Button")
 masterVolumeSlider = NodePath("ScrollContainer/SettingsVBox/AudioSettingsVBox/VolumeHBox/HSlider")
 musicVolumeSlider = NodePath("ScrollContainer/SettingsVBox/AudioSettingsVBox/VolumeHBox2/HSlider")
 soundVolumeSlider = NodePath("ScrollContainer/SettingsVBox/AudioSettingsVBox/VolumeHBox3/HSlider")
+arenaSettingsContainer = NodePath("ScrollContainer/SettingsVBox/ArenaSettingsVBox")
+snakeSettingsContainer = NodePath("ScrollContainer/SettingsVBox/SnakeSettingsVBox")
+abilitySettingsContainer = NodePath("ScrollContainer/SettingsVBox/AbilitySettingsVBox")
+numberFieldPrefab = ExtResource("3_32ntc")
 
 [node name="ColorRect" type="ColorRect" parent="."]
 layout_mode = 1
@@ -58,6 +63,19 @@ offset_bottom = 42.0
 theme_override_colors/font_color = Color(1, 0, 0, 1)
 text = "Cancel"
 
+[node name="Wipe Button" type="Button" parent="."]
+layout_mode = 1
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -99.0
+offset_top = 15.0
+offset_right = -27.0
+offset_bottom = 46.0
+grow_horizontal = 0
+theme_override_colors/font_color = Color(1, 0, 0, 1)
+text = "Wipe Settings File"
+
 [node name="ScrollContainer" type="ScrollContainer" parent="."]
 layout_mode = 1
 anchors_preset = -1
@@ -69,6 +87,7 @@ offset_right = -20.0
 offset_bottom = -20.0
 grow_horizontal = 2
 grow_vertical = 2
+focus_mode = 1
 horizontal_scroll_mode = 0
 
 [node name="SettingsVBox" type="VBoxContainer" parent="ScrollContainer"]
@@ -107,13 +126,21 @@ layout_mode = 2
 theme_type_variation = &"MediumHeader"
 text = "Arena"
 
-[node name="Number Field Entry" parent="ScrollContainer/SettingsVBox/ArenaSettingsVBox" instance=ExtResource("3_32ntc")]
+[node name="SnakeSettingsVBox" type="VBoxContainer" parent="ScrollContainer/SettingsVBox"]
 layout_mode = 2
-Title = "bbb"
 
-[node name="Number Field Entry2" parent="ScrollContainer/SettingsVBox/ArenaSettingsVBox" node_paths=PackedStringArray("inputField") instance=ExtResource("3_32ntc")]
+[node name="Snake Header" type="Label" parent="ScrollContainer/SettingsVBox/SnakeSettingsVBox"]
 layout_mode = 2
-inputField = NodePath("../Number Field Entry/SpinBox")
+theme_type_variation = &"MediumHeader"
+text = "Snake"
+
+[node name="AbilitySettingsVBox" type="VBoxContainer" parent="ScrollContainer/SettingsVBox"]
+layout_mode = 2
+
+[node name="Ability Header" type="Label" parent="ScrollContainer/SettingsVBox/AbilitySettingsVBox"]
+layout_mode = 2
+theme_type_variation = &"MediumHeader"
+text = "Abilities"
 
 [editable path="ScrollContainer/SettingsVBox/AudioSettingsVBox/VolumeHBox"]
 [editable path="ScrollContainer/SettingsVBox/AudioSettingsVBox/VolumeHBox2"]

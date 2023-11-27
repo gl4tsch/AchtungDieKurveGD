@@ -12,14 +12,14 @@ namespace ADK
         static string lengthSettingKey => $"{DisplayName}_{nameof(halfBarLength)}";
         float halfBarLength = 80;
 
-        public VBarAbility(AbilitySettings settings) : base(settings){}
+        public VBarAbility(SettingsSection settings) : base(settings){}
 
-        public static List<(string key, Variant setting)> DefaultSettings => new List<(string key, Variant setting)>
+        public static Dictionary<string, Variant> DefaultSettings => new()
         {
-            (lengthSettingKey, 80)
+            {lengthSettingKey, 80}
         };
 
-        public override void ApplySettings(AbilitySettings settings)
+        public override void ApplySettings(SettingsSection settings)
         {
             if (settings.Settings.TryGetValue(lengthSettingKey, out Variant lengthSetting))
             {

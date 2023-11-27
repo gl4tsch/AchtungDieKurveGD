@@ -64,9 +64,7 @@ namespace ADK
 
         public void ApplyAudioSettings()
         {
-            AudioManager.Instance?.SetMasterVolume(Settings.AudioSettings.MasterVolume);
-            AudioManager.Instance?.SetMusicVolume(Settings.AudioSettings.MusicVolume);
-            AudioManager.Instance?.SetSoundVolume(Settings.AudioSettings.SoundVolume);
+            AudioManager.Instance?.ApplySettings(Settings.AudioSettings);
         }
 
         public void ApplyArenaSettings()

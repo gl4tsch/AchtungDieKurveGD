@@ -10,6 +10,15 @@ namespace ADK
         public uint Width => pxWidth;
         public uint Height => pxHeight;
 
+        public static readonly string WidthSettingName = "PxWidth";
+        public static readonly string HeightSettingName = "PxHeight";
+
+        public static System.Collections.Generic.Dictionary<string, Variant> DefaultSettings => new()
+        {
+            {WidthSettingName, 1024},
+            {HeightSettingName, 1024}
+        };
+
         [Export] RDShaderFile snakeComputeShader, explodeComputeShader, selectComputeShader, clearTextureComputeShader;
 
         RenderingDevice rd;
@@ -27,8 +36,8 @@ namespace ADK
         {
             base._Ready();
 
-            pxWidth = (uint)GameManager.Instance.Settings.ArenaSettings.PxWidth;
-            pxHeight = (uint)GameManager.Instance.Settings.ArenaSettings.PxHeight;
+            pxWidth = (uint)GameManager.Instance.Settings.ArenaSettings.Settings[WidthSettingName];
+            pxHeight = (uint)GameManager.Instance.Settings.ArenaSettings.Settings[HeightSettingName];
             GameManager.Instance.ActiveArenaScene.BattleStateChanged += OnBattleStateChanged;
 
             InitArenaTextures();

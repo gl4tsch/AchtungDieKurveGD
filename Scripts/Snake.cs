@@ -23,6 +23,15 @@ namespace ADK
         public float TurnRateModifier { get; set; } = 1f;
         public float ThicknessModifier { get; set; } = 1f;
 
+        public static Dictionary<string, Variant> DefaultSettings => new()
+        {
+            {nameof(PxThickness), 10f},
+            {nameof(MoveSpeed), 100f},
+            {nameof(TurnRate), 3f},
+            {nameof(GapFrequency), 400},
+            {nameof(GapWidthRelToThickness), 3}
+        };
+
         public int TurnSign { get; private set; } = 0; // 0 = straight, -1 = left, 1 = right
         /// <summary>
         /// this is always normalized
@@ -60,18 +69,33 @@ namespace ADK
             Name = name;
         }
 
-        public Snake(string name, SnakeSettings settings) : this(name)
+        public Snake(string name, SettingsSection settings) : this(name)
         {
             ApplySettings(settings);
         }
 
-        public void ApplySettings(SnakeSettings settings)
+        public void ApplySettings(SettingsSection settings)
         {
-            PxThickness = settings.Thickness;
-            MoveSpeed = settings.MoveSpeed;
-            TurnRate = settings.TurnRate;
-            GapFrequency = settings.GapFrequency;
-            GapWidthRelToThickness = settings.GapWidthRelToThickness;
+            if (settings.Settings.TryGetValue(nameof(PxThickness), out var thickness))
+            {
+                PxThickness = (float)thickness;
+            }
+            if (settings.Settings.TryGetValue(nameof(MoveSpeed), out var moveSpeed))
+            {
+                MoveSpeed = (float)moveSpeed;
+            }
+            if (settings.Settings.TryGetValue(nameof(TurnRate), out var turnRate))
+            {
+                TurnRate = (float)turnRate;
+            }
+            if (settings.Settings.TryGetValue(nameof(GapFrequency), out var gapFrequency))
+            {
+                GapFrequency = (float)gapFrequency;
+            }
+            if (settings.Settings.TryGetValue(nameof(GapWidthRelToThickness), out var gapWidth))
+            {
+                GapWidthRelToThickness = (float)gapWidth;
+            }
         }
 
         public void RandomizeColor()

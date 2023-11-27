@@ -7,27 +7,31 @@ namespace ADK.UI
 {
     public partial class SettingsWindow : Control
     {
-        [Export] Button confirmButton, cancelButton;
+        [Export] Button confirmButton, cancelButton, wipeButton;
+
         [Export] Slider masterVolumeSlider;
         [Export] Slider musicVolumeSlider;
         [Export] Slider soundVolumeSlider;
 
+        [Export] Control arenaSettingsContainer, snakeSettingsContainer, abilitySettingsContainer;
+        [Export] PackedScene numberFieldPrefab;
+
         // local copies
         Settings localSettings;
-        AudioSettings localAudioSettings => localSettings.AudioSettings;
-        ArenaSettings localArenaSettings => localSettings.ArenaSettings;
-        SnakeSettings localSnakeSettings => localSettings.SnakeSettings;
-        AbilitySettings localAbilitySettings => localSettings.AbilitySettings;
+        SettingsSection localAudioSettings => localSettings.AudioSettings;
+        SettingsSection localArenaSettings => localSettings.ArenaSettings;
+        SettingsSection localSnakeSettings => localSettings.SnakeSettings;
+        SettingsSection localAbilitySettings => localSettings.AbilitySettings;
 
         public override void _Ready()
         {
             base._Ready();
 
             localSettings = GameManager.Instance.Settings.NewCopy();
-            FillAllAbilitySettings();
 
             confirmButton.Pressed += OnConfirmButtonClicked;
             cancelButton.Pressed += OnCancelButtonClicked;
+            wipeButton.Pressed += OnWipeButtonClicked;
 
             masterVolumeSlider.SetValueNoSignal(AudioManager.Instance.MasterVolume);
             masterVolumeSlider.ValueChanged += OnMasterVolumeInput;
@@ -35,34 +39,19 @@ namespace ADK.UI
             musicVolumeSlider.ValueChanged += OnMusicVolumeInput;
             soundVolumeSlider.SetValueNoSignal(AudioManager.Instance.SoundVolume);
             soundVolumeSlider.ValueChanged += OnSoundVolumeInput;
+
+            SpawnSettings(localArenaSettings, arenaSettingsContainer);
+            SpawnSettings(localSnakeSettings, snakeSettingsContainer);
+            SpawnSettings(localAbilitySettings, abilitySettingsContainer);
         }
 
-        /// <summary>
-        /// fills AbilitySettings with default values for all missing entrys
-        /// </summary>
-        void FillAllAbilitySettings()
+        void SpawnSettings(SettingsSection section, Control container)
         {
-            List<(string key, Variant setting)> defaultAbilitySettings = new();
-            defaultAbilitySettings.AddRange(EraserAbility.DefaultSettings);
-            defaultAbilitySettings.AddRange(SpeedAbility.DefaultSettings);
-            defaultAbilitySettings.AddRange(TBarAbility.DefaultSettings);
-            defaultAbilitySettings.AddRange(TeleportAbility.DefaultSettings);
-            defaultAbilitySettings.AddRange(VBarAbility.DefaultSettings);
-
-            foreach (var defaultSetting in defaultAbilitySettings)
+            foreach (var setting in section.Settings)
             {
-                if (!localAbilitySettings.Settings.ContainsKey(defaultSetting.key))
-                {
-                    localAbilitySettings.Settings.Add(defaultSetting.key, defaultSetting.setting);
-                }
-            }
-        }
-
-        void SpawnAbilitySettings()
-        {
-            foreach (var setting in localAbilitySettings.Settings)
-            {
-                // spawn the corresponding prefab to setting type
+                var settingField = numberFieldPrefab.Instantiate<NumberSettingInputField>().Init(setting.Key, setting.Value);
+                container.AddChild(settingField);
+                settingField.ValueChanged += v => section.Settings[setting.Key] = v;
             }
         }
 
@@ -81,21 +70,28 @@ namespace ADK.UI
             QueueFree();
         }
 
+        void OnWipeButtonClicked()
+        {
+            // clear settings file
+            GameManager.Instance.Settings.WipeSettings();
+            QueueFree();
+        }
+
         void OnMasterVolumeInput(double value)
         {
-            localAudioSettings.MasterVolume = (float)value;
+            localAudioSettings.Settings[nameof(AudioManager.MasterVolume)] = (float)value;
             AudioManager.Instance?.SetMasterVolume((float)value);
         }
 
         private void OnMusicVolumeInput(double value)
         {
-            localAudioSettings.MusicVolume = (float)value;
+            localAudioSettings.Settings[nameof(AudioManager.MusicVolume)] = (float)value;
             AudioManager.Instance?.SetMusicVolume((float)value);
         }
 
         private void OnSoundVolumeInput(double value)
         {
-            localAudioSettings.SoundVolume = (float)value;
+            localAudioSettings.Settings[nameof(AudioManager.SoundVolume)] = (float)value;
             AudioManager.Instance?.SetSoundVolume((float)value);
         }
     }

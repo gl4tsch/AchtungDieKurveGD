@@ -47,6 +47,13 @@ namespace ADK
         /// </summary>
         public float SoundVolume => AudioServer.GetBusVolumeDb(soundBusIdx).Map(minDb, maxDb, 0, 100);
 
+        public static Dictionary<string, Variant> DefaultSettings => new()
+        {
+            {nameof(MasterVolume), 100f},
+            {nameof(MusicVolume), 100f},
+            {nameof(SoundVolume), 100f}
+        };
+
         public AudioManager()
         {
             Instance = this;
@@ -95,11 +102,20 @@ namespace ADK
             ApplySettings(GameManager.Instance.Settings.AudioSettings);
         }
 
-        void ApplySettings(AudioSettings settings)
+        public void ApplySettings(SettingsSection settings)
         {
-            SetMasterVolume(settings.MasterVolume);
-            SetMusicVolume(settings.MusicVolume);
-            SetSoundVolume(settings.SoundVolume);
+            if (settings.Settings.TryGetValue(nameof(MasterVolume), out var masterVolume))
+            {
+                SetMasterVolume((float)masterVolume);
+            }
+            if (settings.Settings.TryGetValue(nameof(MusicVolume), out var musicVolume))
+            {
+                SetMusicVolume((float)musicVolume);
+            }
+            if (settings.Settings.TryGetValue(nameof(SoundVolume), out var soundVolume))
+            {
+                SetSoundVolume((float)soundVolume);
+            }
         }
 
         public void PlayMusic(Music music)
