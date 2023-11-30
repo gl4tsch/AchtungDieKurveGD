@@ -228,11 +228,8 @@ namespace ADK
             rd.BufferUpdate(snakeBuffer, sizeof(uint), (uint)snakesBytes.Count, snakesBytes.ToArray());
 
             // clear collision data buffer
-            byte[] collisionBytes = new byte[snakeCount * sizeof(int)];
-            for (int i = 0; i < collisionBytes.Length; i++)
-            {
-                collisionBytes[i] = 0;
-            }
+            // apparently this gets initialized to all 0s automatically
+            byte[] collisionBytes = new byte[snakes.Count * sizeof(int)];
             rd.BufferUpdate(collisionBuffer, 0, (uint)collisionBytes.Length, collisionBytes);
 
             // line draw data
