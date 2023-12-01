@@ -199,7 +199,8 @@ namespace ADK
         void ComputeSnakesSync(LineData[] snakesData)
         {
             ComputeSnakesAsync(snakesData);
-            rd.Sync();
+            //rd.Sync();
+            rd.Barrier(RenderingDevice.BarrierMask.Compute);
         }
 
         void ComputeSnakesAsync(LineData[] snakesData)
@@ -250,7 +251,7 @@ namespace ADK
             rd.ComputeListEnd();
 
             // force the GPU to start the commands
-            rd.Submit();
+            //rd.Submit();
         }
 
         void CheckForCollisions()

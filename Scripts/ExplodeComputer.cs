@@ -166,8 +166,9 @@ namespace ADK
             }
 
             // force the GPU to start the commands
-            rd.Submit();
-            rd.Sync();
+            // rd.Submit();
+            // rd.Sync();
+            rd.Barrier(RenderingDevice.BarrierMask.Compute);
         }
     }
 }

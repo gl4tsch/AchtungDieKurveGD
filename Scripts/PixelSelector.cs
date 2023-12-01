@@ -142,8 +142,9 @@ namespace ADK
             rd.ComputeListEnd();
 
             // force the GPU to start the commands
-            rd.Submit();
-            rd.Sync();
+            //rd.Submit();
+            //rd.Sync();
+            rd.Barrier(RenderingDevice.BarrierMask.Compute);
 
             byte[] byteSize = rd.BufferGetData(selectedPixelsBuffer, 0, sizeof(uint));
             uint pixelCount = BitConverter.ToUInt32(byteSize);

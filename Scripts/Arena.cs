@@ -23,6 +23,7 @@ namespace ADK
 
         RenderingDevice rd;
         Rid arenaTexReadWrite;
+        Texture2Drd renderTex;
 
         SnakeComputer snakeComputer;
         ExplodeComputer explodeComputer;
@@ -73,24 +74,31 @@ namespace ADK
 
         void InitArenaTextures()
         {
-            // create a local rendering device.
-            rd ??= RenderingServer.CreateLocalRenderingDevice();
+            // with a local rendering device, arenaTexReadWrite cannot be used as the texture in textureRect
+            // rd ??= RenderingServer.CreateLocalRenderingDevice();
+            rd ??= RenderingServer.GetRenderingDevice();
 
             // create arena write texture format
             var arenaTexReadWriteFormat = new RDTextureFormat
             {
                 Format = RenderingDevice.DataFormat.R8G8B8A8Unorm,
+                TextureType = RenderingDevice.TextureType.Type2D,
                 Width = pxWidth,
                 Height = pxHeight,
                 Depth = 1,
+                ArrayLayers = 1,
+                Mipmaps = 1,
                 UsageBits =
+                RenderingDevice.TextureUsageBits.SamplingBit |
                 RenderingDevice.TextureUsageBits.CanCopyFromBit |
                 RenderingDevice.TextureUsageBits.StorageBit |
                 RenderingDevice.TextureUsageBits.CanUpdateBit
             };
 
             // create arena textures
-            arenaTexReadWrite = rd.TextureCreate(arenaTexReadWriteFormat, new RDTextureView());
+            arenaTexReadWrite = rd.TextureCreate(arenaTexReadWriteFormat, new RDTextureView(), new Array<byte[]>());
+            renderTex = Texture as Texture2Drd;
+            renderTex.TextureRdRid = arenaTexReadWrite;
             InitArenaClearComputeShader();
             ClearArenaTextures();
         }
@@ -124,9 +132,10 @@ namespace ADK
             rd.ComputeListEnd();
 
             // force the GPU to start the commands
-            rd.Submit();
+            //rd.Submit();
             // wait for GPU
-            rd.Sync();
+            //rd.Sync();
+            rd.Barrier(RenderingDevice.BarrierMask.Compute);
         }
 
         void ResetArena()
@@ -203,6 +212,8 @@ namespace ADK
 
         void DisplayArena()
         {
+            return;
+
             // unfortunately there is no way to display a gpu texture
             // other then fetch the data and create a cpu texture from it...
             // https://github.com/godotengine/godot-demo-projects/pull/938
