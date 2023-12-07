@@ -9,8 +9,8 @@ namespace ADK
         public static AudioManager Instance { get; private set; }
 
         [ExportCategory("Music")]
-        [Export] AudioStream lobbyMusic;
-        [Export] AudioStream battleMusic;
+        [Export] Godot.Collections.Array<AudioStream> lobbyMusic;
+        [Export] Godot.Collections.Array<AudioStream> battleMusic;
 
         [ExportCategory("Sound")]
         [Export] AudioStream snakeDeathExplosionSound;
@@ -25,7 +25,7 @@ namespace ADK
         StringName soundBus = "SoundFX Bus";
         int soundBusIdx => AudioServer.GetBusIndex(soundBus);
 
-        Dictionary<Music, AudioStream> musicFiles;
+        Dictionary<Music, Godot.Collections.Array<AudioStream>> musicFiles;
         Dictionary<SFX, AudioStream> soundFiles;
 
         AudioStreamPlayer musicPlayer;
@@ -120,9 +120,9 @@ namespace ADK
 
         public void PlayMusic(Music music)
         {
-            if (musicFiles.TryGetValue(music, out var stream))
+            if (musicFiles.TryGetValue(music, out var list))
             {
-                PlayMusic(stream);
+                PlayMusic(list.PickRandom());
             }
             else
             {
