@@ -6,6 +6,8 @@ namespace ADK
 {
     public partial class ArenaScene : Node
     {
+        [Export] PackedScene WinPopUpPrefab;
+
         public enum BattleState
         {
             StartOfRound,
@@ -14,6 +16,8 @@ namespace ADK
         }
         public BattleState CurrentBattleState { get; private set; }
         public event Action<BattleState> BattleStateChanged;
+
+        EndOfRoundPopup popUpWindowInstance;
 
         public override void _Ready()
         {
@@ -46,20 +50,25 @@ namespace ADK
 
         public void StartNewRound()
         {
+            popUpWindowInstance?.QueueFree();
             BroadcastBattleStateTransition(BattleState.StartOfRound);
         }
 
-        public void EndRound()
+        public void EndRound(Snake winner = null)
         {
             if (CurrentBattleState == BattleState.EndOfRound)
             {
                 // already ending
                 return;
             }
-            // TODO display win/continue message or implement a win screen node
-            // listening to battle state transition broadcast
-            
+            DisplayWinPopup(winner);
             BroadcastBattleStateTransition(BattleState.EndOfRound);
+        }
+
+        void DisplayWinPopup(Snake winner)
+        {
+            popUpWindowInstance = WinPopUpPrefab.Instantiate<EndOfRoundPopup>().PopUp(winner);
+            AddChild(popUpWindowInstance);
         }
 
         void BroadcastBattleStateTransition(BattleState state)

@@ -1,11 +1,13 @@
-[gd_scene load_steps=4 format=3 uid="uid://cui1you3xjgtb"]
+[gd_scene load_steps=5 format=3 uid="uid://cui1you3xjgtb"]
 
 [ext_resource type="Script" path="res://Scripts/ArenaScene.cs" id="1_4erib"]
 [ext_resource type="PackedScene" uid="uid://cyk1hxyvevajg" path="res://Prefabs/ArenaRect.tscn" id="2_qbl2j"]
 [ext_resource type="PackedScene" uid="uid://tytbc3qfkstf" path="res://Prefabs/ScoreBoard.tscn" id="3_c5uxr"]
+[ext_resource type="PackedScene" uid="uid://dqr24ev42ax6v" path="res://Prefabs/WinnerPopUp.tscn" id="4_5tm8f"]
 
 [node name="ArenaScene" type="Node"]
 script = ExtResource("1_4erib")
+WinPopUpPrefab = ExtResource("4_5tm8f")
 
 [node name="BG" type="ColorRect" parent="."]
 anchors_preset = 15

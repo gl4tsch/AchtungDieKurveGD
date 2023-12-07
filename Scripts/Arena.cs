@@ -212,7 +212,7 @@ namespace ADK
 
         void DisplayArena()
         {
-            return;
+            return; // yay
 
             // unfortunately there is no way to display a gpu texture
             // other then fetch the data and create a cpu texture from it...

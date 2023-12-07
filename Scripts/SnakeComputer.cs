@@ -165,7 +165,7 @@ namespace ADK
             // we have a winner
             if (aliveSnakes.Count <= 1)
             {
-                GameManager.Instance?.ActiveArenaScene?.EndRound();
+                GameManager.Instance?.ActiveArenaScene?.EndRound(aliveSnakes.Count == 1 ? aliveSnakes[0] : null);
             }
             // but the last player may still move while the round ends
             if (aliveSnakes.Count == 0)
