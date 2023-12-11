@@ -10,7 +10,7 @@ namespace ADK
     {
         // base stats
         public string Name { get; set; } = "Snake";
-        public Color Color { get; private set; } = new Color(1, 0, 0, 1);
+        public Color Color { get; set; } = new Color(1, 0, 0, 1);
         public float PxThickness { get; private set; } = 10f;
         public float MoveSpeed { get; private set; } = 100f;
         public float TurnRate {get; private set; } = 3f;

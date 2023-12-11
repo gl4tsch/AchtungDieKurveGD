@@ -9,6 +9,7 @@ namespace ADK.UI
     {
         [Export] LineEdit nameInput;
         [Export] Button colorButton;
+        [Export] PackedScene hueSliderPrefab;
         [Export] Button leftButton, rightButton, fireButton;
         [Export] OptionButton abilityDD;
         [Export] Button deleteButton;
@@ -165,8 +166,15 @@ namespace ADK.UI
 
         void OnColorButtonClicked()
         {
-            Snake.RandomizeColor();
-            UpdateNameInputField();
+            var hueSliderInstance = hueSliderPrefab.Instantiate<HueSlider>();
+            hueSliderInstance.SetHueNoNotify(Snake.Color.H);
+            Lobby.AddChild(hueSliderInstance);
+            hueSliderInstance.GlobalPosition = GetGlobalMousePosition() - hueSliderInstance.Size / 2;
+            hueSliderInstance.HueChanged += d => 
+            {
+                Snake.Color = Color.FromHsv((float)d, 1, 1);
+                UpdateNameInputField();
+            };
         }
 
         void OnLeftButtonClicked()

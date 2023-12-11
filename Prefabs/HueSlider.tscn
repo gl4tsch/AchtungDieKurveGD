@@ -1,0 +1,52 @@
+[gd_scene load_steps=7 format=3 uid="uid://cklvjsaicdo27"]
+
+[ext_resource type="Script" path="res://Scripts/UI Scripts/HueSlider.cs" id="1_3cs05"]
+[ext_resource type="Shader" path="res://HueGradient.gdshader" id="1_655iu"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_04upj"]
+shader = ExtResource("1_655iu")
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_f1032"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_hukwi"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_8kqvf"]
+
+[node name="Hue Slider" type="Control" node_paths=PackedStringArray("slider", "bgButton")]
+layout_mode = 3
+anchors_preset = 0
+offset_right = 132.0
+offset_bottom = 30.0
+script = ExtResource("1_3cs05")
+slider = NodePath("HSlider")
+bgButton = NodePath("BG Button")
+
+[node name="BG Button" type="Button" parent="."]
+layout_mode = 0
+offset_left = -5000.0
+offset_top = -5000.0
+offset_right = 5000.0
+offset_bottom = 5000.0
+pivot_offset = Vector2(5000, 5000)
+flat = true
+
+[node name="Panel" type="Panel" parent="."]
+material = SubResource("ShaderMaterial_04upj")
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="HSlider" type="HSlider" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/center_grabber = 1
+theme_override_styles/slider = SubResource("StyleBoxEmpty_f1032")
+theme_override_styles/grabber_area = SubResource("StyleBoxEmpty_hukwi")
+theme_override_styles/grabber_area_highlight = SubResource("StyleBoxEmpty_8kqvf")
