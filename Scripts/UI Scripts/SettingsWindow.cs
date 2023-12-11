@@ -9,6 +9,8 @@ namespace ADK.UI
     {
         [Export] Button confirmButton, cancelButton, wipeButton;
 
+        [Export] OptionButton vSyncDD, fpsLimitDD;
+
         [Export] Slider masterVolumeSlider;
         [Export] Slider musicVolumeSlider;
         [Export] Slider soundVolumeSlider;
@@ -18,10 +20,30 @@ namespace ADK.UI
 
         // local copies
         Settings localSettings;
+        GraphicsSettings localGraphicsSettings => localSettings.GraphicsSettings;
         SettingsSection localAudioSettings => localSettings.AudioSettings;
         SettingsSection localArenaSettings => localSettings.ArenaSettings;
         SettingsSection localSnakeSettings => localSettings.SnakeSettings;
         SettingsSection localAbilitySettings => localSettings.AbilitySettings;
+
+        List<(string name, DisplayServer.VSyncMode mode)> vSyncOptions = new()
+        {
+            ("Disabled", DisplayServer.VSyncMode.Disabled),
+            ("Enabled", DisplayServer.VSyncMode.Enabled),
+            ("Adaptive", DisplayServer.VSyncMode.Adaptive),
+            ("Mailbox", DisplayServer.VSyncMode.Mailbox)
+        };
+
+        List<(string name, int limit)> fpsLimitOptions = new()
+        {
+            ("Unlimited", 0),
+            ("30", 30),
+            ("60", 60),
+            ("75", 75),
+            ("120", 120),
+            ("144", 144),
+            ("240", 240)
+        };
 
         public override void _Ready()
         {
@@ -32,6 +54,8 @@ namespace ADK.UI
             confirmButton.Pressed += OnConfirmButtonClicked;
             cancelButton.Pressed += OnCancelButtonClicked;
             wipeButton.Pressed += OnWipeButtonClicked;
+
+            InitGraphicsSettings();
 
             masterVolumeSlider.SetValueNoSignal(AudioManager.Instance.MasterVolume);
             masterVolumeSlider.ValueChanged += OnMasterVolumeInput;
@@ -45,6 +69,27 @@ namespace ADK.UI
             SpawnSettings(localAbilitySettings, abilitySettingsContainer);
         }
 
+        void InitGraphicsSettings()
+        {
+            // VSync
+            vSyncDD.Clear();
+            foreach (var option in vSyncOptions)
+            {
+                vSyncDD.AddItem(option.name);
+            }
+            vSyncDD.Select(vSyncOptions.FindIndex(o => o.mode == localGraphicsSettings.VSyncSetting));
+            vSyncDD.ItemSelected += OnVSyncOptionSelected;
+
+            // fps limit
+            fpsLimitDD.Clear();
+            foreach (var item in fpsLimitOptions)
+            {
+                fpsLimitDD.AddItem(item.name);
+            }
+            fpsLimitDD.Select(fpsLimitOptions.FindIndex(o => o.limit == localGraphicsSettings.FPSLimitSetting));
+            fpsLimitDD.ItemSelected += OnFpsLimitSelected;
+        }
+
         void SpawnSettings(SettingsSection section, Control container)
         {
             foreach (var setting in section.Settings)
@@ -54,7 +99,7 @@ namespace ADK.UI
                 settingField.ValueChanged += v => section.Settings[setting.Key] = v;
             }
         }
-
+        
         void OnConfirmButtonClicked()
         {
             // save settings
@@ -75,6 +120,22 @@ namespace ADK.UI
             // clear settings file
             GameManager.Instance.Settings.WipeSettings();
             QueueFree();
+        }
+
+        void OnVSyncOptionSelected(long value)
+        {
+            var mode = vSyncOptions[(int)value].mode;
+            localGraphicsSettings.VSyncSetting = mode;
+            // apply temporarily
+            DisplayServer.WindowSetVsyncMode(mode);
+        }
+
+        void OnFpsLimitSelected(long value)
+        {
+            int limit = fpsLimitOptions[(int)value].limit;
+            localGraphicsSettings.FPSLimitSetting = limit;
+            // apply temporarily
+            Engine.MaxFps = limit;
         }
 
         void OnMasterVolumeInput(double value)

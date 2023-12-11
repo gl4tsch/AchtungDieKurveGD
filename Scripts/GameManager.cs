@@ -56,10 +56,17 @@ namespace ADK
         public void ApplySettings(Settings settings)
         {
             Settings = settings;
+            ApplyGraphicsSettings();
             ApplyAudioSettings();
             ApplyArenaSettings();
             ApplySnakeSettings();
             ApplyAbilitySettings();
+        }
+
+        public void ApplyGraphicsSettings()
+        {
+            DisplayServer.WindowSetVsyncMode(Settings.GraphicsSettings.VSyncSetting);
+            Engine.MaxFps = Settings.GraphicsSettings.FPSLimitSetting;
         }
 
         public void ApplyAudioSettings()

@@ -18,6 +18,7 @@ namespace ADK
         public string SnakeSectionName => "Snake";
         public string AbilitySectionName => "Abilities";
 
+        public GraphicsSettings GraphicsSettings { get; private set; }
         public SettingsSection AudioSettings { get; private set; }
         public SettingsSection ArenaSettings { get; private set; }
         public SettingsSection SnakeSettings { get; private set; }
@@ -30,6 +31,9 @@ namespace ADK
         {
             var error = config.Load(settingsFilePathRelative);
             GD.Print($"Settings File Loading: {error}");
+
+            GraphicsSettings = new();
+            GraphicsSettings.LoadFromConfig(config);
             AudioSettings = new(AudioSectionName, AudioManager.DefaultSettings);
             AudioSettings.LoadFromConfig(config);
             ArenaSettings = new(ArenaSectionName, Arena.DefaultSettings);
@@ -45,10 +49,12 @@ namespace ADK
         /// </summary>
         public void SaveSettings()
         {
+            GraphicsSettings.SaveToConfig(config);
             AudioSettings.SaveToConfig(config);
             ArenaSettings.SaveToConfig(config);
             SnakeSettings.SaveToConfig(config);
             AbilitySettings.SaveToConfig(config);
+
             // save to file
             var error = config.Save(settingsFilePathRelative);
             GD.Print($"Settings File Saving: {error}");
@@ -120,6 +126,37 @@ namespace ADK
             {
                 config.SetValue(ConfigSectionName, setting.Key, setting.Value);
             }
+        }
+    }
+
+    public class GraphicsSettings : SettingsSection
+    {
+        static string vSyncSettingName = "VSync";
+        static string fpsLimitSettingName = "FPSLimit";
+
+        static Dictionary<string, Variant> defaultSettings => new()
+        {
+            {vSyncSettingName, (int)DisplayServer.VSyncMode.Disabled},
+            {fpsLimitSettingName, 0} // 0 = unlimited
+        };
+
+        public GraphicsSettings() : base("Graphics", defaultSettings)
+        {
+        }
+
+        public DisplayServer.VSyncMode VSyncSetting
+        {
+            get => (DisplayServer.VSyncMode)(int)Settings[vSyncSettingName];
+            set => Settings[vSyncSettingName] = (int)value;
+        }
+        
+        /// <summary>
+        /// 0 = unlimited
+        /// </summary>
+        public int FPSLimitSetting
+        {
+            get => (int)Settings[fpsLimitSettingName];
+            set => Settings[fpsLimitSettingName] = value;
         }
     }
 }
