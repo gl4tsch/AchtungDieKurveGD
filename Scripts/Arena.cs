@@ -97,6 +97,7 @@ namespace ADK
 
             // create arena textures
             arenaTexReadWrite = rd.TextureCreate(arenaTexReadWriteFormat, new RDTextureView(), new Array<byte[]>());
+            // the old texture should be cleaned up automatically if there are no more references to it
             Texture = new Texture2Drd();
             renderTex = Texture as Texture2Drd;
             renderTex.TextureRdRid = arenaTexReadWrite;
