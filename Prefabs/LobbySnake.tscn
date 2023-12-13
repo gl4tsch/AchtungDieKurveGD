@@ -1,7 +1,7 @@
 [gd_scene load_steps=3 format=3 uid="uid://ca7fqescjyftk"]
 
 [ext_resource type="Script" path="res://Scripts/UI Scripts/LobbySnake.cs" id="1_b56ky"]
-[ext_resource type="PackedScene" uid="uid://cklvjsaicdo27" path="res://Prefabs/HueSlider.tscn" id="2_fhwde"]
+[ext_resource type="PackedScene" uid="uid://oa6gvj4qgu06" path="res://Prefabs/ColorPickerPopup.tscn" id="2_5ga8a"]
 
 [node name="LobbySnake" type="HBoxContainer" node_paths=PackedStringArray("nameInput", "colorButton", "leftButton", "rightButton", "fireButton", "abilityDD", "deleteButton")]
 size_flags_vertical = 4
@@ -9,7 +9,7 @@ alignment = 1
 script = ExtResource("1_b56ky")
 nameInput = NodePath("Name")
 colorButton = NodePath("Color Button")
-hueSliderPrefab = ExtResource("2_fhwde")
+huePopupPrefab = ExtResource("2_5ga8a")
 leftButton = NodePath("Left Button")
 rightButton = NodePath("Right Button")
 fireButton = NodePath("Fire Button")

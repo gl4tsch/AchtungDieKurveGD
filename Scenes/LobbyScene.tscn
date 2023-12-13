@@ -1,8 +1,8 @@
 [gd_scene load_steps=4 format=3 uid="uid://m6uwqstddv83"]
 
-[ext_resource type="Script" path="res://Scripts/LobbyScene.cs" id="1_lyy22"]
-[ext_resource type="PackedScene" uid="uid://cheohotxldlmc" path="res://Prefabs/SnakeLobby.tscn" id="2_lldim"]
-[ext_resource type="PackedScene" uid="uid://dskpv0ggh8o4b" path="res://SettingsWindow.tscn" id="3_7ccn4"]
+[ext_resource type="Script" path="res://Scripts/Scene Scripts/LobbyScene.cs" id="1_cpc0c"]
+[ext_resource type="PackedScene" uid="uid://dskpv0ggh8o4b" path="res://Scenes/SettingsWindow.tscn" id="2_wftw7"]
+[ext_resource type="PackedScene" uid="uid://cheohotxldlmc" path="res://Prefabs/SnakeLobby.tscn" id="3_xrims"]
 
 [node name="LobbyScene" type="Control" node_paths=PackedStringArray("startButton", "settingsButton", "snakeLobby")]
 layout_mode = 3
@@ -11,11 +11,11 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-script = ExtResource("1_lyy22")
+script = ExtResource("1_cpc0c")
 startButton = NodePath("Start Button")
 settingsButton = NodePath("Settings Button")
 snakeLobby = NodePath("SnakeLobby")
-settingsWindowPrefab = ExtResource("3_7ccn4")
+settingsWindowPrefab = ExtResource("2_wftw7")
 
 [node name="BG" type="ColorRect" parent="."]
 layout_mode = 1
@@ -54,7 +54,7 @@ grow_horizontal = 0
 text = "Settings"
 icon_alignment = 1
 
-[node name="SnakeLobby" parent="." instance=ExtResource("2_lldim")]
+[node name="SnakeLobby" parent="." instance=ExtResource("3_xrims")]
 layout_mode = 1
 anchors_preset = -1
 offset_top = 100.0

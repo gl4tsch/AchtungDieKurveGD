@@ -9,7 +9,7 @@ namespace ADK.UI
     {
         [Export] LineEdit nameInput;
         [Export] Button colorButton;
-        [Export] PackedScene hueSliderPrefab;
+        [Export] PackedScene huePopupPrefab;
         [Export] Button leftButton, rightButton, fireButton;
         [Export] OptionButton abilityDD;
         [Export] Button deleteButton;
@@ -28,28 +28,7 @@ namespace ADK.UI
         static readonly List<Key> forbiddenControlKeys = new(){ Key.Escape };
 
         SettingsSection abilitySettings => GameManager.Instance.Settings.AbilitySettings;
-        static string noAbilityDisplayName = "None";
-        List<(string name, Func<Ability> creator)> abilityFactory;
-        // List<Ability> allAbilities = new()
-        // {
-        //     null,
-        //     new EraserAbility(),
-        //     new TBarAbility(),
-        //     new VBarAbility()
-        // };
-
-        public LobbySnake()
-        {
-            abilityFactory = new()
-            {
-                (noAbilityDisplayName, () => null),
-                (EraserAbility.DisplayName, () => new EraserAbility(abilitySettings)),
-                (SpeedAbility.DisplayName, () => new SpeedAbility(abilitySettings)),
-                (TeleportAbility.DisplayName, () => new TeleportAbility(abilitySettings)),
-                (TBarAbility.DisplayName, () => new TBarAbility(abilitySettings)),
-                (VBarAbility.DisplayName, () => new VBarAbility(abilitySettings))
-            };
-        }
+        List<(string name, Func<Ability> creator)> abilityFactory => GameManager.Instance.AbilityFactory;
 
         public LobbySnake Init(Snake snake)
         {
@@ -154,7 +133,7 @@ namespace ADK.UI
 
         void UpdateDDValue()
         {
-            var idx = abilityFactory.FindIndex(a => a.name == (Snake.Ability?.Name ?? noAbilityDisplayName));
+            var idx = abilityFactory.FindIndex(a => a.name == (Snake.Ability?.Name ?? Ability.NoAbilityDisplayName));
             //int idx = allAbilities.FindIndex(a => a?.Name == Snake.Ability?.Name);
             abilityDD.Select(idx);
         }
@@ -166,11 +145,12 @@ namespace ADK.UI
 
         void OnColorButtonClicked()
         {
-            var hueSliderInstance = hueSliderPrefab.Instantiate<HueSlider>();
-            hueSliderInstance.SetHueNoNotify(Snake.Color.H);
-            Lobby.AddChild(hueSliderInstance);
-            hueSliderInstance.GlobalPosition = GetGlobalMousePosition() - hueSliderInstance.Size / 2;
-            hueSliderInstance.HueChanged += d => 
+            var colorPicker = huePopupPrefab.Instantiate<ColorPickerPopup>();
+            var hueSlider = colorPicker.HueSlider;
+            hueSlider.SetHueNoNotify(Snake.Color.H);
+            Lobby.AddChild(colorPicker);
+            colorPicker.GlobalPosition = GetGlobalMousePosition() - colorPicker.Size / 2;
+            hueSlider.HueChanged += d => 
             {
                 Snake.Color = Color.FromHsv((float)d, 1, 1);
                 UpdateNameInputField();

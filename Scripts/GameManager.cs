@@ -13,19 +13,38 @@ namespace ADK
         public LobbyScene ActiveLobbyScene => CurrentScene as LobbyScene;
         public ArenaScene ActiveArenaScene => CurrentScene as ArenaScene;
 
-        string lobbyScenePath = "res://LobbyScene.tscn";
-        string arenaScenePath = "res://ArenaScene.tscn";
+        [Export] PackedScene mainScene;
+        [Export] PackedScene lobbyScene;
+        [Export] PackedScene netLobbyScene;
+        [Export] PackedScene arenaScene;
 
         public Settings Settings { get; private set; }
+        /// <summary>
+        /// this is used as a centralized mapping from index to ability
+        /// </summary>
+        public List<(string name, Func<Ability> creator)> AbilityFactory;
         public List<Snake> Snakes = new();
 
         public GameManager()
         {
             Instance = this;
+
             // load settings
             Settings = new();
             Settings.LoadSettings();
             ApplySettings(Settings);
+
+            // create ability factory
+            AbilityFactory = new()
+            {
+                (Ability.NoAbilityDisplayName, () => null),
+                (EraserAbility.DisplayName, () => new EraserAbility(Settings.AbilitySettings)),
+                (SpeedAbility.DisplayName, () => new SpeedAbility(Settings.AbilitySettings)),
+                (TeleportAbility.DisplayName, () => new TeleportAbility(Settings.AbilitySettings)),
+                (TBarAbility.DisplayName, () => new TBarAbility(Settings.AbilitySettings)),
+                (VBarAbility.DisplayName, () => new VBarAbility(Settings.AbilitySettings))
+            };
+
             // init default snakes
             CreateNewSnake();
             CreateNewSnake();
@@ -100,18 +119,17 @@ namespace ADK
             switch (scene)
             {
                 case GameScene.Lobby:
-                    CallDeferred(MethodName.DeferredGoToScene, lobbyScenePath);
+                    CallDeferred(MethodName.DeferredGoToScene, lobbyScene);
                     break;
                 case GameScene.Arena:
-                    CallDeferred(MethodName.DeferredGoToScene, arenaScenePath);
+                    CallDeferred(MethodName.DeferredGoToScene, arenaScene);
                     break;
             }
         }
 
-        void DeferredGoToScene(string path)
+        void DeferredGoToScene(PackedScene scene)
         {
             CurrentScene?.Free();
-            var scene = GD.Load<PackedScene>(path);
             CurrentScene = scene?.Instantiate();
 
             if (CurrentScene != null)

@@ -20,6 +20,7 @@ namespace ADK
         }
         public Action<int> UsesChanged;
 
+        public static string NoAbilityDisplayName = "None";
         public static Dictionary<string, Variant> AllDefaultAbilitySettings
         {
             get

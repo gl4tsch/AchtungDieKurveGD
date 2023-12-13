@@ -7,7 +7,6 @@ namespace ADK.UI
     public partial class HueSlider : Control
     {
         [Export] Slider slider;
-        [Export] Button bgButton;
 
         public event Action<double> HueChanged;
 
@@ -15,7 +14,6 @@ namespace ADK.UI
         {
             base._Ready();
             slider.ValueChanged += OnSliderValueChanged;
-            bgButton.Pressed += Close;
         }
 
         /// <param name="hue">[0,1]</param>
@@ -32,11 +30,6 @@ namespace ADK.UI
         void OnSliderValueChanged(double value)
         {
             HueChanged?.Invoke(((float)value).Map((float)slider.MinValue, (float)slider.MaxValue, 0, 1));
-        }
-
-        void Close()
-        {
-            QueueFree();
         }
     }
 }

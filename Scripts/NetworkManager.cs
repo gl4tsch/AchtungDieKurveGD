@@ -12,8 +12,8 @@ namespace ADK.Net
         [Export] string defaultServerIP = "localhost";
         [Export] int maxConnections = 99;
 
-        public event Action<(int id, PlayerInfo info)> PlayerConnected;
-        public event Action<int> PlayerDisconnected;
+        public event Action<(long id, PlayerInfo info)> PlayerConnected;
+        public event Action<long> PlayerDisconnected;
         public event Action ServerDisconnected;
 
         PlayerInfo localPlayerInfo;
@@ -22,6 +22,7 @@ namespace ADK.Net
         public NetworkManager()
         {
             Instance = this;
+            localPlayerInfo = new();
         }
 
         public override void _Ready()
@@ -76,17 +77,18 @@ namespace ADK.Net
         private void OnPeerConnected(long id)
         {
             GD.Print($"Player Connected: {id}");
-            Rpc(nameof(RegisterPlayer), localPlayerInfo.Name, localPlayerInfo.Color);
+            Rpc(nameof(RegisterPlayer), localPlayerInfo.Name, localPlayerInfo.Color, localPlayerInfo.Ability);
         }
 
         [Rpc(MultiplayerApi.RpcMode.AnyPeer, TransferMode = MultiplayerPeer.TransferModeEnum.Reliable)]
-        void RegisterPlayer(string name, Color color)
+        void RegisterPlayer(string name, Color color, int ability)
         {
-            int id = Multiplayer.GetRemoteSenderId();
+            long id = Multiplayer.GetRemoteSenderId();
             PlayerInfo newPlayer = new()
             {
                 Name = name,
-                Color = color
+                Color = color,
+                Ability = ability
             };
             players[id] = newPlayer;
             PlayerConnected?.Invoke((id, newPlayer));
@@ -99,6 +101,8 @@ namespace ADK.Net
         private void OnPeerDisconnected(long id)
         {
             GD.Print($"Player Disconnected: {id}");
+            players.Remove(id);
+            PlayerDisconnected?.Invoke(id);
         }
 
         /// <summary>
@@ -107,6 +111,9 @@ namespace ADK.Net
         private void OnConnectedToServer()
         {
             GD.Print("Connected to Server");
+            var myId = Multiplayer.GetUniqueId();
+            players[myId] = localPlayerInfo;
+            PlayerConnected?.Invoke((myId, localPlayerInfo));
         }
 
         /// <summary>
@@ -115,6 +122,7 @@ namespace ADK.Net
         private void OnConnectionFailed()
         {
             GD.Print("Connection Failed");
+            Multiplayer.MultiplayerPeer = null;
         }
 
         /// <summary>
@@ -122,6 +130,9 @@ namespace ADK.Net
         /// </summary>
         private void OnServerDisconnected()
         {
+            Multiplayer.MultiplayerPeer = null;
+            players.Clear();
+            ServerDisconnected?.Invoke();
         }
     }
 }

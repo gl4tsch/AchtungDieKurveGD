@@ -1,0 +1,23 @@
+[gd_scene load_steps=3 format=3 uid="uid://oa6gvj4qgu06"]
+
+[ext_resource type="Script" path="res://Scripts/UI Scripts/ColorPickerPopup.cs" id="1_igm05"]
+[ext_resource type="PackedScene" uid="uid://cklvjsaicdo27" path="res://Prefabs/HueSlider.tscn" id="1_kph7d"]
+
+[node name="Color Picker PopUp" type="Control" node_paths=PackedStringArray("HueSlider", "bgButton")]
+layout_mode = 3
+anchors_preset = 0
+offset_right = 132.0
+offset_bottom = 30.0
+script = ExtResource("1_igm05")
+HueSlider = NodePath("Hue Slider")
+bgButton = NodePath("BG Button")
+
+[node name="BG Button" type="Button" parent="."]
+layout_mode = 0
+offset_left = -5000.0
+offset_top = -5000.0
+offset_right = 5000.0
+offset_bottom = 5000.0
+flat = true
+
+[node name="Hue Slider" parent="." instance=ExtResource("1_kph7d")]
