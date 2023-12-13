@@ -1,6 +1,7 @@
 using Godot;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace ADK.Net
 {
@@ -12,12 +13,15 @@ namespace ADK.Net
         [Export] string defaultServerIP = "localhost";
         [Export] int maxConnections = 99;
 
+        public long OwnId = -1;
+
         public event Action<(long id, PlayerInfo info)> PlayerConnected;
+        public event Action<(long id, PlayerInfo info)> PlayerInfoChanged;
         public event Action<long> PlayerDisconnected;
         public event Action ServerDisconnected;
 
         PlayerInfo localPlayerInfo;
-        Dictionary<long, PlayerInfo> players;
+        Dictionary<long, PlayerInfo> players = new();
 
         public NetworkManager()
         {
@@ -66,58 +70,44 @@ namespace ADK.Net
                 return;
             }
             Multiplayer.MultiplayerPeer = peer;
-            GD.Print("Join Success");
+            GD.Print("Joining...");
         }
 
         /// <summary>
-        /// runs on all peers.
-        /// when a peer connects, send them my player info.
+        /// gets called on all peers
         /// </summary>
         /// <param name="id">connected player</param>
         private void OnPeerConnected(long id)
         {
-            GD.Print($"Player Connected: {id}");
-            Rpc(nameof(RegisterPlayer), localPlayerInfo.Name, localPlayerInfo.Color, localPlayerInfo.Ability);
-        }
-
-        [Rpc(MultiplayerApi.RpcMode.AnyPeer, TransferMode = MultiplayerPeer.TransferModeEnum.Reliable)]
-        void RegisterPlayer(string name, Color color, int ability)
-        {
-            long id = Multiplayer.GetRemoteSenderId();
-            PlayerInfo newPlayer = new()
-            {
-                Name = name,
-                Color = color,
-                Ability = ability
-            };
-            players[id] = newPlayer;
-            PlayerConnected?.Invoke((id, newPlayer));
+            GD.Print($"Player Connected: {id}. Handled by server");
         }
 
         /// <summary>
-        /// runs on all peers
+        /// gets called on all peers
         /// </summary>
         /// <param name="id">disconnected player</param>
         private void OnPeerDisconnected(long id)
         {
-            GD.Print($"Player Disconnected: {id}");
+            GD.Print($"Player Disconnected: {id}.");
+
             players.Remove(id);
             PlayerDisconnected?.Invoke(id);
         }
 
         /// <summary>
-        /// runs on clients only
+        /// gets called on this client
         /// </summary>
         private void OnConnectedToServer()
         {
             GD.Print("Connected to Server");
+
             var myId = Multiplayer.GetUniqueId();
-            players[myId] = localPlayerInfo;
-            PlayerConnected?.Invoke((myId, localPlayerInfo));
+            // send my info to the server
+            RpcId(1, nameof(UpdatePlayerInfo), myId, localPlayerInfo.Name, localPlayerInfo.Color, localPlayerInfo.Ability);
         }
 
         /// <summary>
-        /// runs on clients only
+        /// gets called on this client
         /// </summary>
         private void OnConnectionFailed()
         {
@@ -126,13 +116,44 @@ namespace ADK.Net
         }
 
         /// <summary>
-        /// runs on clinets only
+        /// gets called on all clients
         /// </summary>
         private void OnServerDisconnected()
         {
             Multiplayer.MultiplayerPeer = null;
             players.Clear();
             ServerDisconnected?.Invoke();
+        }
+
+        [Rpc(MultiplayerApi.RpcMode.AnyPeer, TransferMode = MultiplayerPeer.TransferModeEnum.Reliable)]
+        void UpdatePlayerInfo(long id, string name, Color color, int ability)
+        {
+            PlayerInfo info = new()
+            {
+                Name = name,
+                Color = color,
+                Ability = ability
+            };
+
+            if (players.ContainsKey(id))
+            {
+                players[id] = info;
+                PlayerInfoChanged?.Invoke((id, info));
+            }
+            else
+            {
+                players.Add(id, info);
+                PlayerConnected?.Invoke((id, info));
+            }
+
+            // if i am the server, send info to all clients
+            if (Multiplayer.IsServer())
+            {
+                foreach (var player in players)
+                {
+                    Rpc(nameof(UpdatePlayerInfo), player.Key, player.Value.Name, player.Value.Color, player.Value.Ability);
+                }
+            }
         }
     }
 }

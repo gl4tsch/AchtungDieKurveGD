@@ -1,0 +1,151 @@
+[gd_scene load_steps=4 format=3 uid="uid://c1ntf8evbrjbr"]
+
+[ext_resource type="Script" path="res://Scripts/Scene Scripts/NetLobbyScene.cs" id="1_3b25f"]
+[ext_resource type="PackedScene" uid="uid://bae87207cf2dx" path="res://NetworkLobby.tscn" id="2_mryw8"]
+[ext_resource type="PackedScene" uid="uid://ca7fqescjyftk" path="res://Prefabs/LobbySnake.tscn" id="2_wudt5"]
+
+[node name="NetLobbyScene" type="Control" node_paths=PackedStringArray("hostButton", "joinButton", "preLobbyContent", "lobbyContent")]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_3b25f")
+hostButton = NodePath("Content/Bot/Pre-Lobby/Buttons/Host")
+joinButton = NodePath("Content/Bot/Pre-Lobby/Buttons/Join")
+preLobbyContent = NodePath("Content/Bot/Pre-Lobby")
+lobbyContent = NodePath("Content/Bot/Lobby")
+
+[node name="ColorRect" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0, 0, 0, 1)
+
+[node name="Header" type="Label" parent="."]
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+offset_top = 20.0
+offset_bottom = 57.0
+grow_horizontal = 2
+theme_type_variation = &"BigHeader"
+text = "Online Multiplayer"
+horizontal_alignment = 1
+
+[node name="Content" type="Control" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = 77.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Label" type="Label" parent="Content"]
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -20.0
+offset_right = 20.0
+offset_bottom = 29.0
+grow_horizontal = 2
+theme_type_variation = &"MediumHeader"
+text = "You:"
+
+[node name="LobbySnake" parent="Content" instance=ExtResource("2_wudt5")]
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -239.5
+offset_top = 36.0
+offset_right = 239.5
+offset_bottom = 67.0
+grow_horizontal = 2
+
+[node name="Bot" type="Control" parent="Content"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = 88.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Pre-Lobby" type="Control" parent="Content/Bot"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="Content/Bot/Pre-Lobby"]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Label" type="Label" parent="Content/Bot/Pre-Lobby/VBoxContainer"]
+layout_mode = 2
+text = "Your IP:"
+horizontal_alignment = 1
+
+[node name="Label2" type="Label" parent="Content/Bot/Pre-Lobby/VBoxContainer"]
+layout_mode = 2
+text = "localhost"
+horizontal_alignment = 1
+
+[node name="Buttons" type="HBoxContainer" parent="Content/Bot/Pre-Lobby"]
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -89.5
+offset_right = 89.5
+offset_bottom = 57.0
+grow_horizontal = 2
+alignment = 1
+
+[node name="Host" type="Button" parent="Content/Bot/Pre-Lobby/Buttons"]
+layout_mode = 2
+text = "Host Game"
+
+[node name="Join" type="Button" parent="Content/Bot/Pre-Lobby/Buttons"]
+layout_mode = 2
+text = "Join Game"
+
+[node name="Lobby" type="Control" parent="Content/Bot"]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Label2" type="Label" parent="Content/Bot/Lobby"]
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -59.0
+offset_top = 12.0
+offset_right = 57.0
+offset_bottom = 41.0
+grow_horizontal = 2
+theme_type_variation = &"MediumHeader"
+text = "The Others (and you):"
+
+[node name="NetworkLobby" parent="Content/Bot/Lobby" instance=ExtResource("2_mryw8")]
+layout_mode = 1
+offset_top = 57.0

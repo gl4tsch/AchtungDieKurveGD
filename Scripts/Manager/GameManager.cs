@@ -118,8 +118,14 @@ namespace ADK
         {
             switch (scene)
             {
+                case GameScene.Main:
+                    CallDeferred(MethodName.DeferredGoToScene, mainScene);
+                    break;
                 case GameScene.Lobby:
                     CallDeferred(MethodName.DeferredGoToScene, lobbyScene);
+                    break;
+                case GameScene.NetLobby:
+                    CallDeferred(MethodName.DeferredGoToScene, netLobbyScene);
                     break;
                 case GameScene.Arena:
                     CallDeferred(MethodName.DeferredGoToScene, arenaScene);
@@ -143,7 +149,9 @@ namespace ADK
 
     public enum GameScene
     {
+        Main,
         Lobby,
+        NetLobby,
         Arena
     }
 }

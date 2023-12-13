@@ -1,10 +1,15 @@
-[gd_scene load_steps=2 format=3 uid="uid://bxvae3exce6n6"]
+[gd_scene load_steps=3 format=3 uid="uid://bxvae3exce6n6"]
+
+[ext_resource type="Script" path="res://Scripts/UI Scripts/NetworkLobbySnake.cs" id="1_mromy"]
 
 [sub_resource type="ImageTexture" id="ImageTexture_b6u3n"]
 
-[node name="NetworkLobbySnake" type="HBoxContainer"]
+[node name="NetworkLobbySnake" type="HBoxContainer" node_paths=PackedStringArray("nameLabel", "abilityDD")]
 size_flags_vertical = 4
 alignment = 1
+script = ExtResource("1_mromy")
+nameLabel = NodePath("Name")
+abilityDD = NodePath("Ability")
 
 [node name="Name" type="Label" parent="."]
 layout_mode = 2

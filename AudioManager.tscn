@@ -1,6 +1,6 @@
 [gd_scene load_steps=11 format=3 uid="uid://bckwucveog1oc"]
 
-[ext_resource type="Script" path="res://Scripts/AudioManager.cs" id="1_t2pds"]
+[ext_resource type="Script" path="res://Scripts/Manager/AudioManager.cs" id="1_t2pds"]
 [ext_resource type="AudioStream" uid="uid://chvh2hrqwspb3" path="res://Audio/Chill Buster (From 'Deltarune') ~ Lofi Hip Hop Remix.mp3" id="2_oi8ib"]
 [ext_resource type="AudioStream" uid="uid://ysctqsw868ys" path="res://Audio/Super Mario World - Koopa Castle (OC remix).mp3" id="3_m05du"]
 [ext_resource type="AudioStream" uid="uid://b8djkct8bj523" path="res://Audio/JoelChipTunes.mp3" id="3_oi0mh"]

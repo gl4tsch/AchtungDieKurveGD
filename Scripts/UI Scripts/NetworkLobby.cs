@@ -2,14 +2,12 @@ using ADK.Net;
 using Godot;
 using System;
 using System.Collections.Generic;
+using System.Data.Common;
 
 namespace ADK.UI
 {
     public partial class NetworkLobby : Control
     {
-        [Export] LineEdit playerNameInput;
-        [Export] HueSlider colorPicker;
-        [Export] Button hostButton, joinButton;
         [Export] Control netSnakeContainer;
         [Export] PackedScene netSnakePrefab;
 

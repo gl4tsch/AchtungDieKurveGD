@@ -1,6 +1,14 @@
-[gd_scene load_steps=2 format=3 uid="uid://bo6qj1od1nhna"]
+[gd_scene load_steps=6 format=3 uid="uid://bo6qj1od1nhna"]
 
-[ext_resource type="Script" path="res://Scripts/GameManager.cs" id="1_gsdh7"]
+[ext_resource type="Script" path="res://Scripts/Manager/GameManager.cs" id="1_gsdh7"]
+[ext_resource type="PackedScene" uid="uid://debe6xwo3cqkc" path="res://Scenes/MainMenuScene.tscn" id="2_ai0al"]
+[ext_resource type="PackedScene" uid="uid://m6uwqstddv83" path="res://Scenes/LobbyScene.tscn" id="3_kgfyj"]
+[ext_resource type="PackedScene" uid="uid://c1ntf8evbrjbr" path="res://Scenes/NetLobbyScene.tscn" id="4_gofdn"]
+[ext_resource type="PackedScene" uid="uid://cui1you3xjgtb" path="res://Scenes/ArenaScene.tscn" id="5_21mcf"]
 
 [node name="GameManager" type="Node"]
 script = ExtResource("1_gsdh7")
+mainScene = ExtResource("2_ai0al")
+lobbyScene = ExtResource("3_kgfyj")
+netLobbyScene = ExtResource("4_gofdn")
+arenaScene = ExtResource("5_21mcf")

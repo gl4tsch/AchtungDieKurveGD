@@ -2,19 +2,22 @@ using ADK.UI;
 using Godot;
 using System;
 
-public partial class ColorPickerPopup : Control
+namespace ADK.UI
 {
-    [Export] public HueSlider HueSlider { get; private set; }
-    [Export] Button bgButton;
-
-    public override void _Ready()
+    public partial class ColorPickerPopup : Control
     {
-        base._Ready();
-        bgButton.Pressed += OnBgButtonClicked;
-    }
+        [Export] public HueSlider HueSlider { get; private set; }
+        [Export] Button bgButton;
 
-    private void OnBgButtonClicked()
-    {
-        QueueFree();
+        public override void _Ready()
+        {
+            base._Ready();
+            bgButton.Pressed += OnBgButtonClicked;
+        }
+
+        private void OnBgButtonClicked()
+        {
+            QueueFree();
+        }
     }
 }
