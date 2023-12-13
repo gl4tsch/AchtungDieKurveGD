@@ -17,6 +17,7 @@ namespace ADK.UI
         {
             base._Ready();
             NetworkManager.Instance.PlayerConnected += OnPlayerConnected;
+            NetworkManager.Instance.PlayerInfoChanged += OnPlayerInfoChanged;
             NetworkManager.Instance.PlayerDisconnected += OnPlayerDisconnected;
             NetworkManager.Instance.ServerDisconnected += OnServerDisconnected;
         }
@@ -26,6 +27,14 @@ namespace ADK.UI
             var netSnake = netSnakePrefab.Instantiate<NetworkLobbySnake>().Init(player.info);
             netSnakeContainer.AddChild(netSnake);
             netSnakeInstances.Add(player.id, netSnake);
+        }
+
+        void OnPlayerInfoChanged((long id, PlayerInfo info) player)
+        {
+            if (netSnakeInstances.ContainsKey(player.id))
+            {
+                netSnakeInstances[player.id].Init(player.info);
+            }
         }
 
         void OnPlayerDisconnected(long id)

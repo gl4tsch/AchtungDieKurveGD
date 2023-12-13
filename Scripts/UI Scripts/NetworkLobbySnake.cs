@@ -16,6 +16,8 @@ namespace ADK.UI
             this.playerInfo = playerInfo;
 
             nameLabel.Text = playerInfo.Name;
+            nameLabel.AddThemeColorOverride("font_color", playerInfo.Color);
+            
             abilityDD.Clear();
             foreach (var ability in GameManager.Instance.AbilityFactory)
             {

@@ -15,7 +15,7 @@ namespace ADK.UI
         [Export] Button deleteButton;
 
         public SnakeLobby Lobby;
-        public Snake Snake{ get; private set; }
+        public Snake Snake{ get; private set; } = new();
 
         enum RebindKey
         {
@@ -33,17 +33,14 @@ namespace ADK.UI
         public LobbySnake Init(Snake snake)
         {
             this.Snake = snake;
+            UpdateNameInputField();
+            UpdateDDValue();
             return this;
         }
 
         public override void _Ready()
         {
             base._Ready();
-
-            if (Snake == null)
-            {
-                Init(new Snake());
-            }
 
             UpdateNameInputField();
             nameInput.TextChanged += OnSnakeNameInput;

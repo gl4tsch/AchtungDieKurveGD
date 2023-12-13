@@ -69,6 +69,13 @@ namespace ADK
             Name = name;
         }
 
+        public Snake(string name, Color color, Ability ability)
+        {
+            Name = name;
+            Color = color;
+            Ability = ability;
+        }
+
         public Snake(string name, SettingsSection settings) : this(name)
         {
             ApplySettings(settings);

@@ -114,6 +114,16 @@ namespace ADK
             }
         }
 
+        public Ability CreateAbility(int idx)
+        {
+            return AbilityFactory[idx].creator();
+        }
+
+        public int GetAbilityIndex(Ability ability)
+        {
+            return ability == null ? 0 : AbilityFactory.FindIndex(a => a.name == ability.Name);
+        }
+
         public void GoToScene(GameScene scene)
         {
             switch (scene)

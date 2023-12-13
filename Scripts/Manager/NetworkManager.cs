@@ -13,20 +13,29 @@ namespace ADK.Net
         [Export] string defaultServerIP = "localhost";
         [Export] int maxConnections = 99;
 
-        public long OwnId = -1;
-
         public event Action<(long id, PlayerInfo info)> PlayerConnected;
         public event Action<(long id, PlayerInfo info)> PlayerInfoChanged;
         public event Action<long> PlayerDisconnected;
         public event Action ServerDisconnected;
 
         PlayerInfo localPlayerInfo;
+        public PlayerInfo LocalPlayerInfo
+        {
+            get => localPlayerInfo;
+            set
+            {
+                localPlayerInfo = value;
+                SendPlayerInfoUpdate();
+            }
+        }
         Dictionary<long, PlayerInfo> players = new();
 
         public NetworkManager()
         {
             Instance = this;
             localPlayerInfo = new();
+            var rng = new RandomNumberGenerator();
+            localPlayerInfo.Color = Color.FromHsv(rng.Randf(), 1, 1);
         }
 
         public override void _Ready()
@@ -52,8 +61,8 @@ namespace ADK.Net
 
             // connect to own game
             Multiplayer.MultiplayerPeer = peer;
-            players.Add(1, localPlayerInfo);
-            PlayerConnected?.Invoke((1, localPlayerInfo));
+            players.Add(1, LocalPlayerInfo);
+            PlayerConnected?.Invoke((1, LocalPlayerInfo));
         }
 
         public void JoinGame(string hostIP = null)
@@ -100,10 +109,7 @@ namespace ADK.Net
         private void OnConnectedToServer()
         {
             GD.Print("Connected to Server");
-
-            var myId = Multiplayer.GetUniqueId();
-            // send my info to the server
-            RpcId(1, nameof(UpdatePlayerInfo), myId, localPlayerInfo.Name, localPlayerInfo.Color, localPlayerInfo.Ability);
+            SendPlayerInfoUpdate();
         }
 
         /// <summary>
@@ -123,6 +129,20 @@ namespace ADK.Net
             Multiplayer.MultiplayerPeer = null;
             players.Clear();
             ServerDisconnected?.Invoke();
+        }
+
+        void SendPlayerInfoUpdate()
+        {
+            // send my info to the server
+            var myId = Multiplayer.GetUniqueId();
+            if (Multiplayer.IsServer())
+            {
+                UpdatePlayerInfo(myId, LocalPlayerInfo.Name, localPlayerInfo.Color, localPlayerInfo.Ability);
+            }
+            else
+            {
+                RpcId(1, nameof(UpdatePlayerInfo), myId, LocalPlayerInfo.Name, LocalPlayerInfo.Color, LocalPlayerInfo.Ability);
+            }
         }
 
         [Rpc(MultiplayerApi.RpcMode.AnyPeer, TransferMode = MultiplayerPeer.TransferModeEnum.Reliable)]
