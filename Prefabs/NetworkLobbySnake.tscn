@@ -1,15 +1,13 @@
-[gd_scene load_steps=3 format=3 uid="uid://bxvae3exce6n6"]
+[gd_scene load_steps=2 format=3 uid="uid://bxvae3exce6n6"]
 
 [ext_resource type="Script" path="res://Scripts/UI Scripts/NetworkLobbySnake.cs" id="1_mromy"]
 
-[sub_resource type="ImageTexture" id="ImageTexture_b6u3n"]
-
-[node name="NetworkLobbySnake" type="HBoxContainer" node_paths=PackedStringArray("nameLabel", "abilityDD")]
+[node name="NetworkLobbySnake" type="HBoxContainer" node_paths=PackedStringArray("nameLabel", "ability")]
 size_flags_vertical = 4
 alignment = 1
 script = ExtResource("1_mromy")
 nameLabel = NodePath("Name")
-abilityDD = NodePath("Ability")
+ability = NodePath("Ability")
 
 [node name="Name" type="Label" parent="."]
 layout_mode = 2
@@ -18,19 +16,11 @@ text = "Snake 1"
 [node name="VSeparator" type="VSeparator" parent="."]
 layout_mode = 2
 
-[node name="Label4" type="Label" parent="."]
+[node name="Ability Label" type="Label" parent="."]
 layout_mode = 2
 text = "Ability:"
 vertical_alignment = 1
 
-[node name="Ability" type="OptionButton" parent="."]
+[node name="Ability" type="Label" parent="."]
 layout_mode = 2
-focus_mode = 0
-theme_override_icons/arrow = SubResource("ImageTexture_b6u3n")
-button_mask = 0
-item_count = 2
-selected = 0
-popup/item_0/text = "blub"
-popup/item_0/id = 0
-popup/item_1/text = "bla"
-popup/item_1/id = 1
+text = "blub"

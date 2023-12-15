@@ -7,12 +7,12 @@ namespace ADK.UI
     public partial class ColorPickerPopup : Control
     {
         [Export] public HueSlider HueSlider { get; private set; }
-        [Export] Button bgButton;
+        [Export] public Button BgButton {get; private set;}
 
         public override void _Ready()
         {
             base._Ready();
-            bgButton.Pressed += OnBgButtonClicked;
+            BgButton.Pressed += OnBgButtonClicked;
         }
 
         private void OnBgButtonClicked()

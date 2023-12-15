@@ -7,7 +7,7 @@ namespace ADK.UI
     public partial class NetworkLobbySnake : HBoxContainer
     {
         [Export] Label nameLabel;
-        [Export] OptionButton abilityDD; 
+        [Export] Label ability;
 
         PlayerInfo playerInfo;
 
@@ -18,12 +18,7 @@ namespace ADK.UI
             nameLabel.Text = playerInfo.Name;
             nameLabel.AddThemeColorOverride("font_color", playerInfo.Color);
             
-            abilityDD.Clear();
-            foreach (var ability in GameManager.Instance.AbilityFactory)
-            {
-                abilityDD.AddItem(ability.name);
-            }
-            abilityDD.Select(playerInfo.Ability);
+            ability.Text = GameManager.Instance.GetAbilityName(playerInfo.Ability);
 
             return this;
         }

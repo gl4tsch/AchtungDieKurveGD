@@ -8,11 +8,11 @@ namespace ADK.UI
     public partial class LobbySnake : HBoxContainer
     {
         [Export] LineEdit nameInput;
-        [Export] Button colorButton;
-        [Export] PackedScene huePopupPrefab;
+        [Export] HuePickerButton colorButton;
         [Export] Button leftButton, rightButton, fireButton;
         [Export] OptionButton abilityDD;
         [Export] Button deleteButton;
+        [Export] bool deleteButtonEnabled = true;
 
         public SnakeLobby Lobby;
         public Snake Snake{ get; private set; } = new();
@@ -45,7 +45,8 @@ namespace ADK.UI
             UpdateNameInputField();
             nameInput.TextChanged += OnSnakeNameInput;
 
-            colorButton.Pressed += OnColorButtonClicked;
+            colorButton.Pressed += () => colorButton.Hue = Snake.Color.H;
+            colorButton.HueChanged += OnColorPicked;
 
             UpdateControlButtonLabels();
             leftButton.Pressed += OnLeftButtonClicked;
@@ -63,6 +64,7 @@ namespace ADK.UI
             abilityDD.ItemSelected += OnAbilitySelected;
 
             deleteButton.Pressed += OnDeleteButtonClicked;
+            deleteButton.Visible = deleteButtonEnabled;
         }
 
         public override void _Input(InputEvent @event)
@@ -140,18 +142,10 @@ namespace ADK.UI
             Snake.Name = input;
         }
 
-        void OnColorButtonClicked()
+        void OnColorPicked(float hue)
         {
-            var colorPicker = huePopupPrefab.Instantiate<ColorPickerPopup>();
-            var hueSlider = colorPicker.HueSlider;
-            hueSlider.SetHueNoNotify(Snake.Color.H);
-            Lobby.AddChild(colorPicker);
-            colorPicker.GlobalPosition = GetGlobalMousePosition() - colorPicker.Size / 2;
-            hueSlider.HueChanged += d => 
-            {
-                Snake.Color = Color.FromHsv((float)d, 1, 1);
-                UpdateNameInputField();
-            };
+            Snake.Color = Color.FromHsv(hue, 1, 1);
+            UpdateNameInputField();
         }
 
         void OnLeftButtonClicked()
