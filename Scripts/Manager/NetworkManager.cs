@@ -1,6 +1,7 @@
 using Godot;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 
 namespace ADK.Net
@@ -48,24 +49,25 @@ namespace ADK.Net
             Multiplayer.ServerDisconnected += OnServerDisconnected;
         }
 
-        public void HostGame()
+        public bool HostGame()
         {
             ENetMultiplayerPeer peer = new();
+
             var error = peer.CreateServer(port, maxConnections);
             if (error != Error.Ok)
             {
-                GD.Print($"Error trying to host: {error}");
-                return;
+                GD.PrintErr($"Error trying to host: {error}");
+                return false;
             }
             GD.Print("Server ready");
 
             // connect to own game
             Multiplayer.MultiplayerPeer = peer;
-            players.Add(1, LocalPlayerInfo);
-            PlayerConnected?.Invoke((1, LocalPlayerInfo));
+            UpdatePlayerInfo(1, localPlayerInfo.Name, localPlayerInfo.Color, localPlayerInfo.Ability);
+            return true;
         }
 
-        public void JoinGame(string hostIP = null)
+        public bool JoinGame(string hostIP = null)
         {
             if (hostIP == null)
             {
@@ -75,11 +77,19 @@ namespace ADK.Net
             var error = peer.CreateClient(hostIP, port);
             if (error != Error.Ok)
             {
-                GD.Print($"Error trying to join host at {hostIP}: {error}");
-                return;
+                GD.PrintErr($"Error trying to join host at {hostIP}: {error}");
+                return false;
             }
             Multiplayer.MultiplayerPeer = peer;
             GD.Print("Joining...");
+            return true;
+        }
+
+        public void Disconnect()
+        {
+            players.Clear();
+            Multiplayer.MultiplayerPeer?.Close();
+            Multiplayer.MultiplayerPeer = null;
         }
 
         /// <summary>

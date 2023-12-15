@@ -16,10 +16,32 @@ namespace ADK.UI
         public override void _Ready()
         {
             base._Ready();
+            
+            ClearNetSnakeInstances();
+
             NetworkManager.Instance.PlayerConnected += OnPlayerConnected;
             NetworkManager.Instance.PlayerInfoChanged += OnPlayerInfoChanged;
             NetworkManager.Instance.PlayerDisconnected += OnPlayerDisconnected;
             NetworkManager.Instance.ServerDisconnected += OnServerDisconnected;
+        }
+
+        public override void _ExitTree()
+        {
+            base._ExitTree();
+
+            NetworkManager.Instance.PlayerConnected -= OnPlayerConnected;
+            NetworkManager.Instance.PlayerInfoChanged -= OnPlayerInfoChanged;
+            NetworkManager.Instance.PlayerDisconnected -= OnPlayerDisconnected;
+            NetworkManager.Instance.ServerDisconnected -= OnServerDisconnected;
+        }
+
+        void ClearNetSnakeInstances()
+        {
+            foreach (var child in netSnakeContainer.GetChildren())
+            {
+                child.QueueFree();
+            }
+            netSnakeInstances.Clear();
         }
 
         void OnPlayerConnected((long id, PlayerInfo info) player)

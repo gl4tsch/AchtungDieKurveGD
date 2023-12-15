@@ -63,20 +63,25 @@ namespace ADK
 
         void OnHostButtonClicked()
         {
-            NetworkManager.Instance.HostGame();
-            preLobbyContent.Visible = false;
-            lobbyContent.Visible = true;   
+            if (NetworkManager.Instance.HostGame())
+            {
+                preLobbyContent.Visible = false;
+                lobbyContent.Visible = true;   
+            }
         }
 
         void OnJoinButtonClicked()
         {
-            NetworkManager.Instance.JoinGame();
-            preLobbyContent.Visible = false;
-            lobbyContent.Visible = true;
+            if (NetworkManager.Instance.JoinGame())
+            {
+                preLobbyContent.Visible = false;
+                lobbyContent.Visible = true;
+            }
         }
 
         void GoBack()
         {
+            NetworkManager.Instance.Disconnect();
             GameManager.Instance.GoToScene(GameScene.Main);
         }
     }
