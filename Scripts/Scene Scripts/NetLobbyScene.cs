@@ -8,9 +8,17 @@ namespace ADK
     {
         [Export] Button backButton;
         [Export] LobbySnake ownSnake;
-        [Export] Button hostButton, joinButton;
+        [Export] Button hostButton, joinButton, startButton, readyButton;
         [Export] NetworkLobby lobby;
-        [Export] Control preLobbyContent, lobbyContent;
+        [Export] Control lobbyContent;
+
+        enum NetLobbyState
+        {
+            Disconnected,
+            Host,
+            Client
+        }
+        NetLobbyState lobbyState = NetLobbyState.Disconnected;
 
         PlayerInfo ownPlayerInfo => NetworkManager.Instance.LocalPlayerInfo;
 
@@ -26,7 +34,11 @@ namespace ADK
 
             hostButton.Pressed += OnHostButtonClicked;
             joinButton.Pressed += OnJoinButtonClicked;
+            readyButton.Pressed += OnReadyButtonClicked;
+            startButton.Pressed += OnStartButtonClicked;
             backButton.Pressed += GoBack;
+
+            SetLobbyState(NetLobbyState.Disconnected);
         }
 
         public override void _Input(InputEvent @event)
@@ -61,12 +73,25 @@ namespace ADK
             }
         }
 
+        void SetLobbyState(NetLobbyState state)
+        {
+            lobbyState = state;
+
+            // buttons
+            hostButton.Visible = state == NetLobbyState.Disconnected;
+            joinButton.Visible = state == NetLobbyState.Disconnected;
+            startButton.Visible = state == NetLobbyState.Host;
+            readyButton.Visible = state != NetLobbyState.Disconnected;
+
+            // lobby
+            lobbyContent.Visible = state != NetLobbyState.Disconnected;
+        }
+
         void OnHostButtonClicked()
         {
             if (NetworkManager.Instance.HostGame())
             {
-                preLobbyContent.Visible = false;
-                lobbyContent.Visible = true;   
+                SetLobbyState(NetLobbyState.Host);
             }
         }
 
@@ -74,9 +99,18 @@ namespace ADK
         {
             if (NetworkManager.Instance.JoinGame())
             {
-                preLobbyContent.Visible = false;
-                lobbyContent.Visible = true;
+                SetLobbyState(NetLobbyState.Client);
             }
+        }
+
+        void OnReadyButtonClicked()
+        {
+
+        }
+
+        void OnStartButtonClicked()
+        {
+            NetworkManager.Instance.SendStartGame();
         }
 
         void GoBack()

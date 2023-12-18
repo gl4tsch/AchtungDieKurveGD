@@ -17,6 +17,7 @@ namespace ADK
         [Export] PackedScene lobbyScene;
         [Export] PackedScene netLobbyScene;
         [Export] PackedScene arenaScene;
+        [Export] PackedScene netArenaScene;
 
         public Settings Settings { get; private set; }
         /// <summary>
@@ -145,6 +146,9 @@ namespace ADK
                 case GameScene.Arena:
                     CallDeferred(MethodName.DeferredGoToScene, arenaScene);
                     break;
+                case GameScene.NetArena:
+                    CallDeferred(MethodName.DeferredGoToScene, netArenaScene);
+                    break;
             }
         }
 
@@ -167,6 +171,7 @@ namespace ADK
         Main,
         Lobby,
         NetLobby,
-        Arena
+        Arena,
+        NetArena
     }
 }

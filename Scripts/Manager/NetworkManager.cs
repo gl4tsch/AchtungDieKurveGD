@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Runtime.ConstrainedExecution;
 
 namespace ADK.Net
 {
@@ -18,6 +19,7 @@ namespace ADK.Net
         public event Action<(long id, PlayerInfo info)> PlayerInfoChanged;
         public event Action<long> PlayerDisconnected;
         public event Action ServerDisconnected;
+        public event Action AllReady;
 
         PlayerInfo localPlayerInfo;
         public PlayerInfo LocalPlayerInfo
@@ -30,6 +32,8 @@ namespace ADK.Net
             }
         }
         Dictionary<long, PlayerInfo> players = new();
+        List<long> readyPlayers = new();
+        bool isEveryoneReady => players.Keys.All(p => readyPlayers.Contains(p));
 
         public NetworkManager()
         {
@@ -184,6 +188,54 @@ namespace ADK.Net
                     Rpc(nameof(UpdatePlayerInfo), player.Key, player.Value.Name, player.Value.Color, player.Value.Ability);
                 }
             }
+        }
+
+        // only the server may start the game
+        public void SendStartGame()
+        {
+            if (Multiplayer.IsServer())
+            {
+                Rpc(nameof(StartGame));
+            }
+        }
+
+        [Rpc(MultiplayerApi.RpcMode.AnyPeer, CallLocal = true, TransferMode = MultiplayerPeer.TransferModeEnum.Reliable)]
+        void StartGame()
+        {
+            GameManager.Instance.GoToScene(GameScene.NetArena);
+        }
+
+        // tell the server i am ready
+        public void SendReady()
+        {
+            RpcId(1, nameof(SetReady));
+        }
+
+        [Rpc(MultiplayerApi.RpcMode.AnyPeer, CallLocal = true, TransferMode = MultiplayerPeer.TransferModeEnum.Reliable)]
+        void SetReady()
+        {
+            if (!Multiplayer.IsServer())
+            {
+                return;
+            }
+
+            long playerId = Multiplayer.GetRemoteSenderId();
+            if (!readyPlayers.Contains(playerId))
+            {
+                readyPlayers.Add(playerId);
+            }
+            if (isEveryoneReady)
+            {
+                Rpc(nameof(ReadyToRumble));
+                // clear the list for the next ready check
+                readyPlayers.Clear();
+            }
+        }
+
+        [Rpc(MultiplayerApi.RpcMode.AnyPeer, CallLocal = true, TransferMode = MultiplayerPeer.TransferModeEnum.Reliable)]
+        void ReadyToRumble()
+        {
+            AllReady?.Invoke();
         }
     }
 }

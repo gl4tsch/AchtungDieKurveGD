@@ -11,7 +11,7 @@ border_width_top = 2
 border_width_right = 2
 border_width_bottom = 2
 
-[node name="NetLobbyScene" type="Control" node_paths=PackedStringArray("backButton", "ownSnake", "hostButton", "joinButton", "preLobbyContent", "lobbyContent")]
+[node name="NetLobbyScene" type="Control" node_paths=PackedStringArray("backButton", "ownSnake", "hostButton", "joinButton", "startButton", "readyButton", "lobbyContent")]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -21,9 +21,10 @@ grow_vertical = 2
 script = ExtResource("1_3b25f")
 backButton = NodePath("Back Button")
 ownSnake = NodePath("Content/LobbySnake")
-hostButton = NodePath("Content/Bot/Pre-Lobby/Buttons/Host")
-joinButton = NodePath("Content/Bot/Pre-Lobby/Buttons/Join")
-preLobbyContent = NodePath("Content/Bot/Pre-Lobby")
+hostButton = NodePath("Content/Bot/Buttons/Host")
+joinButton = NodePath("Content/Bot/Buttons/Join")
+startButton = NodePath("Content/Bot/Buttons/Start")
+readyButton = NodePath("Content/Bot/Buttons/Ready")
 lobbyContent = NodePath("Content/Bot/Lobby")
 
 [node name="ColorRect" type="ColorRect" parent="."]
@@ -97,34 +98,7 @@ offset_top = 88.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="Pre-Lobby" type="Control" parent="Content/Bot"]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-
-[node name="VBoxContainer" type="VBoxContainer" parent="Content/Bot/Pre-Lobby"]
-visible = false
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-
-[node name="Label" type="Label" parent="Content/Bot/Pre-Lobby/VBoxContainer"]
-layout_mode = 2
-text = "Your IP:"
-horizontal_alignment = 1
-
-[node name="Label2" type="Label" parent="Content/Bot/Pre-Lobby/VBoxContainer"]
-layout_mode = 2
-text = "localhost"
-horizontal_alignment = 1
-
-[node name="Buttons" type="HBoxContainer" parent="Content/Bot/Pre-Lobby"]
+[node name="Buttons" type="HBoxContainer" parent="Content/Bot"]
 layout_mode = 1
 anchors_preset = 5
 anchor_left = 0.5
@@ -135,20 +109,28 @@ offset_bottom = 57.0
 grow_horizontal = 2
 alignment = 1
 
-[node name="Host" type="Button" parent="Content/Bot/Pre-Lobby/Buttons"]
+[node name="Host" type="Button" parent="Content/Bot/Buttons"]
 layout_mode = 2
 text = "Host Game"
 
-[node name="Join" type="Button" parent="Content/Bot/Pre-Lobby/Buttons"]
+[node name="Join" type="Button" parent="Content/Bot/Buttons"]
 layout_mode = 2
 text = "Join Game"
 
+[node name="Start" type="Button" parent="Content/Bot/Buttons"]
+layout_mode = 2
+text = "Start Game"
+
+[node name="Ready" type="Button" parent="Content/Bot/Buttons"]
+layout_mode = 2
+text = "Ready!"
+
 [node name="Lobby" type="Control" parent="Content/Bot"]
-visible = false
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
+offset_top = 66.0
 grow_horizontal = 2
 grow_vertical = 2
 
@@ -168,16 +150,6 @@ text = "The Others (and you):"
 [node name="NetworkLobby" parent="Content/Bot/Lobby" instance=ExtResource("2_mryw8")]
 layout_mode = 1
 offset_top = 57.0
-
-[node name="Button" type="Button" parent="Content"]
-layout_mode = 1
-anchors_preset = 1
-anchor_left = 1.0
-anchor_right = 1.0
-offset_left = -8.0
-offset_bottom = 8.0
-grow_horizontal = 0
-text = "Start Game"
 
 [node name="Error Popup" type="Control" parent="."]
 visible = false
