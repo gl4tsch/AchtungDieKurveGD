@@ -3,12 +3,12 @@
 importer="wav"
 type="AudioStreamWAV"
 uid="uid://vq7w2txyqno0"
-path="res://.godot/imported/smw_goal_iris-out.wav-d4c1b671d7e7a88aec5f595f57d8e2d7.sample"
+path="res://.godot/imported/smw_goal_iris-out.wav-936e4410d6013d8b2b173ae5c00b80e4.sample"
 
 [deps]
 
-source_file="res://Audio/smw_goal_iris-out.wav"
-dest_files=["res://.godot/imported/smw_goal_iris-out.wav-d4c1b671d7e7a88aec5f595f57d8e2d7.sample"]
+source_file="res://Audio/SFX/smw_goal_iris-out.wav"
+dest_files=["res://.godot/imported/smw_goal_iris-out.wav-936e4410d6013d8b2b173ae5c00b80e4.sample"]
 
 [params]
 

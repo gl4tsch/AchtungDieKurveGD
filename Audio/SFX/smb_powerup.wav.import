@@ -2,13 +2,13 @@
 
 importer="wav"
 type="AudioStreamWAV"
-uid="uid://oubuqd8my7bh"
-path="res://.godot/imported/smb_vine.wav-8c6694912e3e9a9e4bd86a122d24045e.sample"
+uid="uid://dbxnc1x0rp6t2"
+path="res://.godot/imported/smb_powerup.wav-ff0d5c7be93c9eea3bbb01cb06059caa.sample"
 
 [deps]
 
-source_file="res://Audio/smb_vine.wav"
-dest_files=["res://.godot/imported/smb_vine.wav-8c6694912e3e9a9e4bd86a122d24045e.sample"]
+source_file="res://Audio/SFX/smb_powerup.wav"
+dest_files=["res://.godot/imported/smb_powerup.wav-ff0d5c7be93c9eea3bbb01cb06059caa.sample"]
 
 [params]
 

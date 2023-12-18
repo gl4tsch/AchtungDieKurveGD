@@ -3,12 +3,12 @@
 importer="wav"
 type="AudioStreamWAV"
 uid="uid://ysng3mdoqbss"
-path="res://.godot/imported/ssbm_starman_theme.wav-008651774bfaa1e7a16bc2c2e2d4b06c.sample"
+path="res://.godot/imported/ssbm_starman_theme.wav-020df17788445a1836e817faa853a580.sample"
 
 [deps]
 
-source_file="res://Audio/ssbm_starman_theme.wav"
-dest_files=["res://.godot/imported/ssbm_starman_theme.wav-008651774bfaa1e7a16bc2c2e2d4b06c.sample"]
+source_file="res://Audio/SFX/ssbm_starman_theme.wav"
+dest_files=["res://.godot/imported/ssbm_starman_theme.wav-020df17788445a1836e817faa853a580.sample"]
 
 [params]
 

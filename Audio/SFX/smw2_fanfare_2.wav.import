@@ -3,12 +3,12 @@
 importer="wav"
 type="AudioStreamWAV"
 uid="uid://c17ja5ybx1lj"
-path="res://.godot/imported/smw2_fanfare_2.wav-12c8ef2e3589c29de1ca309d3e8988af.sample"
+path="res://.godot/imported/smw2_fanfare_2.wav-23353989c227ca0f38c80f680462daee.sample"
 
 [deps]
 
-source_file="res://Audio/smw2_fanfare_2.wav"
-dest_files=["res://.godot/imported/smw2_fanfare_2.wav-12c8ef2e3589c29de1ca309d3e8988af.sample"]
+source_file="res://Audio/SFX/smw2_fanfare_2.wav"
+dest_files=["res://.godot/imported/smw2_fanfare_2.wav-23353989c227ca0f38c80f680462daee.sample"]
 
 [params]
 

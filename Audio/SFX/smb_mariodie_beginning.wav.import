@@ -3,12 +3,12 @@
 importer="wav"
 type="AudioStreamWAV"
 uid="uid://dnmhaag1bia4n"
-path="res://.godot/imported/smb_mariodie_beginning.wav-227c6c7d344709cf4fcda6c48143b315.sample"
+path="res://.godot/imported/smb_mariodie_beginning.wav-4c286066ad967b07094cc331255d51e7.sample"
 
 [deps]
 
-source_file="res://Audio/smb_mariodie_beginning.wav"
-dest_files=["res://.godot/imported/smb_mariodie_beginning.wav-227c6c7d344709cf4fcda6c48143b315.sample"]
+source_file="res://Audio/SFX/smb_mariodie_beginning.wav"
+dest_files=["res://.godot/imported/smb_mariodie_beginning.wav-4c286066ad967b07094cc331255d51e7.sample"]
 
 [params]
 

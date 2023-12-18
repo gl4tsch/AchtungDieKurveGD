@@ -3,12 +3,12 @@
 importer="wav"
 type="AudioStreamWAV"
 uid="uid://bft0q23nwj2do"
-path="res://.godot/imported/smw_keyhole_exit.wav-c902d21a0a3f2efbeb66cdfd6c10f304.sample"
+path="res://.godot/imported/smw_keyhole_exit.wav-de12933a269330be92308107f60e330e.sample"
 
 [deps]
 
-source_file="res://Audio/smw_keyhole_exit.wav"
-dest_files=["res://.godot/imported/smw_keyhole_exit.wav-c902d21a0a3f2efbeb66cdfd6c10f304.sample"]
+source_file="res://Audio/SFX/smw_keyhole_exit.wav"
+dest_files=["res://.godot/imported/smw_keyhole_exit.wav-de12933a269330be92308107f60e330e.sample"]
 
 [params]
 

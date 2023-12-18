@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://cl7g674lafcjc"
+path="res://.godot/imported/Chicken Old Ladies on a Bus.mp3-335716699704a8528a0545ea1f8de2b6.mp3str"
+
+[deps]
+
+source_file="res://Audio/Music/Chicken Old Ladies on a Bus.mp3"
+dest_files=["res://.godot/imported/Chicken Old Ladies on a Bus.mp3-335716699704a8528a0545ea1f8de2b6.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

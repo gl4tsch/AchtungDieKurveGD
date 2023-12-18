@@ -1,6 +1,7 @@
 using Godot;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Runtime.ConstrainedExecution;
@@ -32,6 +33,7 @@ namespace ADK.Net
             }
         }
         Dictionary<long, PlayerInfo> players = new();
+        public IReadOnlyDictionary<long, PlayerInfo> Players => players;
         List<long> readyPlayers = new();
         bool isEveryoneReady => players.Keys.All(p => readyPlayers.Contains(p));
 

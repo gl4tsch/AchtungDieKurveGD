@@ -2,13 +2,13 @@
 
 importer="wav"
 type="AudioStreamWAV"
-uid="uid://i1ridn8o2cn6"
-path="res://.godot/imported/smb_pause.wav-37ed007533b6c4de941b1354e03d5c64.sample"
+uid="uid://dlrnuxmxtxsk0"
+path="res://.godot/imported/smb_bump.wav-26166e091caf2f2066cfcee25fe3fb76.sample"
 
 [deps]
 
-source_file="res://Audio/smb_pause.wav"
-dest_files=["res://.godot/imported/smb_pause.wav-37ed007533b6c4de941b1354e03d5c64.sample"]
+source_file="res://Audio/SFX/smb_bump.wav"
+dest_files=["res://.godot/imported/smb_bump.wav-26166e091caf2f2066cfcee25fe3fb76.sample"]
 
 [params]
 

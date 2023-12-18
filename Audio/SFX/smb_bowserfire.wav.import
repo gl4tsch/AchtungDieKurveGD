@@ -3,12 +3,12 @@
 importer="wav"
 type="AudioStreamWAV"
 uid="uid://bna22soqnl8mq"
-path="res://.godot/imported/smb_bowserfire.wav-90f1a6dc68725cf40b0cd2c32279a4ef.sample"
+path="res://.godot/imported/smb_bowserfire.wav-217545ce4adf6d0b6e63a9ae6918c83a.sample"
 
 [deps]
 
-source_file="res://Audio/smb_bowserfire.wav"
-dest_files=["res://.godot/imported/smb_bowserfire.wav-90f1a6dc68725cf40b0cd2c32279a4ef.sample"]
+source_file="res://Audio/SFX/smb_bowserfire.wav"
+dest_files=["res://.godot/imported/smb_bowserfire.wav-217545ce4adf6d0b6e63a9ae6918c83a.sample"]
 
 [params]
 

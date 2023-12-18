@@ -1,19 +1,20 @@
-[gd_scene load_steps=11 format=3 uid="uid://bckwucveog1oc"]
+[gd_scene load_steps=12 format=3 uid="uid://bckwucveog1oc"]
 
 [ext_resource type="Script" path="res://Scripts/Manager/AudioManager.cs" id="1_t2pds"]
-[ext_resource type="AudioStream" uid="uid://chvh2hrqwspb3" path="res://Audio/Chill Buster (From 'Deltarune') ~ Lofi Hip Hop Remix.mp3" id="2_oi8ib"]
-[ext_resource type="AudioStream" uid="uid://ysctqsw868ys" path="res://Audio/Super Mario World - Koopa Castle (OC remix).mp3" id="3_m05du"]
-[ext_resource type="AudioStream" uid="uid://b8djkct8bj523" path="res://Audio/JoelChipTunes.mp3" id="3_oi0mh"]
-[ext_resource type="AudioStream" uid="uid://1bbu83xq4qgj" path="res://Audio/smb_breakblock.wav" id="4_3yxtp"]
-[ext_resource type="AudioStream" uid="uid://b2u6o33chvu6g" path="res://Audio/Monty Python and the Holy Grail- Intermission Music.mp3" id="4_kbgej"]
-[ext_resource type="AudioStream" uid="uid://dlrnuxmxtxsk0" path="res://Audio/smb_bump.wav" id="5_32j5p"]
-[ext_resource type="AudioStream" uid="uid://dhl30nk53ycbv" path="res://Audio/smb_jump-small.wav" id="6_ts674"]
-[ext_resource type="AudioStream" uid="uid://dbxnc1x0rp6t2" path="res://Audio/smb_powerup.wav" id="7_mcx6i"]
-[ext_resource type="AudioStream" uid="uid://c103ukaw56k42" path="res://Audio/smw_thud.wav" id="8_jvl8e"]
+[ext_resource type="AudioStream" uid="uid://chvh2hrqwspb3" path="res://Audio/Music/Chill Buster (From 'Deltarune') ~ Lofi Hip Hop Remix.mp3" id="2_oi8ib"]
+[ext_resource type="AudioStream" uid="uid://ysctqsw868ys" path="res://Audio/Music/Super Mario World - Koopa Castle (OC remix).mp3" id="3_m05du"]
+[ext_resource type="AudioStream" uid="uid://b8djkct8bj523" path="res://Audio/Music/JoelChipTunes.mp3" id="3_oi0mh"]
+[ext_resource type="AudioStream" uid="uid://1bbu83xq4qgj" path="res://Audio/SFX/smb_breakblock.wav" id="4_3yxtp"]
+[ext_resource type="AudioStream" uid="uid://b2u6o33chvu6g" path="res://Audio/Music/Monty Python and the Holy Grail- Intermission Music.mp3" id="4_kbgej"]
+[ext_resource type="AudioStream" uid="uid://dlrnuxmxtxsk0" path="res://Audio/SFX/smb_bump.wav" id="5_32j5p"]
+[ext_resource type="AudioStream" uid="uid://cl7g674lafcjc" path="res://Audio/Music/Chicken Old Ladies on a Bus.mp3" id="5_jjcke"]
+[ext_resource type="AudioStream" uid="uid://dhl30nk53ycbv" path="res://Audio/SFX/smb_jump-small.wav" id="6_ts674"]
+[ext_resource type="AudioStream" uid="uid://dbxnc1x0rp6t2" path="res://Audio/SFX/smb_powerup.wav" id="7_mcx6i"]
+[ext_resource type="AudioStream" uid="uid://c103ukaw56k42" path="res://Audio/SFX/smw_thud.wav" id="8_jvl8e"]
 
 [node name="AudioManager" type="Node"]
 script = ExtResource("1_t2pds")
-lobbyMusic = Array[AudioStream]([ExtResource("2_oi8ib"), ExtResource("3_oi0mh"), ExtResource("4_kbgej")])
+lobbyMusic = Array[AudioStream]([ExtResource("2_oi8ib"), ExtResource("3_oi0mh"), ExtResource("4_kbgej"), ExtResource("5_jjcke")])
 battleMusic = Array[AudioStream]([ExtResource("3_m05du"), ExtResource("3_oi0mh")])
 snakeDeathExplosionSound = ExtResource("4_3yxtp")
 barAbilitySound = ExtResource("5_32j5p")

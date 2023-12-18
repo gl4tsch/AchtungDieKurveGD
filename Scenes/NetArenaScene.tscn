@@ -2,5 +2,5 @@
 
 [ext_resource type="Script" path="res://Scripts/Scene Scripts/NetArenaScene.cs" id="1_t0tpl"]
 
-[node name="NetArena" type="Node"]
+[node name="NetArenaScene" type="Node"]
 script = ExtResource("1_t0tpl")

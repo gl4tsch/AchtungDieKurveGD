@@ -3,12 +3,12 @@
 importer="wav"
 type="AudioStreamWAV"
 uid="uid://bcwpq2h4203lt"
-path="res://.godot/imported/smb_jump-super.wav-14276d84a6948f1fe17e9291fd40e95b.sample"
+path="res://.godot/imported/smb_jump-super.wav-cf0b323aac3fdaab57dc5a1055fefa4c.sample"
 
 [deps]
 
-source_file="res://Audio/smb_jump-super.wav"
-dest_files=["res://.godot/imported/smb_jump-super.wav-14276d84a6948f1fe17e9291fd40e95b.sample"]
+source_file="res://Audio/SFX/smb_jump-super.wav"
+dest_files=["res://.godot/imported/smb_jump-super.wav-cf0b323aac3fdaab57dc5a1055fefa4c.sample"]
 
 [params]
 
