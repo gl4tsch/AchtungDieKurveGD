@@ -29,8 +29,14 @@ namespace ADK
         {
             base._Ready();
 
+            GameManager.Instance.Snakes.Clear();
+            var snake = GameManager.Instance.CreateNewSnake();
+
             Ability playerInfoAbility = GameManager.Instance.CreateAbility(ownPlayerInfo.Ability);
-            ownSnake.Init(new Snake(ownPlayerInfo.Name, ownPlayerInfo.Color, playerInfoAbility));
+            snake.Ability = playerInfoAbility;
+            snake.Color = ownPlayerInfo.Color;
+            snake.Name = ownPlayerInfo.Name;
+            ownSnake.Init(snake);
 
             hostButton.Pressed += OnHostButtonClicked;
             joinButton.Pressed += OnJoinButtonClicked;

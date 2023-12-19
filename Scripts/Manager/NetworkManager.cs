@@ -1,10 +1,7 @@
 using Godot;
 using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Diagnostics;
 using System.Linq;
-using System.Runtime.ConstrainedExecution;
 
 namespace ADK.Net
 {
@@ -15,6 +12,14 @@ namespace ADK.Net
         [Export] int port = 1414;
         [Export] string defaultServerIP = "localhost";
         [Export] int maxConnections = 99;
+        /// <summary>
+        /// This sets Physics Ticks per Second
+        /// </summary>
+        [Export] public int TicksPerSecond
+        {
+            get => Engine.PhysicsTicksPerSecond;
+            set => Engine.PhysicsTicksPerSecond = value;
+        }
 
         public event Action<(long id, PlayerInfo info)> PlayerConnected;
         public event Action<(long id, PlayerInfo info)> PlayerInfoChanged;
@@ -48,6 +53,7 @@ namespace ADK.Net
         public override void _Ready()
         {
             base._Ready();
+            Engine.PhysicsTicksPerSecond = TicksPerSecond;
             Multiplayer.PeerConnected += OnPeerConnected;
             Multiplayer.PeerDisconnected += OnPeerDisconnected;
             Multiplayer.ConnectedToServer += OnConnectedToServer;
@@ -213,6 +219,7 @@ namespace ADK.Net
             RpcId(1, nameof(SetReady));
         }
 
+        // runs on server only
         [Rpc(MultiplayerApi.RpcMode.AnyPeer, CallLocal = true, TransferMode = MultiplayerPeer.TransferModeEnum.Reliable)]
         void SetReady()
         {

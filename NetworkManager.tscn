@@ -4,3 +4,4 @@
 
 [node name="NetworkManager" type="Node"]
 script = ExtResource("1_0sfgl")
+TicksPerSecond = 60
