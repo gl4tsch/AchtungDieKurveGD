@@ -29,6 +29,10 @@ namespace ADK.Net
             {
                 AcknowledgedServerTicks = data[1..];
             }
+            else
+            {
+                AcknowledgedServerTicks = System.Array.Empty<int>();
+            }
         }
 
         public int[] ToMessage()

@@ -8,21 +8,30 @@ namespace ADK.Net
     /// </summary>
     public class ServerTickMessage
     {
-        public int TickNumber;
-        public InputFlags[] ClientInputs; //TODO: send all input not acknowledged by the client yet
+        // send all input not acknowledged by the client yet
+        public SortedList<int, InputFlags[]> ClientInputs = new();
 
         public ServerTickMessage(){}
-        public ServerTickMessage(int[] tickData)
+
+        /// <param name="tickData">of the form [tickNumber,[InputFlagsForEachPlayer],...]</param>
+        public ServerTickMessage(int[] tickData, int numPlayers)
         {
-            TickNumber = tickData[0];
-            ClientInputs = tickData[1..].Cast<InputFlags>().ToArray();
+            int blockLength = numPlayers + 1;
+            for (int i = 0; i < tickData.Length; i += blockLength)
+            {
+                InputFlags[] inputs = tickData[(i+1)..(i+blockLength-1)].Cast<InputFlags>().ToArray();
+                ClientInputs.Add(tickData[i], inputs);
+            }
         }
 
         public int[] ToMessage()
         {
             List<int> data = new();
-            data.Add(TickNumber);
-            data.AddRange(ClientInputs.Cast<int>());
+            foreach (var input in ClientInputs)
+            {
+                data.Add(input.Key);
+                data.AddRange(input.Value.Cast<int>());
+            }
             return data.ToArray();
         }
     }
