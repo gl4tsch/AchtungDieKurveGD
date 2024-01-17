@@ -43,16 +43,6 @@ namespace ADK.Net
             serverTickInputBlock = new InputFlags[NetworkManager.Instance.Players.Count];
         }
 
-        long IdxToPlayerId(int idx)
-        {
-            return sortedPlayerIds[idx];
-        }
-
-        int PlayerIdToIdx(long playerId)
-        {
-            return sortedPlayerIds.IndexOf(playerId);
-        }
-
         void OnSceneLoadedForAllPlayers()
         {
             GD.Print("All Ready!");
@@ -136,81 +126,6 @@ namespace ADK.Net
                 input |= InputFlags.Fire;
             }
             localInput = input;
-        }
-
-        void SendClientTickMessage()
-        {
-            ClientTickMessage clientTick = new()
-            {
-                Input = localInput,
-                AcknowledgedServerTicks = receivedServerTicksToAcknowledge.ToArray()
-            };
-
-            GD.Print($"Sending input {clientTick.Input}\nand sending acknowledgements for ticks {string.Join(",", clientTick.AcknowledgedServerTicks)}");
-            
-            // send local input to server
-            RpcId(1, nameof(ReceiveClientTickOnServer), clientTick.ToMessage());
-        }
-
-        [Rpc(MultiplayerApi.RpcMode.AnyPeer, CallLocal = true, TransferMode = MultiplayerPeer.TransferModeEnum.Unreliable)]
-        void ReceiveClientTickOnServer(int[] clientTickData)
-        {
-            ClientTickMessage clientTick = new(clientTickData);
-            int playerId = Multiplayer.GetRemoteSenderId();
-
-            GD.Print($"Server received input {clientTick.Input} from Player {playerId}");
-            serverTickInputBlock[PlayerIdToIdx(playerId)] = clientTick.Input;
-
-            // all ticks acknowledged by the client will not be sent anymore
-            pendingAcknowledgements[playerId].RemoveAll(tick => clientTick.AcknowledgedServerTicks.Contains(tick));
-            // shorten input history if possible
-        }
-
-        void SendServerTickMessage()
-        {
-            inputHistory.Add(localTick, serverTickInputBlock);
-
-            foreach (var id in sortedPlayerIds)
-            {
-                // always send input for the current server tick
-                pendingAcknowledgements[id].Add(localTick);
-
-                ServerTickMessage serverTick = new()
-                {
-                    ClientInputs = GetPendingInputsForPlayer(id)
-                };
-                RpcId(id, nameof(ReceiveServerTickOnClients), serverTick.ToMessage());
-            }
-
-            // do not reset input block between sends. this way, the previous input will be used if no input arrived from a client in time
-        }
-
-        SortedList<int, InputFlags[]> GetPendingInputsForPlayer(long playerId)
-        {
-            SortedList<int, InputFlags[]> inputs = new();
-            foreach (var tick in pendingAcknowledgements[playerId])
-            {
-                inputs.Add(tick, inputHistory[tick]);
-            }
-            return inputs;
-        }
-
-        [Rpc(MultiplayerApi.RpcMode.AnyPeer, CallLocal = true, TransferMode = MultiplayerPeer.TransferModeEnum.Unreliable)]
-        void ReceiveServerTickOnClients(int[] serverTickData)
-        {
-            ServerTickMessage serverTick = new(serverTickData, sortedPlayerIds.Count);
-
-            // do not send acknowledgements again for ticks no longer received from the server
-            receivedServerTicksToAcknowledge.Clear();
-
-            foreach (var inputTick in serverTick.ClientInputs)
-            {
-                if (inputBuffer.TryAdd(inputTick.Key, inputTick.Value))
-                {
-                    receivedServerTicksToAcknowledge.Add(inputTick.Key);
-                }
-                // else it is an input repeated by sliding window. ignore.
-            }
         }
     }
 
