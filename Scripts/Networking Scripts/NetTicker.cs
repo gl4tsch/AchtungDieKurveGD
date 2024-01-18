@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Godot;
@@ -58,7 +59,9 @@ namespace ADK.Net
             }
         }
 
-        public void Tick(ISerializableInput localInput)
+        /// <param name="localInput">the input to be sent to the server</param>
+        /// <returns>the input for all players (by id) received from the server</returns>
+        public Dictionary<long, ISerializableInput> Tick(ISerializableInput localInput)
         {
             // clients send their input and acknowledge received input
             SendClientTickMessage(localInput);
@@ -69,14 +72,19 @@ namespace ADK.Net
                 SendServerTickMessage();
             }
 
+            Dictionary<long, ISerializableInput> consumedInput = new();
             // consume input buffer
             if (inputBuffer.ContainsKey(localTick))
             {
-                // TODO consume
+                for (int i = 0; i < inputBuffer[localTick].Length; i++)
+                {
+                    consumedInput.Add(sortedPlayerIds[i], inputBuffer[localTick][i]);
+                }
                 inputBuffer.Remove(localTick);
                 // increment tick counter
                 localTick++;
             }
+            return consumedInput;
         }
 
         void SendClientTickMessage(ISerializableInput input)
