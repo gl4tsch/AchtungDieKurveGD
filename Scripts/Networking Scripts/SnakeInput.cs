@@ -5,7 +5,8 @@ namespace ADK.Net
     public class SnakeInput : ISerializableInput
     {
         InputFlags input;
-        public int SizeInByte => sizeof(int);
+        public int SizeInByte => 1;
+        public static int SizeofInput => 1;
 
         public SnakeInput()
         {
@@ -24,12 +25,18 @@ namespace ADK.Net
 
         public void Deserialize(byte[] data)
         {
-            input = (InputFlags)BitConverter.ToInt32(data);
+            // data should only consist of one byte
+            input = (InputFlags)data[0];
         }
 
         public byte[] Serialize()
         {
-            return BitConverter.GetBytes((int)input);
+            return new byte[]{(byte)input};
+        }
+
+        public override string ToString()
+        {
+            return input.ToString();
         }
     }
 

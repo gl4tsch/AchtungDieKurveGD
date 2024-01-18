@@ -4,7 +4,7 @@ namespace ADK.Net
 {
     public class SnakeInputSerializer : InputSerializer
     {
-        public override int SizeofInput => sizeof(int);
+        public override int SizeofInput => SnakeInput.SizeofInput;
 
         public override ISerializableInput DeserializeInput(byte[] inputData)
         {

@@ -83,7 +83,7 @@ namespace ADK.Net
         {
             ClientTickMessage clientTick = new(input, receivedServerTicksToAcknowledge.ToArray());
 
-            GD.Print($"Sending input {clientTick.Input}\nand sending acknowledgements for ticks {string.Join(",", clientTick.AcknowledgedServerTicks)}");
+            GD.Print($"{Multiplayer.GetUniqueId()}:\nSending input {clientTick.Input}\nand sending acknowledgements for ticks {string.Join(",", clientTick.AcknowledgedServerTicks)}");
 
             // send local input to server
             RpcId(1, nameof(ReceiveClientTickOnServer), clientTick.ToMessage());
