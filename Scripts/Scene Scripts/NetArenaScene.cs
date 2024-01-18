@@ -7,40 +7,19 @@ namespace ADK.Net
 {
     public partial class NetArenaScene : Node
     {
-#region AllClients
+        [Export] NetTicker netTicker;
         Dictionary<long, NetSnake> snakes = new();
-        List<long> sortedPlayerIds;
         Snake localSnake => GameManager.Instance.Snakes[0];
-
-        SortedList<int, InputFlags[]> inputBuffer = new();
-        InputFlags localInput;
-        List<int> receivedServerTicksToAcknowledge = new();
-        int localTick = 0;
-#endregion
-
-#region ServerOnly
-        // input from all clients gets collected here every tick
-        InputFlags[] serverTickInputBlock;
-        // by tickNumber
-        SortedList<int, InputFlags[]> inputHistory = new();
-        // keys = player id. value = list of tick numbers
-        Dictionary<long, List<int>> pendingAcknowledgements = new();
-#endregion
+        SnakeInputSerializer inputSerializer = new();
 
         public override void _Ready()
         {
             base._Ready();
-            sortedPlayerIds = NetworkManager.Instance.Players.Keys.OrderBy(id => id).ToList();
-            sortedPlayerIds.ForEach(id => pendingAcknowledgements.Add(id, new()));
-            ResetServerInputBlock();
+            var playerIDs = NetworkManager.Instance.Players.Keys.ToList();
+            netTicker.Init(inputSerializer, playerIDs);
             NetworkManager.Instance.AllReady += OnSceneLoadedForAllPlayers;
             NetworkManager.Instance.SendReady();
             GD.Print("Waiting for other Players...");
-        }
-
-        void ResetServerInputBlock()
-        {
-            serverTickInputBlock = new InputFlags[NetworkManager.Instance.Players.Count];
         }
 
         void OnSceneLoadedForAllPlayers()
@@ -84,29 +63,10 @@ namespace ADK.Net
         public override void _PhysicsProcess(double delta)
         {
             base._PhysicsProcess(delta);
-
-            CollectLocalInput();
-            
-            // clients send their input and acknowledge received input
-            SendClientTickMessage();
-
-            // server broadcasts collected input
-            if (Multiplayer.IsServer())
-            {
-                SendServerTickMessage();
-            }
-
-            // consume input buffer
-            if (inputBuffer.ContainsKey(localTick))
-            {
-                // TODO consume
-                inputBuffer.Remove(localTick);
-                // increment tick counter
-                localTick++;
-            }
+            netTicker.Tick(CollectLocalInput());
         }
 
-        void CollectLocalInput()
+        ISerializableInput CollectLocalInput()
         {
             // local input
             bool left = Input.IsKeyPressed(localSnake.TurnLeftKey);
@@ -125,16 +85,7 @@ namespace ADK.Net
             {
                 input |= InputFlags.Fire;
             }
-            localInput = input;
+            return new SnakeInput(input);
         }
-    }
-
-    [Flags]
-    public enum InputFlags
-    {
-        None = 0,
-        Left = 1 << 0,
-        Right = 1 << 1,
-        Fire = 1 << 2
     }
 }

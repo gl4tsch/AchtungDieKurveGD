@@ -1,6 +1,11 @@
-[gd_scene load_steps=2 format=3 uid="uid://d0ddhy5gjnplg"]
+[gd_scene load_steps=3 format=3 uid="uid://d0ddhy5gjnplg"]
 
 [ext_resource type="Script" path="res://Scripts/Scene Scripts/NetArenaScene.cs" id="1_t0tpl"]
+[ext_resource type="Script" path="res://Scripts/Networking Scripts/NetTicker.cs" id="2_du3f1"]
 
-[node name="NetArenaScene" type="Node"]
+[node name="NetArenaScene" type="Node" node_paths=PackedStringArray("netTicker")]
 script = ExtResource("1_t0tpl")
+netTicker = NodePath("NetTicker")
+
+[node name="NetTicker" type="Node" parent="."]
+script = ExtResource("2_du3f1")

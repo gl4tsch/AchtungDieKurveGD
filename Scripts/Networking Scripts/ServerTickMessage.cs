@@ -26,7 +26,7 @@ namespace ADK.Net
             int dataBlockLength = sizeof(int) + numPlayers * sizeofInput;
             for (int i = 0; i < tickData.Length; i += dataBlockLength)
             {
-                int tick = BitConverter.ToInt32(tickData.Take(i * sizeof(int)).ToArray());
+                int tick = BitConverter.ToInt32(tickData, i);
 
                 byte[] inputs = tickData[(i+1)..(i+dataBlockLength-1)];
                 List<ISerializableInput> tickInputs = new();
@@ -40,7 +40,7 @@ namespace ADK.Net
             }
         }
 
-        public byte[] ToMessage(InputSerializer inputSerializer)
+        public byte[] ToMessage()
         {
             List<byte> data = new();
             foreach (var entry in ClientsInputData)
@@ -48,7 +48,7 @@ namespace ADK.Net
                 data.AddRange(BitConverter.GetBytes(entry.Key));
                 foreach (var input in entry.Value)
                 {
-                    data.AddRange(inputSerializer.SerializeInput(input));
+                    data.AddRange(input.Serialize());
                 }
             }
             return data.ToArray();

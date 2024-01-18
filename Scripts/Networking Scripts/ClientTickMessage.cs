@@ -9,7 +9,7 @@ namespace ADK.Net
     /// <summary>
     /// what each client sends to the server every tick
     /// </summary>
-    public partial class ClientTickMessage
+    public class ClientTickMessage
     {
         public ISerializableInput Input;
         public int[] AcknowledgedServerTicks;
@@ -46,10 +46,10 @@ namespace ADK.Net
             }
         }
 
-        public byte[] ToMessage(InputSerializer inputSerializer)
+        public byte[] ToMessage()
         {
             List<byte> data = new();
-            data.AddRange(inputSerializer.SerializeInput(Input));
+            data.AddRange(Input.Serialize());
             data.AddRange(MemoryMarshal.AsBytes(AcknowledgedServerTicks.AsSpan()).ToArray());
             // data.AddRange(AcknowledgedServerTicks.SelectMany(BitConverter.GetBytes));
             return data.ToArray();
