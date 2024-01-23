@@ -9,14 +9,16 @@ namespace ADK.Net
     /// <summary>
     /// what the server sends to each client every tick
     /// </summary>
-    public class ServerTickMessage
+    public class ServerTickMessage : INetworkMessage
     {
+        public long Receiver { get; }
         // send all input not acknowledged by the client yet
         public SortedList<int, ISerializableInput[]> ClientsInputData = new();
 
-        public ServerTickMessage(SortedList<int, ISerializableInput[]> clientsInputData)
+        public ServerTickMessage(SortedList<int, ISerializableInput[]> clientsInputData, long receiver)
         {
             ClientsInputData = clientsInputData;
+            Receiver = receiver;
         }
 
         /// <param name="tickData">of the form [tickNumber,[InputFlagsForEachPlayer],...]</param>

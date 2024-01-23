@@ -9,3 +9,4 @@ netTicker = NodePath("NetTicker")
 
 [node name="NetTicker" type="Node" parent="."]
 script = ExtResource("2_du3f1")
+simulateLag = true

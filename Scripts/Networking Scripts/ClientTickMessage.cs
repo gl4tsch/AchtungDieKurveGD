@@ -9,7 +9,7 @@ namespace ADK.Net
     /// <summary>
     /// what each client sends to the server every tick
     /// </summary>
-    public class ClientTickMessage
+    public class ClientTickMessage : INetworkMessage
     {
         public ISerializableInput Input;
         public int[] AcknowledgedServerTicks;

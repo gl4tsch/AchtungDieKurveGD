@@ -12,10 +12,22 @@ namespace ADK.Net
     /// </summary>
     public partial class NetTicker : Node
     {
+        [Export] bool simulateLag = false;
+        [Export] Key lagToggleKey = Key.Comma;
+        [Export] Key packetLossKey = Key.Period;
+        [Export] float minLagMs = 16f;
+        [Export] float maxLagMs = 200f;
+        SortedList<DateTime, ClientTickMessage> delayedClientMessages = new();
+        SortedList<DateTime, ServerTickMessage> delayedServerMessages = new();
+        bool lagging = false;
+        bool loosingPackets = false;
+        RandomNumberGenerator rng = new();
+
         #region AllClients
         List<long> sortedPlayerIds;
         int numPlayers => sortedPlayerIds.Count;
         SortedList<int, ISerializableInput[]> inputBuffer = new();
+        int nextExpectedTick = 0;
         ISerializableInput localInput;
         List<int> receivedServerTicksToAcknowledge = new();
         int localTick = 0;
@@ -59,6 +71,53 @@ namespace ADK.Net
             }
         }
 
+        public override void _Input(InputEvent @event)
+        {
+            if (!simulateLag) return;
+
+            if (@event is InputEventKey keyEvent)
+            {
+                if (keyEvent.Pressed && !keyEvent.IsEcho() && keyEvent.Keycode == lagToggleKey)
+                {
+                    lagging = !lagging;
+                    GD.PrintErr($"Lag simulation " + (lagging ? "on" : "off"));
+                }
+
+                if (keyEvent.Keycode == packetLossKey)
+                {
+                    if (keyEvent.Pressed && !keyEvent.IsEcho()) // button down
+                    {
+                        GD.PrintErr("Startig packet loss simulation now");
+                    }
+                    loosingPackets = keyEvent.Pressed;
+                    if (keyEvent.IsReleased())
+                    {
+                        GD.PrintErr("Packet loss simulation stopped");
+                    }
+                }
+            }
+        }
+
+        public override void _Process(double delta)
+        {
+            if (!simulateLag) return;
+
+            while (delayedClientMessages.Count > 0 && DateTime.Compare(delayedClientMessages.Keys[0], DateTime.Now) <= 0)
+            {
+                var key = delayedClientMessages.Keys[0];
+                RpcId(1, nameof(ReceiveClientTickOnServer), delayedClientMessages[key].ToMessage());
+                delayedClientMessages.Remove(key);
+            }
+
+            while (delayedServerMessages.Count > 0 && DateTime.Compare(delayedServerMessages.Keys[0], DateTime.Now) <= 0)
+            {
+                var key = delayedServerMessages.Keys[0];
+                var message = delayedServerMessages[key];
+                RpcId(message.Receiver, nameof(ReceiveServerTickOnClients), message.ToMessage());
+                delayedServerMessages.Remove(key);
+            }
+        }
+
         /// <param name="localInput">the input to be sent to the server</param>
         /// <returns>the input for all players (by id) received from the server</returns>
         public Dictionary<long, ISerializableInput> Tick(ISerializableInput localInput)
@@ -74,16 +133,20 @@ namespace ADK.Net
 
             Dictionary<long, ISerializableInput> consumedInput = new();
             // consume input buffer
-            if (inputBuffer.ContainsKey(localTick))
+            if (inputBuffer.ContainsKey(nextExpectedTick))
             {
-                for (int i = 0; i < inputBuffer[localTick].Length; i++)
+                for (int i = 0; i < inputBuffer[nextExpectedTick].Length; i++)
                 {
-                    consumedInput.Add(sortedPlayerIds[i], inputBuffer[localTick][i]);
+                    consumedInput.Add(sortedPlayerIds[i], inputBuffer[nextExpectedTick][i]);
                 }
-                inputBuffer.Remove(localTick);
-                // increment tick counter
-                localTick++;
+                inputBuffer.Remove(nextExpectedTick);
+                nextExpectedTick++;
             }
+            else // no input received from server since the last tick
+            {
+                GD.Print($"no input available for expected tick {nextExpectedTick}");
+            }
+            localTick++;
             return consumedInput;
         }
 
@@ -94,7 +157,18 @@ namespace ADK.Net
             GD.Print($"{Multiplayer.GetUniqueId()}:\nSending input {clientTick.Input}\nand sending acknowledgements for ticks {string.Join(",", clientTick.AcknowledgedServerTicks)}");
 
             // send local input to server
-            RpcId(1, nameof(ReceiveClientTickOnServer), clientTick.ToMessage());
+            if (simulateLag && loosingPackets)
+            {
+                GD.Print($"Simulated packet loss for client tick {localTick} to server");
+            }
+            else if (simulateLag && lagging)
+            {
+                QueueDelayedMessage(clientTick);
+            }
+            else
+            {
+                RpcId(1, nameof(ReceiveClientTickOnServer), clientTick.ToMessage());
+            }
         }
 
         [Rpc(MultiplayerApi.RpcMode.AnyPeer, CallLocal = true, TransferMode = MultiplayerPeer.TransferModeEnum.Unreliable)]
@@ -120,8 +194,19 @@ namespace ADK.Net
                 // always send input for the current server tick
                 pendingAcknowledgements[id].Add(localTick);
 
-                ServerTickMessage serverTick = new(GetPendingInputsForPlayer(id));
-                RpcId(id, nameof(ReceiveServerTickOnClients), serverTick.ToMessage());
+                ServerTickMessage serverTick = new(GetPendingInputsForPlayer(id), id);
+                if (simulateLag && loosingPackets)
+                {
+                    GD.Print($"Simulated packet loss for server tick {localTick} to client {id}");
+                }
+                else if (simulateLag && lagging)
+                {
+                    QueueDelayedMessage(serverTick);
+                }
+                else
+                {
+                    RpcId(id, nameof(ReceiveServerTickOnClients), serverTick.ToMessage());
+                }
             }
             // do not reset input block between sends. this way, the previous input will be used if no input arrived from a client in time
         }
@@ -152,6 +237,22 @@ namespace ADK.Net
                 inputs.Add(tick, inputHistory[tick]);
             }
             return inputs;
+        }
+
+        void QueueDelayedMessage(INetworkMessage message)
+        {
+            float delay = rng.RandfRange(minLagMs, maxLagMs);
+            DateTime delayedTime = DateTime.Now.AddMilliseconds(delay);
+
+            switch (message)
+            {
+                case ServerTickMessage serverTick:
+                    delayedServerMessages.Add(delayedTime, serverTick);
+                    break;
+                case ClientTickMessage clientTick:
+                    delayedClientMessages.Add(delayedTime, clientTick);
+                    break;
+            }
         }
     }
 }
