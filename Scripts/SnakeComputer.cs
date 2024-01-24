@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using ADK.Net;
 using Godot;
 using Godot.Collections;
 using Godot.NativeInterop;
@@ -29,13 +30,14 @@ namespace ADK
         Queue<LineData> lineDrawDataBuffer = new();
         uint maxAdditionalLinesPerSnakePerFrame = 3;
 
-        public SnakeComputer(Arena arena, RenderingDevice rd, RDShaderFile computeShader, Rid arenaTexWrite)
+        public SnakeComputer(Arena arena, List<Snake> snakes, RenderingDevice rd, RDShaderFile computeShader, Rid arenaTexWrite)
         {
             this.arena = arena;
+            this.snakes = snakes;
             this.rd = rd;
             snakeShaderFile = computeShader;
             this.arenaTexWrite = arenaTexWrite;
-            //InitTestSnakes(1);
+            // InitTestSnakes(1);
             InitSnakes();
             InitSnakeComputeShader();
         }
@@ -84,10 +86,10 @@ namespace ADK
 
         void InitSnakes()
         {
-            snakes = GameManager.Instance.Snakes;
+            //snakes = GameManager.Instance.Snakes;
             foreach (Snake snake in snakes)
             {
-                snake.Spawn(new Vector2I((int)arena.Width, (int)arena.Height));
+                //snake.Spawn(new Vector2I((int)arena.Width, (int)arena.Height));
                 aliveSnakes.Add(snake);
                 snake.Died += s => aliveSnakes.Remove(s);
             }
@@ -156,6 +158,15 @@ namespace ADK
             foreach (Snake snake in snakes)
             {
                 snake.HandleInput(keyEvent);
+            }
+        }
+
+        public void HandleSnakeInput(List<SnakeInput> inputs)
+        {
+            for (int i = 0; i < inputs.Count; i++)
+            {
+                SnakeInput input = inputs[i];
+                snakes[i].HandleInput(input);
             }
         }
 

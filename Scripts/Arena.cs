@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+using ADK.Net;
 using Godot;
 using Godot.Collections;
 
@@ -39,15 +41,9 @@ namespace ADK
 
             pxWidth = (uint)GameManager.Instance.Settings.ArenaSettings.Settings[WidthSettingName];
             pxHeight = (uint)GameManager.Instance.Settings.ArenaSettings.Settings[HeightSettingName];
-            GameManager.Instance.ActiveArenaScene.BattleStateChanged += OnBattleStateChanged;
+            //GameManager.Instance.ActiveArenaScene.BattleStateChanged += OnBattleStateChanged;
 
             InitArenaTextures();
-
-            snakeComputer = new SnakeComputer(this, rd, snakeComputeShader, arenaTexReadWrite);
-            explodeComputer = new ExplodeComputer(rd, explodeComputeShader, arenaTexReadWrite);
-            pixelSelector = new PixelSelector(rd, selectComputeShader, arenaTexReadWrite, pxWidth, pxHeight);
-
-            ResetArena();
         }
 
         public override void _ExitTree()
@@ -70,6 +66,15 @@ namespace ADK
             {
                 rd.FreeRid(texClearUniformSet);
             }
+        }
+
+        public void Init(List<Snake> snakes)
+        {
+            snakeComputer = new SnakeComputer(this, snakes, rd, snakeComputeShader, arenaTexReadWrite);
+            explodeComputer = new ExplodeComputer(rd, explodeComputeShader, arenaTexReadWrite);
+            pixelSelector = new PixelSelector(rd, selectComputeShader, arenaTexReadWrite, pxWidth, pxHeight);
+
+            ResetArena();
         }
 
         void InitArenaTextures()
@@ -147,10 +152,8 @@ namespace ADK
             explodeComputer.Reset();
         }
 
-        // input events instead of polling
-        public override void _Input(InputEvent @event)
+        public void HandleInput(InputEvent @event)
         {
-            base._Input(@event);
             // pass keyboard inputs to snakeComputer
             if (@event is InputEventKey keyEvent && !keyEvent.IsEcho())
             {
@@ -158,12 +161,17 @@ namespace ADK
             }
         }
 
+        public void HandleInput(List<SnakeInput> inputs)
+        {
+            snakeComputer.HandleSnakeInput(inputs);
+        }
+
         public override void _Process(double delta)
         {
-            base._Process(delta);
+            if (snakeComputer == null) return;
+
             snakeComputer.UpdateSnakes(delta);
             explodeComputer.UpdateExplosions((float)delta);
-            DisplayArena();
         }
 
         void OnBattleStateChanged(ArenaScene.BattleState battleState)

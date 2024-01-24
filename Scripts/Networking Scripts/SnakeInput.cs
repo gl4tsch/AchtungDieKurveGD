@@ -4,18 +4,18 @@ namespace ADK.Net
 {
     public class SnakeInput : ISerializableInput
     {
-        InputFlags input;
+        public InputFlags Input;
         public int SizeInByte => 1;
         public static int SizeofInput => 1;
 
         public SnakeInput()
         {
-            input = InputFlags.None;
+            Input = InputFlags.None;
         }
 
         public SnakeInput(InputFlags input)
         {
-            this.input = input;
+            this.Input = input;
         }
 
         public SnakeInput(byte[] data)
@@ -26,17 +26,17 @@ namespace ADK.Net
         public void Deserialize(byte[] data)
         {
             // data should only consist of one byte
-            input = (InputFlags)data[0];
+            Input = (InputFlags)data[0];
         }
 
         public byte[] Serialize()
         {
-            return new byte[]{(byte)input};
+            return new byte[]{(byte)Input};
         }
 
         public override string ToString()
         {
-            return input.ToString();
+            return Input.ToString();
         }
     }
 

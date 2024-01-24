@@ -12,6 +12,9 @@ namespace ADK.Net
     /// </summary>
     public partial class NetTicker : Node
     {
+        [Export] int delayTicks = 2;
+
+        [ExportCategory("Lag Simulation")]
         [Export] bool simulateLag = false;
         [Export] Key lagToggleKey = Key.Comma;
         [Export] Key packetLossKey = Key.Period;
@@ -26,9 +29,10 @@ namespace ADK.Net
         #region AllClients
         List<long> sortedPlayerIds;
         int numPlayers => sortedPlayerIds.Count;
+        // all received inputs not consumed yet
         SortedList<int, ISerializableInput[]> inputBuffer = new();
-        int nextExpectedTick = 0;
-        ISerializableInput localInput;
+        int nextTickToConsume => localTick - delayTicks;
+        public ISerializableInput LocalInput { get; set; }
         List<int> receivedServerTicksToAcknowledge = new();
         int localTick = 0;
         #endregion
@@ -131,20 +135,19 @@ namespace ADK.Net
                 SendServerTickMessage();
             }
 
-            Dictionary<long, ISerializableInput> consumedInput = new();
             // consume input buffer
-            if (inputBuffer.ContainsKey(nextExpectedTick))
+            Dictionary<long, ISerializableInput> consumedInput = new();
+            if (inputBuffer.ContainsKey(nextTickToConsume))
             {
-                for (int i = 0; i < inputBuffer[nextExpectedTick].Length; i++)
+                for (int i = 0; i < inputBuffer[nextTickToConsume].Length; i++)
                 {
-                    consumedInput.Add(sortedPlayerIds[i], inputBuffer[nextExpectedTick][i]);
+                    consumedInput.Add(sortedPlayerIds[i], inputBuffer[nextTickToConsume][i]);
                 }
-                inputBuffer.Remove(nextExpectedTick);
-                nextExpectedTick++;
+                inputBuffer.Remove(nextTickToConsume);
             }
-            else // no input received from server since the last tick
+            else // the next input needed is not here yet
             {
-                GD.Print($"no input available for expected tick {nextExpectedTick}");
+                GD.Print($"no input available for expected tick {nextTickToConsume}");
             }
             localTick++;
             return consumedInput;

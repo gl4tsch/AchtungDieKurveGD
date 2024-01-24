@@ -1,3 +1,4 @@
+using ADK.Net;
 using Godot;
 using System;
 using System.Collections.Generic;
@@ -154,6 +155,28 @@ namespace ADK
             }
             // fire
             if (keyEvent.Keycode == FireKey && keyEvent.IsPressed())
+            {
+                GD.Print("Fire!");
+                Ability?.Activate(this);
+            }
+        }
+
+        public void HandleInput(SnakeInput input)
+        {
+            if (!IsAlive) return;
+
+            int turn = 0;
+            if (input.Input.HasFlag(InputFlags.Left))
+            {
+                turn -= 1;
+            }
+            if (input.Input.HasFlag(InputFlags.Right))
+            {
+                turn += 1;
+            }
+            TurnSign = turn;
+
+            if (input.Input.HasFlag(InputFlags.Fire))
             {
                 GD.Print("Fire!");
                 Ability?.Activate(this);

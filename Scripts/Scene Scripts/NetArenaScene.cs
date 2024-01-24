@@ -8,6 +8,8 @@ namespace ADK.Net
     public partial class NetArenaScene : Node
     {
         [Export] NetTicker netTicker;
+        [Export] Arena arena;
+
         Dictionary<long, NetSnake> snakes = new();
         Snake localSnake => GameManager.Instance.Snakes[0];
         SnakeInputSerializer inputSerializer = new();
@@ -17,6 +19,7 @@ namespace ADK.Net
             base._Ready();
             var playerIDs = NetworkManager.Instance.Players.Keys.ToList();
             netTicker.Init(inputSerializer, playerIDs);
+            playerIDs.ForEach(id => snakes.Add(id, null));
             NetworkManager.Instance.AllReady += OnSceneLoadedForAllPlayers;
             NetworkManager.Instance.SendReady();
             GD.Print("Waiting for other Players...");
@@ -48,13 +51,19 @@ namespace ADK.Net
         [Rpc(MultiplayerApi.RpcMode.AnyPeer, CallLocal = true, TransferMode = MultiplayerPeer.TransferModeEnum.Reliable)]
         void SpawnSnakeForPlayer(long playerId, Vector2 position, Vector2 direction)
         {
-            if (snakes.ContainsKey(playerId))
+            if (!snakes.ContainsKey(playerId))
             {
-                snakes.Remove(playerId);
+                GD.PrintErr("received snake spawn rpc for unknown player: " + playerId);
             }
             var snake = new NetSnake(NetworkManager.Instance.Players[playerId], position, direction);
-            snakes.Add(playerId, snake);
+            snake.PlayerId = playerId;
+            snakes[playerId] = snake;
             GD.Print($"Snake spawned at {position}, {direction}");
+
+            if (snakes.Values.All(s => s != null))
+            {
+                arena.Init(snakes.Values.Cast<Snake>().ToList());
+            }
         }
 
         /// <summary>
@@ -62,8 +71,16 @@ namespace ADK.Net
         /// </summary>
         public override void _PhysicsProcess(double delta)
         {
-            base._PhysicsProcess(delta);
-            netTicker.Tick(CollectLocalInput());
+            var collectedInput = CollectLocalInput();
+            var input = netTicker.Tick(collectedInput);
+            if (input.Count == 0)
+            {
+                GD.PrintErr("no input available. freezing simulation until it arrives");
+            }
+            else
+            {
+                arena.HandleInput(input.Values.Cast<SnakeInput>().ToList());
+            }
         }
 
         ISerializableInput CollectLocalInput()

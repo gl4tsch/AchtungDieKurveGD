@@ -30,13 +30,13 @@ namespace ADK.Net
             {
                 int tick = BitConverter.ToInt32(tickData, i);
 
-                byte[] inputs = tickData[(i+1)..(i+dataBlockLength-1)];
+                Span<byte> inputs = tickData.AsSpan().Slice(sizeof(int), numPlayers*sizeofInput);
                 List<ISerializableInput> tickInputs = new();
                 for (int j = 0; j < numPlayers; j++)
                 {
                     int offset = j * sizeofInput;
-                    byte[] inputBytes = inputs[offset..(offset + sizeofInput)];
-                    tickInputs.Add(inputSerializer.DeserializeInput(inputBytes));
+                    var inputBytes = inputs[offset..(offset + sizeofInput)];
+                    tickInputs.Add(inputSerializer.DeserializeInput(inputBytes.ToArray()));
                 }
                 ClientsInputData.Add(tick, tickInputs.ToArray());
             }

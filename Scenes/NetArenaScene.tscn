@@ -1,12 +1,18 @@
-[gd_scene load_steps=3 format=3 uid="uid://d0ddhy5gjnplg"]
+[gd_scene load_steps=4 format=3 uid="uid://d0ddhy5gjnplg"]
 
 [ext_resource type="Script" path="res://Scripts/Scene Scripts/NetArenaScene.cs" id="1_t0tpl"]
 [ext_resource type="Script" path="res://Scripts/Networking Scripts/NetTicker.cs" id="2_du3f1"]
+[ext_resource type="PackedScene" uid="uid://cyk1hxyvevajg" path="res://Prefabs/ArenaRect.tscn" id="3_qhwow"]
 
-[node name="NetArenaScene" type="Node" node_paths=PackedStringArray("netTicker")]
+[node name="NetArenaScene" type="Node" node_paths=PackedStringArray("netTicker", "arena")]
 script = ExtResource("1_t0tpl")
 netTicker = NodePath("NetTicker")
+arena = NodePath("TextureRect")
 
 [node name="NetTicker" type="Node" parent="."]
 script = ExtResource("2_du3f1")
 simulateLag = true
+minLagMs = 40.0
+maxLagMs = 40.0
+
+[node name="TextureRect" parent="." instance=ExtResource("3_qhwow")]
