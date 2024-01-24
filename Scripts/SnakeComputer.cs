@@ -148,7 +148,7 @@ namespace ADK
             aliveSnakes.Clear();
             foreach (Snake snake in snakes)
             {
-                snake.Spawn(new Vector2I((int)arena.Width, (int)arena.Height));
+                //snake.Spawn(new Vector2I((int)arena.Width, (int)arena.Height));
                 aliveSnakes.Add(snake);
             }
         }

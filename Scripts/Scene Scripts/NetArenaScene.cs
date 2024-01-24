@@ -56,7 +56,7 @@ namespace ADK.Net
                 GD.PrintErr("received snake spawn rpc for unknown player: " + playerId);
             }
             var snake = new NetSnake(NetworkManager.Instance.Players[playerId], position, direction);
-            snake.PlayerId = playerId;
+            // snake.PlayerId = playerId;
             snakes[playerId] = snake;
             GD.Print($"Snake spawned at {position}, {direction}");
 

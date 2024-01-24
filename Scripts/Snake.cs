@@ -124,6 +124,14 @@ namespace ADK
             bool right = Input.IsKeyPressed(TurnRightKey);
             TurnSign = left && !right ? -1 : right && !left ? 1 : 0;
 
+            Spawn(PxPosition, Direction);
+        }
+
+        public void Spawn(Vector2 position, Vector2 direction)
+        {
+            PxPosition = position;
+            Direction = direction;
+
             // reset modifiers
             MoveSpeedModifier = 1f;
             TurnRateModifier = 1f;
