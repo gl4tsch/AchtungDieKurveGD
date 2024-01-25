@@ -64,16 +64,19 @@ float sdArc( in vec2 p, in vec2 sc, in float ra, float rb )
 }
 // alternative: https://www.shadertoy.com/view/WldGWM
 
-// right now only works for left turns
+// arcAngleDeg > 0 for right turns, < 0 for left turns
 float sdArcWrapper( in vec2 point, vec2 arcStart, float arcAngleDeg, float arcRadius, float headingAngleDeg, float thickness)
 {
+	float angleSign = sign(arcAngleDeg);
+	angleSign *= -1.0;
+	arcAngleDeg = abs(arcAngleDeg);
     float halfArcAngleRad = arcAngleDeg / 2.0 * deg2Rad;
     vec2  sc = vec2(sin(halfArcAngleRad),cos(halfArcAngleRad));
     
-    point -= arcStart;
-    point *= rotateAroundOrigin(deg2Rad * headingAngleDeg);
-    point.x += arcRadius;
-    point *= rotateAroundOrigin(deg2Rad * 90.0 - halfArcAngleRad);
+    point += angleSign * arcStart; // offset
+    point *= rotateAroundOrigin(deg2Rad * headingAngleDeg); // rotate such that headingAngle is up
+    point.x += angleSign * arcRadius; // offset such that position is on arc
+    point *= rotateAroundOrigin(angleSign * (deg2Rad * 90.0 - halfArcAngleRad)); // rotate arc such that one end is at position
     
 	return sdArc(point, sc, arcRadius, thickness);
 }
