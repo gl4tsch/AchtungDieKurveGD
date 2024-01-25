@@ -37,11 +37,45 @@ layout(set = 0, binding = 3, std430) restrict readonly buffer LineBuffer
 	LineData[] lines;
 } lineBuffer;
 
+const float PI = 3.14;
+const float deg2Rad = PI / 180.0;
+const float rad2Deg = 180.0 / PI;
+
+mat2 rotateAroundOrigin(float angleRad)
+{
+	return mat2(cos(angleRad), -sin(angleRad), sin(angleRad), cos(angleRad));
+}
+
+
+// https://iquilezles.org/articles/distfunctions2d/
 float sdSegment( vec2 p, vec2 a, vec2 b )
 {
     vec2 pa = p-a, ba = b-a;
     float h = clamp( dot(pa,ba) / dot(ba,ba), 0.0, 1.0 );
     return length( pa - ba*h );
+}
+
+// https://www.shadertoy.com/view/wl23RK
+// sc is the sin/cos of the aperture
+float sdArc( in vec2 p, in vec2 sc, in float ra, float rb )
+{
+    p.x = abs(p.x);
+    return ((sc.y*p.x>sc.x*p.y) ? length(p-sc*ra) : abs(length(p)-ra)) - rb;
+}
+// alternative: https://www.shadertoy.com/view/WldGWM
+
+// right now only works for left turns
+float sdArcWrapper( in vec2 point, vec2 arcStart, float arcAngleDeg, float arcRadius, float headingAngleDeg, float thickness)
+{
+    float halfArcAngleRad = arcAngleDeg / 2.0 * deg2Rad;
+    vec2  sc = vec2(sin(halfArcAngleRad),cos(halfArcAngleRad));
+    
+    point -= arcStart;
+    point *= rotateAroundOrigin(deg2Rad * headingAngleDeg);
+    point.x += arcRadius;
+    point *= rotateAroundOrigin(deg2Rad * 90.0 - halfArcAngleRad);
+    
+	return sdArc(point, sc, arcRadius, thickness);
 }
 
 void main()
