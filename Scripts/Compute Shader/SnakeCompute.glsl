@@ -67,13 +67,12 @@ float sdArc( in vec2 p, in vec2 sc, in float ra, float rb )
 // arcAngleDeg > 0 for right turns, < 0 for left turns
 float sdArcWrapper( in vec2 point, vec2 arcStart, float arcAngleDeg, float arcRadius, float headingAngleDeg, float thickness)
 {
-	float angleSign = sign(arcAngleDeg);
-	angleSign *= -1.0;
+	float angleSign = -sign(arcAngleDeg);
 	arcAngleDeg = abs(arcAngleDeg);
     float halfArcAngleRad = arcAngleDeg / 2.0 * deg2Rad;
     vec2  sc = vec2(sin(halfArcAngleRad),cos(halfArcAngleRad));
     
-    point += angleSign * arcStart; // offset
+    point -= arcStart; // offset
     point *= rotateAroundOrigin(deg2Rad * headingAngleDeg); // rotate such that headingAngle is up
     point.x += angleSign * arcRadius; // offset such that position is on arc
     point *= rotateAroundOrigin(angleSign * (deg2Rad * 90.0 - halfArcAngleRad)); // rotate arc such that one end is at position
