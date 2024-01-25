@@ -12,6 +12,7 @@ layout(r8, binding = 0) uniform image2D arena;
 struct LineData
 {
     float prevPosX, prevPosY, newPosX, newPosY;
+	// float arcAngle; // if this is not 0, newPosX is arcRadius, newPosY is headingAngle
     float halfThickness;
     float colorR, colorG, colorB, colorA;
 	int clipMode;
@@ -46,7 +47,6 @@ mat2 rotateAroundOrigin(float angleRad)
 	return mat2(cos(angleRad), -sin(angleRad), sin(angleRad), cos(angleRad));
 }
 
-
 // https://iquilezles.org/articles/distfunctions2d/
 float sdSegment( vec2 p, vec2 a, vec2 b )
 {
@@ -70,7 +70,7 @@ float sdArcWrapper( in vec2 point, vec2 arcStart, float arcAngleDeg, float arcRa
 	float angleSign = -sign(arcAngleDeg);
 	arcAngleDeg = abs(arcAngleDeg);
     float halfArcAngleRad = arcAngleDeg / 2.0 * deg2Rad;
-    vec2  sc = vec2(sin(halfArcAngleRad),cos(halfArcAngleRad));
+    vec2 sc = vec2(sin(halfArcAngleRad),cos(halfArcAngleRad));
     
     point -= arcStart; // offset
     point *= rotateAroundOrigin(deg2Rad * headingAngleDeg); // rotate such that headingAngle is up

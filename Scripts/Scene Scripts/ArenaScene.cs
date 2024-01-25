@@ -6,6 +6,7 @@ namespace ADK
 {
     public partial class ArenaScene : Node
     {
+        [Export] Arena arena;
         [Export] PackedScene WinPopUpPrefab;
 
         public enum BattleState
@@ -22,6 +23,7 @@ namespace ADK
         public override void _Ready()
         {
             base._Ready();
+            arena.Init(GameManager.Instance.Snakes);
             AudioManager.Instance?.PlayMusic(Music.BattleTheme);
             StartNewRound();
         }

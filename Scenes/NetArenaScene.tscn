@@ -11,6 +11,7 @@ arena = NodePath("TextureRect")
 
 [node name="NetTicker" type="Node" parent="."]
 script = ExtResource("2_du3f1")
+delayTicks = 8
 simulateLag = true
 minLagMs = 40.0
 maxLagMs = 40.0
