@@ -166,12 +166,18 @@ namespace ADK
             snakeComputer.HandleSnakeInput(inputs);
         }
 
+        double timer = 0;
         public override void _Process(double delta)
         {
             if (snakeComputer == null) return;
 
-            snakeComputer.UpdateSnakes(delta);
-            explodeComputer.UpdateExplosions((float)delta);
+            timer += delta;
+            if (timer >= 0.5f)
+            {
+                snakeComputer.UpdateSnakes(timer);
+                explodeComputer.UpdateExplosions((float)timer);
+                timer -= 1f;
+            }
         }
 
         void OnBattleStateChanged(ArenaScene.BattleState battleState)

@@ -14,7 +14,7 @@ namespace ADK
         public Color Color { get; set; } = new Color(1, 0, 0, 1);
         public float PxThickness { get; private set; } = 10f;
         public float MoveSpeed { get; private set; } = 100f;
-        public float TurnRadius {get; private set; } = 30f;
+        public float TurnRadius {get; private set; } = 100f;
         public float GapFrequency { get; private set; } = 400;
         public float GapWidthRelToThickness { get; private set; } = 3;
         public float GapWidth => PxThickness * GapWidthRelToThickness;
@@ -28,7 +28,7 @@ namespace ADK
         {
             {nameof(PxThickness), 10f},
             {nameof(MoveSpeed), 100f},
-            {nameof(TurnRadius), 30f},
+            {nameof(TurnRadius), 100f},
             {nameof(GapFrequency), 400},
             {nameof(GapWidthRelToThickness), 3}
         };
@@ -40,6 +40,9 @@ namespace ADK
         public Vector2 Direction { get; private set; } = Vector2.Right;
         public Vector2 PxPosition { get; private set; } = Vector2.Zero;
         Vector2 pxPrevPos;
+        float segmentLength;
+        float arcAngle;
+        float prevHeadingAngle;
 
         // Input
         // possible alternative: InputAction
@@ -200,20 +203,24 @@ namespace ADK
             
             pxPrevPos = PxPosition;
             float moveDistance = MoveSpeed * MoveSpeedModifier * deltaT;
+            segmentLength = moveDistance;
+
             if (TurnSign == 0)
             {
-                PxPosition = pxPrevPos + Direction * moveDistance;
+                PxPosition += Direction * moveDistance;
+                arcAngle = 0;
             }
             else
             {
                 // L = ang * r; ang = L/r // ang in rad
-                float arcAngle = moveDistance / TurnRadius * TurnSign;
-                Vector2 dir90 = Direction.Rotated(Mathf.DegToRad(90) * -TurnSign);
+                arcAngle = moveDistance / (TurnRadius * TurnRadiusModifier) * TurnSign;
+                Vector2 dir90 = Direction.Rotated(Mathf.DegToRad(90) * TurnSign);
                 Vector2 turnCenter = PxPosition + dir90 * TurnRadius;
                 Vector2 turnCenterToStart = PxPosition - turnCenter;
-                Vector2 turnCenterToTarget = turnCenterToStart.Rotated(-arcAngle);
+                Vector2 turnCenterToTarget = turnCenterToStart.Rotated(arcAngle);
                 PxPosition = turnCenter + turnCenterToTarget;
 
+                prevHeadingAngle = Direction.AngleTo(Vector2.Up);
                 Direction = Direction.Rotated(arcAngle); //new Vector2(turnCenterToTarget.Y, -turnCenterToTarget.X).Normalized();
             }
 
@@ -280,6 +287,7 @@ namespace ADK
         public void OnCollision()
         {
             GD.Print(Name + " had a collision!");
+            return;
             RequestExplosion(new LineFilter()
             {
                 startPosX = PxPosition.X,
@@ -307,6 +315,9 @@ namespace ADK
                 prevPosY = pxPrevPos.Y,
                 newPosX = PxPosition.X,
                 newPosY = PxPosition.Y,
+                arcAngle = arcAngle,
+                arcRadius = segmentLength, // TurnRadius * TurnRadiusModifier,
+                headingAngle = prevHeadingAngle,
                 halfThickness = PxThickness * ThicknessModifier / 2f,
                 colorR = Color.R,
                 colorG = Color.G,
@@ -356,6 +367,9 @@ namespace ADK
     public struct LineData
     {
         public float prevPosX, prevPosY, newPosX, newPosY;
+        public float arcAngle;
+        public float arcRadius;
+        public float headingAngle;
         public float halfThickness;
         public float colorR, colorG, colorB, colorA;
 
@@ -374,6 +388,9 @@ namespace ADK
             writer.Write(prevPosY);
             writer.Write(newPosX);
             writer.Write(newPosY);
+            writer.Write(arcAngle);
+            writer.Write(arcRadius);
+            writer.Write(headingAngle);
             writer.Write(halfThickness);
             writer.Write(colorR);
             writer.Write(colorG);
@@ -384,6 +401,6 @@ namespace ADK
             return stream.ToArray();
         }
 
-        public static uint SizeInByte => sizeof(float) * 4 + sizeof(float) + sizeof(float) * 4 + sizeof(int);
+        public static uint SizeInByte => sizeof(float) * 4 + sizeof(float) * 3 + sizeof(float) + sizeof(float) * 4 + sizeof(int);
     }
 }

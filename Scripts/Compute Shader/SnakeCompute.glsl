@@ -13,6 +13,10 @@ struct LineData
 {
     float prevPosX, prevPosY, newPosX, newPosY;
 	// float arcAngle; // if this is not 0, newPosX is arcRadius, newPosY is headingAngle
+	// float arcCenterDist; // > 0 means to the right, < 0 to the left of the connecting line
+	float arcAngle;
+	float arcRadius;
+	float headingAngle;
     float halfThickness;
     float colorR, colorG, colorB, colorA;
 	int clipMode;
@@ -62,22 +66,56 @@ float sdArc( in vec2 p, in vec2 sc, in float ra, float rb )
     p.x = abs(p.x);
     return ((sc.y*p.x>sc.x*p.y) ? length(p-sc*ra) : abs(length(p)-ra)) - rb;
 }
-// alternative: https://www.shadertoy.com/view/WldGWM
 
-// arcAngleDeg > 0 for right turns, < 0 for left turns
-float sdArcWrapper( in vec2 point, vec2 arcStart, float arcAngleDeg, float arcRadius, float headingAngleDeg, float thickness)
+// alternative: https://www.shadertoy.com/view/WldGWM
+float sdJoint( in vec2 p, in float l, in float a, float w)
 {
-	float angleSign = -sign(arcAngleDeg);
-	arcAngleDeg = abs(arcAngleDeg);
-    float halfArcAngleRad = arcAngleDeg / 2.0 * deg2Rad;
+    // if perfectly straight
+    if( abs(a)<0.001 )
+    {
+        float v = p.y;
+        p.y -= clamp(p.y,0.0,l);
+		return length(p);
+    }
+    
+    // parameters
+    vec2  sc = vec2(sin(a),cos(a));
+    float ra = 0.5*l/a;
+    
+    // recenter
+    p.x -= ra;
+    
+    // reflect
+    vec2 q = p - 2.0*sc*max(0.0,dot(sc,p));
+
+	// distance
+    float u = abs(ra)-length(q);
+    float d = (q.y<0.0) ? length( q+vec2(ra,0.0) ) : abs(u);
+
+    return d-w;
+}
+
+// arcAngle > 0 for right turns, < 0 for left turns
+float sdArcWrapper( in vec2 point, vec2 arcStart, float arcAngleRad, float arcRadius, float headingAngleRad, float thickness)
+{
+	float angleSign = -sign(arcAngleRad);
+	arcAngleRad = abs(arcAngleRad);
+    float halfArcAngleRad = arcAngleRad / 2.0;
     vec2 sc = vec2(sin(halfArcAngleRad),cos(halfArcAngleRad));
     
     point -= arcStart; // offset
-    point *= rotateAroundOrigin(deg2Rad * headingAngleDeg); // rotate such that headingAngle is up
+    point *= rotateAroundOrigin(headingAngleRad); // rotate such that headingAngle is up
     point.x += angleSign * arcRadius; // offset such that position is on arc
     point *= rotateAroundOrigin(angleSign * (deg2Rad * 90.0 - halfArcAngleRad)); // rotate arc such that one end is at position
     
 	return sdArc(point, sc, arcRadius, thickness);
+}
+
+float sdJointWrapper( in vec2 point, vec2 arcStart, float arcAngle, float segmentLength, float headingAngle, float width )
+{
+	point -= arcStart; // offset
+	point *= rotateAroundOrigin(headingAngle);
+	return sdJoint( point, segmentLength, arcAngle, width );
 }
 
 void main()
@@ -94,7 +132,17 @@ void main()
 		vec2 prevPos = vec2(snake.prevPosX, snake.prevPosY);
 		vec2 newPos = vec2(snake.newPosX, snake.newPosY);
 		vec4 color = vec4(snake.colorR, snake.colorG, snake.colorB, snake.colorA);
-		float distToSegment = sdSegment(coords, prevPos, newPos);
+		float distToSegment;
+		
+		if (snake.arcAngle == 0)
+		{
+			distToSegment = sdSegment(coords, prevPos, newPos);
+		}
+		else
+		{
+			//distToSegment = sdArcWrapper(coords, prevPos, snake.arcAngle, snake.arcRadius, snake.headingAngle, snake.halfThickness / snake.arcRadius);
+			distToSegment = sdJointWrapper(coords, prevPos, snake.arcAngle, snake.arcRadius, snake.headingAngle, snake.halfThickness / 30.0);
+		}
 
 		if (distToSegment <= snake.halfThickness)
 		{

@@ -43,6 +43,10 @@ namespace ADK.Net
                     var pxPosition = new Vector2(rng.RandfRange(0 + arenaSize.X / 4, arenaSize.X - arenaSize.X / 4), rng.RandfRange(0 + arenaSize.Y / 4, arenaSize.Y - arenaSize.Y / 4));
                     var direction = (arenaCenter - pxPosition).Normalized();
                     
+                    pxPosition = new Vector2(0, 10);
+                    direction = Vector2.Right;
+                    direction = direction.Normalized();
+
                     Rpc(nameof(SpawnSnakeForPlayer), player.Key, pxPosition, direction);
                 }
             }
