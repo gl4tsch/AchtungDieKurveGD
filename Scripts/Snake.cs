@@ -220,8 +220,8 @@ namespace ADK
                 Vector2 turnCenterToTarget = turnCenterToStart.Rotated(arcAngle);
                 PxPosition = turnCenter + turnCenterToTarget;
 
-                prevHeadingAngle = Direction.AngleTo(Vector2.Up);
-                Direction = Direction.Rotated(arcAngle); //new Vector2(turnCenterToTarget.Y, -turnCenterToTarget.X).Normalized();
+                prevHeadingAngle = -Vector2.Up.AngleTo(Direction);
+                Direction = Direction.Rotated(arcAngle);
             }
 
             UpdateGap();

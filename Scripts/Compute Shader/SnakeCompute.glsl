@@ -12,10 +12,8 @@ layout(r8, binding = 0) uniform image2D arena;
 struct LineData
 {
     float prevPosX, prevPosY, newPosX, newPosY;
-	// float arcAngle; // if this is not 0, newPosX is arcRadius, newPosY is headingAngle
-	// float arcCenterDist; // > 0 means to the right, < 0 to the left of the connecting line
 	float arcAngle;
-	float arcRadius;
+	float segmentLength;
 	float headingAngle;
     float halfThickness;
     float colorR, colorG, colorB, colorA;
@@ -141,7 +139,7 @@ void main()
 		else
 		{
 			//distToSegment = sdArcWrapper(coords, prevPos, snake.arcAngle, snake.arcRadius, snake.headingAngle, snake.halfThickness / snake.arcRadius);
-			distToSegment = sdJointWrapper(coords, prevPos, snake.arcAngle, snake.arcRadius, snake.headingAngle, snake.halfThickness / 30.0);
+			distToSegment = sdJointWrapper(coords, prevPos, snake.arcAngle, snake.segmentLength, snake.headingAngle, snake.halfThickness / 30.0);
 		}
 
 		if (distToSegment <= snake.halfThickness)
