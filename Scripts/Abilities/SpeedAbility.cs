@@ -58,7 +58,7 @@ namespace ADK
 
             this.snake = snake;
             snake.MoveSpeedModifier += speedModifier;
-            snake.TurnRateModifier += turnRateModifier;
+            snake.TurnRadiusModifier += turnRateModifier;
             startedTimers.Add(new Countdown(duration));
             AudioManager.Instance?.PlaySound(SFX.SpeedAbility);
         }
@@ -82,7 +82,7 @@ namespace ADK
         {
             GD.Print("Speed End");
             snake.MoveSpeedModifier -= speedModifier;
-            snake.TurnRateModifier -= turnRateModifier;
+            snake.TurnRadiusModifier -= turnRateModifier;
         }
     }
 }
