@@ -14,21 +14,21 @@ namespace ADK
         public Color Color { get; set; } = new Color(1, 0, 0, 1);
         public float PxThickness { get; private set; } = 10f;
         public float MoveSpeed { get; private set; } = 100f;
-        public float TurnRate {get; private set; } = 3f;
+        public float TurnRadius {get; private set; } = 30f;
         public float GapFrequency { get; private set; } = 400;
         public float GapWidthRelToThickness { get; private set; } = 3;
         public float GapWidth => PxThickness * GapWidthRelToThickness;
 
         // stat modifier
         public float MoveSpeedModifier { get; set; } = 1f;
-        public float TurnRateModifier { get; set; } = 1f;
+        public float TurnRadiusModifier { get; set; } = 1f;
         public float ThicknessModifier { get; set; } = 1f;
 
         public static Dictionary<string, Variant> DefaultSettings => new()
         {
             {nameof(PxThickness), 10f},
             {nameof(MoveSpeed), 100f},
-            {nameof(TurnRate), 3f},
+            {nameof(TurnRadius), 30f},
             {nameof(GapFrequency), 400},
             {nameof(GapWidthRelToThickness), 3}
         };
@@ -92,9 +92,9 @@ namespace ADK
             {
                 MoveSpeed = (float)moveSpeed;
             }
-            if (settings.Settings.TryGetValue(nameof(TurnRate), out var turnRate))
+            if (settings.Settings.TryGetValue(nameof(TurnRadius), out var turnRate))
             {
-                TurnRate = (float)turnRate;
+                TurnRadius = (float)turnRate;
             }
             if (settings.Settings.TryGetValue(nameof(GapFrequency), out var gapFrequency))
             {
@@ -134,7 +134,7 @@ namespace ADK
 
             // reset modifiers
             MoveSpeedModifier = 1f;
-            TurnRateModifier = 1f;
+            TurnRadiusModifier = 1f;
             ThicknessModifier = 1f;
 
             // reset gap
@@ -198,9 +198,24 @@ namespace ADK
                 return;
             }
             
-            Direction = Direction.Rotated(TurnSign * TurnRate * TurnRateModifier * deltaT);
             pxPrevPos = PxPosition;
-            PxPosition = pxPrevPos + Direction * MoveSpeed * MoveSpeedModifier * deltaT;
+            float moveDistance = MoveSpeed * MoveSpeedModifier * deltaT;
+            if (TurnSign == 0)
+            {
+                PxPosition = pxPrevPos + Direction * moveDistance;
+            }
+            else
+            {
+                // L = ang * r; ang = L/r // ang in rad
+                float arcAngle = moveDistance / TurnRadius * TurnSign;
+                Vector2 dir90 = Direction.Rotated(Mathf.DegToRad(90) * -TurnSign);
+                Vector2 turnCenter = PxPosition + dir90 * TurnRadius;
+                Vector2 turnCenterToStart = PxPosition - turnCenter;
+                Vector2 turnCenterToTarget = turnCenterToStart.Rotated(-arcAngle);
+                PxPosition = turnCenter + turnCenterToTarget;
+
+                Direction = Direction.Rotated(arcAngle); //new Vector2(turnCenterToTarget.Y, -turnCenterToTarget.X).Normalized();
+            }
 
             UpdateGap();
             Ability?.Tick(deltaT);
