@@ -172,11 +172,11 @@ namespace ADK
             if (snakeComputer == null) return;
 
             timer += delta;
-            if (timer >= 0.5f)
+            if (timer >= 0.01f)
             {
                 snakeComputer.UpdateSnakes(timer);
                 explodeComputer.UpdateExplosions((float)timer);
-                timer -= 1f;
+                timer -= 0.01f;
             }
         }
 

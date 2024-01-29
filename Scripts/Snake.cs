@@ -14,7 +14,7 @@ namespace ADK
         public Color Color { get; set; } = new Color(1, 0, 0, 1);
         public float PxThickness { get; private set; } = 10f;
         public float MoveSpeed { get; private set; } = 100f;
-        public float TurnRadius {get; private set; } = 100f;
+        public float TurnRadius {get; private set; } = 30f;
         public float GapFrequency { get; private set; } = 400;
         public float GapWidthRelToThickness { get; private set; } = 3;
         public float GapWidth => PxThickness * GapWidthRelToThickness;
@@ -28,7 +28,7 @@ namespace ADK
         {
             {nameof(PxThickness), 10f},
             {nameof(MoveSpeed), 100f},
-            {nameof(TurnRadius), 100f},
+            {nameof(TurnRadius), 30f},
             {nameof(GapFrequency), 400},
             {nameof(GapWidthRelToThickness), 3}
         };
@@ -220,7 +220,7 @@ namespace ADK
                 Vector2 turnCenterToTarget = turnCenterToStart.Rotated(arcAngle);
                 PxPosition = turnCenter + turnCenterToTarget;
 
-                prevHeadingAngle = -Vector2.Up.AngleTo(Direction);
+                prevHeadingAngle = Direction.AngleTo(Vector2.Down);
                 Direction = Direction.Rotated(arcAngle);
             }
 
@@ -315,7 +315,7 @@ namespace ADK
                 prevPosY = pxPrevPos.Y,
                 newPosX = PxPosition.X,
                 newPosY = PxPosition.Y,
-                arcAngle = arcAngle,
+                arcAngle = -arcAngle/2f,
                 arcRadius = segmentLength, // TurnRadius * TurnRadiusModifier,
                 headingAngle = prevHeadingAngle,
                 halfThickness = PxThickness * ThicknessModifier / 2f,
