@@ -59,8 +59,8 @@ namespace ADK
         List<LineFilter> explosionBuffer = new();
 
         // gap
-        // turnSign is used to combine segments if possible
-        Stack<(int turnSign, LineData segment)> gapSegmentBuffer = new();
+        // turnRadius is used to combine segments if possible
+        Stack<(float signedTurnRadius, LineData segment)> gapSegmentBuffer = new();
         float distSinceLastGap = 0;
 
         public Snake()
@@ -230,7 +230,7 @@ namespace ADK
 
         void UpdateGap()
         {
-            distSinceLastGap += (PxPosition - pxPrevPos).Length();
+            distSinceLastGap += segmentLength;
 
             // add to gap buffer
             if (distSinceLastGap > GapFrequency)
@@ -241,6 +241,9 @@ namespace ADK
                     prevPosY = pxPrevPos.Y,
                     newPosX = PxPosition.X,
                     newPosY = PxPosition.Y,
+                    arcAngle = -arcAngle / 2f,
+                    segmentLength = segmentLength,
+                    headingAngle = prevHeadingAngle,
                     halfThickness = PxThickness * ThicknessModifier / 2,
                     colorR = 0,
                     colorG = 0,
@@ -249,23 +252,27 @@ namespace ADK
                     clipMode = 1
                 };
 
+                float signedTurnRadius = TurnRadius * TurnRadiusModifier * TurnSign;
+
                 // check if data can be combined
                 if (gapSegmentBuffer.Count > 0)
                 {
                     var lastSegment = gapSegmentBuffer.Peek();
-                    // can only combine if going straight for now
-                    if (lastSegment.turnSign == 0 && TurnSign == 0)
+                    if (lastSegment.signedTurnRadius == signedTurnRadius)
                     {
                         // discard old segment
                         gapSegmentBuffer.Pop();
                         // add to current segment
                         gapSegment.prevPosX = lastSegment.segment.prevPosX;
                         gapSegment.prevPosY = lastSegment.segment.prevPosY;
+                        gapSegment.arcAngle += lastSegment.segment.arcAngle;
+                        gapSegment.segmentLength += lastSegment.segment.segmentLength;
+                        gapSegment.headingAngle = lastSegment.segment.headingAngle;
                     }
                 }
 
                 // add to buffer
-                gapSegmentBuffer.Push((TurnSign, gapSegment));
+                gapSegmentBuffer.Push((signedTurnRadius, gapSegment));
             }
 
             // gap end
@@ -314,8 +321,8 @@ namespace ADK
                 prevPosY = pxPrevPos.Y,
                 newPosX = PxPosition.X,
                 newPosY = PxPosition.Y,
-                arcAngle = -arcAngle/2f,
-                arcRadius = segmentLength, // TurnRadius * TurnRadiusModifier,
+                arcAngle = -arcAngle / 2f, // no idea why this has to be like this for the compute shader to work
+                segmentLength = segmentLength, // TurnRadius * TurnRadiusModifier,
                 headingAngle = prevHeadingAngle,
                 halfThickness = PxThickness * ThicknessModifier / 2f,
                 colorR = Color.R,
@@ -367,7 +374,7 @@ namespace ADK
     {
         public float prevPosX, prevPosY, newPosX, newPosY;
         public float arcAngle;
-        public float arcRadius;
+        public float segmentLength;
         public float headingAngle;
         public float halfThickness;
         public float colorR, colorG, colorB, colorA;
@@ -388,7 +395,7 @@ namespace ADK
             writer.Write(newPosX);
             writer.Write(newPosY);
             writer.Write(arcAngle);
-            writer.Write(arcRadius);
+            writer.Write(segmentLength);
             writer.Write(headingAngle);
             writer.Write(halfThickness);
             writer.Write(colorR);

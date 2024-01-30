@@ -116,6 +116,15 @@ float sdJointWrapper( in vec2 point, vec2 arcStart, float arcAngle, float segmen
 	return sdJoint( point, segmentLength, arcAngle, width );
 }
 
+float distToLineSegment(vec2 pos, LineData line)
+{
+	if (line.arcAngle == 0)
+	{
+		return sdSegment(pos, vec2(line.prevPosX, line.prevPosY), vec2(line.newPosX, line.newPosY));
+	}
+	return sdJointWrapper(pos, vec2(line.prevPosX, line.prevPosY), line.arcAngle, line.segmentLength, line.headingAngle, 0.0);
+}
+
 void main()
 {
 	// Grab the current pixel's position from the ID of this specific invocation ("thread").
@@ -130,17 +139,7 @@ void main()
 		vec2 prevPos = vec2(snake.prevPosX, snake.prevPosY);
 		vec2 newPos = vec2(snake.newPosX, snake.newPosY);
 		vec4 color = vec4(snake.colorR, snake.colorG, snake.colorB, snake.colorA);
-		float distToSegment;
-		
-		if (snake.arcAngle == 0)
-		{
-			distToSegment = sdSegment(coords, prevPos, newPos);
-		}
-		else
-		{
-			//distToSegment = sdArcWrapper(coords, prevPos, snake.arcAngle, snake.arcRadius, snake.headingAngle, snake.halfThickness / snake.arcRadius);
-			distToSegment = sdJointWrapper(coords, prevPos, snake.arcAngle, snake.segmentLength, snake.headingAngle, 0.0);
-		}
+		float distToSegment = distToLineSegment(coords, snake);
 
 		if (distToSegment <= snake.halfThickness)
 		{
@@ -164,7 +163,8 @@ void main()
 		vec2 posA = vec2(line.prevPosX, line.prevPosY);
 		vec2 posB = vec2(line.newPosX, line.newPosY);
 		vec4 color = vec4(line.colorR, line.colorG, line.colorB, line.colorA);
-		float distToSegment = sdSegment(coords, posA, posB);
+
+		float distToSegment = distToLineSegment(coords, line);
 
 		if (distToSegment <= line.halfThickness)
 		{
