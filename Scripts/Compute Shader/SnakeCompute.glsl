@@ -139,7 +139,7 @@ void main()
 		else
 		{
 			//distToSegment = sdArcWrapper(coords, prevPos, snake.arcAngle, snake.arcRadius, snake.headingAngle, snake.halfThickness / snake.arcRadius);
-			distToSegment = sdJointWrapper(coords, prevPos, snake.arcAngle, snake.segmentLength, snake.headingAngle, snake.halfThickness / 30.0);
+			distToSegment = sdJointWrapper(coords, prevPos, snake.arcAngle, snake.segmentLength, snake.headingAngle, 0.0);
 		}
 
 		if (distToSegment <= snake.halfThickness)

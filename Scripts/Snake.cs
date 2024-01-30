@@ -286,8 +286,7 @@ namespace ADK
 
         public void OnCollision()
         {
-            GD.Print(Name + " had a collision!");
-            return;
+            GD.PrintErr(Name + " had a collision!");
             RequestExplosion(new LineFilter()
             {
                 startPosX = PxPosition.X,
