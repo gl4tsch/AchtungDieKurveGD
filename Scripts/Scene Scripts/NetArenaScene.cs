@@ -9,8 +9,9 @@ namespace ADK.Net
     {
         [Export] NetTicker netTicker;
         [Export] Arena arena;
+        SnakeHandler snakeHandler;
 
-        Dictionary<long, NetSnake> snakes = new();
+        Dictionary<long, NetSnake> playerSnakes = new();
         Snake localSnake => GameManager.Instance.Snakes[0];
         SnakeInputSerializer inputSerializer = new();
 
@@ -19,7 +20,8 @@ namespace ADK.Net
             base._Ready();
             var playerIDs = NetworkManager.Instance.Players.Keys.ToList();
             netTicker.Init(inputSerializer, playerIDs);
-            playerIDs.ForEach(id => snakes.Add(id, null));
+            playerIDs.ForEach(id => playerSnakes.Add(id, null));
+            snakeHandler = new(arena);
             NetworkManager.Instance.AllReady += OnSceneLoadedForAllPlayers;
             NetworkManager.Instance.SendReady();
             GD.Print("Waiting for other Players...");
@@ -50,18 +52,20 @@ namespace ADK.Net
         [Rpc(MultiplayerApi.RpcMode.AnyPeer, CallLocal = true, TransferMode = MultiplayerPeer.TransferModeEnum.Reliable)]
         void SpawnSnakeForPlayer(long playerId, Vector2 position, Vector2 direction)
         {
-            if (!snakes.ContainsKey(playerId))
+            if (!playerSnakes.ContainsKey(playerId))
             {
                 GD.PrintErr("received snake spawn rpc for unknown player: " + playerId);
             }
             var snake = new NetSnake(NetworkManager.Instance.Players[playerId], position, direction);
             // snake.PlayerId = playerId;
-            snakes[playerId] = snake;
+            playerSnakes[playerId] = snake;
             GD.Print($"Snake spawned at {position}, {direction}");
 
-            if (snakes.Values.All(s => s != null))
+            if (playerSnakes.Values.All(s => s != null))
             {
-                arena.Init(snakes.Values.Cast<Snake>().ToList());
+                var snakes = playerSnakes.Values.Cast<Snake>().ToList();
+                snakeHandler.SetSnakes(snakes);
+                arena.Init(snakes.Count);
             }
         }
 
@@ -78,7 +82,8 @@ namespace ADK.Net
             }
             else
             {
-                arena.HandleInput(input.Values.Cast<SnakeInput>().ToList());
+                HandleInput(input.Values.Cast<SnakeInput>().ToList());
+                snakeHandler.UpdateSnakes(delta);
             }
         }
 
@@ -102,6 +107,25 @@ namespace ADK.Net
                 input |= InputFlags.Fire;
             }
             return new SnakeInput(input);
+        }
+
+        public void HandleInput(List<SnakeInput> inputs)
+        {
+            snakeHandler.HandleSnakeInput(inputs);
+        }
+
+        void OnBattleStateChanged(ArenaScene.BattleState battleState)
+        {
+            if (battleState == ArenaScene.BattleState.StartOfRound)
+            {
+                arena.ResetArena();
+                return;
+            }
+            else if (battleState == ArenaScene.BattleState.EndOfRound)
+            {
+                //EndRound();
+                return;
+            }
         }
     }
 }

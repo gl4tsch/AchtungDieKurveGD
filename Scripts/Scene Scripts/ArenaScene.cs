@@ -23,7 +23,7 @@ namespace ADK
         public override void _Ready()
         {
             base._Ready();
-            arena.Init(GameManager.Instance.Snakes);
+            arena.Init(GameManager.Instance.Snakes.Count);
             AudioManager.Instance?.PlayMusic(Music.BattleTheme);
             StartNewRound();
         }

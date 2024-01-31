@@ -68,9 +68,9 @@ namespace ADK
             }
         }
 
-        public void Init(List<Snake> snakes)
+        public void Init(int snakeCount)
         {
-            snakeComputer = new SnakeComputer(this, snakes, rd, snakeComputeShader, arenaTexReadWrite);
+            snakeComputer = new SnakeComputer(Width, Height, snakeCount, rd, snakeComputeShader, arenaTexReadWrite);
             explodeComputer = new ExplodeComputer(rd, explodeComputeShader, arenaTexReadWrite);
             pixelSelector = new PixelSelector(rd, selectComputeShader, arenaTexReadWrite, pxWidth, pxHeight);
 
@@ -145,53 +145,43 @@ namespace ADK
             rd.Barrier(RenderingDevice.BarrierMask.Compute);
         }
 
-        void ResetArena()
+        public void ResetArena()
         {
             ClearArenaTextures();
-            snakeComputer.Reset();
             explodeComputer.Reset();
         }
 
-        public void HandleInput(InputEvent @event)
-        {
-            // pass keyboard inputs to snakeComputer
-            if (@event is InputEventKey keyEvent && !keyEvent.IsEcho())
-            {
-                snakeComputer.HandleSnakeInput(keyEvent);
-            }
-        }
-
-        public void HandleInput(List<SnakeInput> inputs)
-        {
-            snakeComputer.HandleSnakeInput(inputs);
-        }
-
-        double timer = 0;
         public override void _Process(double delta)
         {
-            if (snakeComputer == null) return;
-
-            timer += delta;
-            if (timer >= 0.01f)
-            {
-                snakeComputer.UpdateSnakes(timer);
-                explodeComputer.UpdateExplosions((float)timer);
-                timer -= 0.01f;
-            }
+            explodeComputer.UpdateExplosions((float)delta);
         }
 
-        void OnBattleStateChanged(ArenaScene.BattleState battleState)
+        /// <returns>collided snakes</returns>
+        public List<Snake> DrawSnakesAndLines(List<Snake> aliveSnakes)
         {
-            if (battleState == ArenaScene.BattleState.StartOfRound)
+            List<LineData> snakeDrawData = new();
+            List<LineData> lineDrawData = new();
+            foreach (var snake in aliveSnakes)
             {
-                ResetArena();
-                return;
+                // snake draw data
+                snakeDrawData.Add(snake.GetSnakeDrawData());
+                // fill line draw buffer
+                foreach (var line in snake.GetLineDrawData())
+                {
+                    lineDrawData.Add(line);
+                }
             }
-            else if (battleState == ArenaScene.BattleState.EndOfRound)
+            snakeComputer.Draw(snakeDrawData, lineDrawData);
+
+            // collisions
+            List<Snake> collidedSnakes = new();
+            int[] collisions = snakeComputer.GetCollisions();
+            for (int i = 0; i < aliveSnakes.Count; i++)
             {
-                //EndRound();
-                return;
+                if (collisions[i] != 0)
+                collidedSnakes.Add(aliveSnakes[i]);
             }
+            return collidedSnakes;
         }
 
         public void ExplodeWholeScreen()
@@ -224,22 +214,6 @@ namespace ADK
             {
                 explodeComputer.Explode(new Vector2I((int)pixelFilter.startPosX, (int)pixelFilter.startPosY), pixelFilter.halfThickness, pixels);
             }
-        }
-
-        void DisplayArena()
-        {
-            return; // yay
-
-            // unfortunately there is no way to display a gpu texture
-            // other then fetch the data and create a cpu texture from it...
-            // https://github.com/godotengine/godot-demo-projects/pull/938
-            // https://docs.godotengine.org/de/4.x/classes/class_texture2drd.html
-            // coming in GODOT 4.2 (?)
-            var texBytes = rd.TextureGetData(arenaTexReadWrite, 0);
-            var arenaImg = Image.CreateFromData((int)pxWidth, (int)pxHeight, false, Image.Format.Rgba8, texBytes);
-            var displayTex = ImageTexture.CreateFromImage(arenaImg);
-            Texture = displayTex;
-            //rd.TextureUpdate(arenaTexRead, 0, texBytes);
         }
     }
 }
