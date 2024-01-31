@@ -12,6 +12,8 @@ namespace ADK
     {
         List<Snake> snakes = new();
         List<Snake> aliveSnakes = new();
+        List<Snake> collidedSnakes = new();
+        public List<Snake> CollidedSnakes => collidedSnakes;
         Arena arena;
 
         public SnakeHandler(Arena arena)
@@ -34,7 +36,27 @@ namespace ADK
             }
         }
 
-        public void UpdateSnakes(double deltaT)
+        public void HandleSnakeInput(InputEventKey keyEvent)
+        {
+            foreach (Snake snake in snakes)
+            {
+                snake.HandleInput(keyEvent);
+            }
+        }
+
+        public void HandleSnakeInput(List<SnakeInput> inputs)
+        {
+            for (int i = 0; i < inputs.Count; i++)
+            {
+                SnakeInput input = inputs[i];
+                snakes[i].HandleInput(input);
+            }
+        }
+
+        /// <summary>
+        /// after executing this, the collided snakes list is filled and usable
+        /// </summary>
+        public void UpdateSnakes(double deltaT, bool handleCollisionsImmediately = true)
         {
             aliveSnakes.RemoveAll(s => !s.IsAlive);
             // we have a winner
@@ -53,44 +75,43 @@ namespace ADK
                 snake.Update((float) deltaT);
             }
 
-            List<Snake> collidedSnakes = arena.DrawSnakesAndLines(aliveSnakes);
+            collidedSnakes = arena.DrawSnakesAndLines(aliveSnakes);
+            // add snakes out of bounds (e.g. the ones that jumped over the arena border)
+            collidedSnakes.AddRange(CheckOutOfBounds(aliveSnakes).Except(collidedSnakes));
+
+            if (handleCollisionsImmediately)
+            {
+                HandleCollisions(collidedSnakes);
+            }
+        }
+
+        List<Snake> CheckOutOfBounds(List<Snake> snakes)
+        {
+            List<Snake> oobSnakes = new();
+            foreach (var snake in snakes)
+            {
+                if (snake.PxPosition.X < 0 || snake.PxPosition.X >= arena.Width || snake.PxPosition.Y < 0 || snake.PxPosition.Y >= arena.Height)
+                {
+                    oobSnakes.Add(snake);
+                }
+            }
+            return oobSnakes;
+        }
+
+        public void HandleCollisions()
+        {
             HandleCollisions(collidedSnakes);
-            HandleSnakeExplosionRequests();
-        }
-
-        public void HandleSnakeInput(InputEventKey keyEvent)
-        {
-            foreach (Snake snake in snakes)
-            {
-                snake.HandleInput(keyEvent);
-            }
-        }
-
-        public void HandleSnakeInput(List<SnakeInput> inputs)
-        {
-            for (int i = 0; i < inputs.Count; i++)
-            {
-                SnakeInput input = inputs[i];
-                snakes[i].HandleInput(input);
-            }
         }
 
         public void HandleCollisions(List<Snake> collidedSnakes)
         {
-            // out of bounds fallback
-            foreach (var snake in aliveSnakes.Except(collidedSnakes))
-            {
-                if (snake.PxPosition.X < 0 || snake.PxPosition.X >= arena.Width || snake.PxPosition.Y < 0 || snake.PxPosition.Y >= arena.Height)
-                {
-                    collidedSnakes.Add(snake);
-                }
-            }
-
-            // work on separate list because OnCollision removes snake from aliveSnakes
             foreach (var snake in collidedSnakes)
             {
                 snake.OnCollision();
+                // aliveSnakes.Remove(snake);
             }
+
+            HandleSnakeExplosionRequests();
         }
 
         void HandleSnakeExplosionRequests()

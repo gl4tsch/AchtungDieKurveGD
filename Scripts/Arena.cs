@@ -38,11 +38,8 @@ namespace ADK
         public override void _Ready()
         {
             base._Ready();
-
             pxWidth = (uint)GameManager.Instance.Settings.ArenaSettings.Settings[WidthSettingName];
             pxHeight = (uint)GameManager.Instance.Settings.ArenaSettings.Settings[HeightSettingName];
-            //GameManager.Instance.ActiveArenaScene.BattleStateChanged += OnBattleStateChanged;
-
             InitArenaTextures();
         }
 
@@ -153,7 +150,7 @@ namespace ADK
 
         public override void _Process(double delta)
         {
-            explodeComputer.UpdateExplosions((float)delta);
+            explodeComputer?.UpdateExplosions((float)delta);
         }
 
         /// <returns>collided snakes</returns>

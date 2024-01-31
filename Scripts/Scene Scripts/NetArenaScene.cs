@@ -18,10 +18,10 @@ namespace ADK.Net
         public override void _Ready()
         {
             base._Ready();
+            snakeHandler = new(arena);
             var playerIDs = NetworkManager.Instance.Players.Keys.ToList();
             netTicker.Init(inputSerializer, playerIDs);
             playerIDs.ForEach(id => playerSnakes.Add(id, null));
-            snakeHandler = new(arena);
             NetworkManager.Instance.AllReady += OnSceneLoadedForAllPlayers;
             NetworkManager.Instance.SendReady();
             GD.Print("Waiting for other Players...");
@@ -84,7 +84,13 @@ namespace ADK.Net
             {
                 HandleInput(input.Values.Cast<SnakeInput>().ToList());
                 snakeHandler.UpdateSnakes(delta);
+                // snakeHandler.HandleCollisions(); // wtf why does this not work
             }
+        }
+
+        public override void _Process(double delta)
+        {
+
         }
 
         ISerializableInput CollectLocalInput()
