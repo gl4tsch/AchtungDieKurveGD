@@ -15,10 +15,12 @@ namespace ADK.Net
         List<Snake> sortedSnakes; // sorted by player id from playerSnakes
         Snake localSnake => GameManager.Instance.Snakes[0];
         SnakeInputSerializer inputSerializer = new();
+        Queue<TickInputs> ticksToExecute = new();
 
         public override void _Ready()
         {
             base._Ready();
+            Engine.PhysicsTicksPerSecond = 3;
             snakeHandler = new(arena);
             var playerIDs = NetworkManager.Instance.Players.Keys.ToList();
             netTicker.Init(inputSerializer, playerIDs);
@@ -85,7 +87,21 @@ namespace ADK.Net
             while (ticks.Count > 0)
             {
                 var tick = ticks.Dequeue();
-                ExecuteTick(tick, delta);
+                ticksToExecute.Enqueue(tick);
+            }
+        }
+
+        double t = 0;
+        public override void _Process(double delta)
+        {
+            t += delta;
+            if (t > 0.1f)
+            {
+                if (ticksToExecute.TryDequeue(out var tick))
+                {
+                    ExecuteTick(tick, 1f/3f);
+                }
+                t -= 0.1f;
             }
         }
 
@@ -128,9 +144,9 @@ namespace ADK.Net
         ISerializableInput CollectLocalInput()
         {
             // local input
-            bool left = Input.IsKeyPressed(localSnake.TurnLeftKey);
-            bool right = Input.IsKeyPressed(localSnake.TurnRightKey);
-            bool fire = Input.IsKeyPressed(localSnake.FireKey);
+            bool left = Input.IsPhysicalKeyPressed(localSnake.TurnLeftKey);
+            bool right = Input.IsPhysicalKeyPressed(localSnake.TurnRightKey);
+            bool fire = Input.IsPhysicalKeyPressed(localSnake.FireKey);
             InputFlags input = InputFlags.None;
             if (left)
             {

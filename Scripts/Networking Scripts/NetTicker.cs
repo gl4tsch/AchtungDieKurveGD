@@ -5,18 +5,6 @@ using Godot;
 
 namespace ADK.Net
 {
-    public class TickInputs
-    {
-        public int TickNumber;
-        public SortedList<long, ISerializableInput> PlayersInput;
-
-        public TickInputs(int tickNumber, SortedList<long, ISerializableInput> playersInput)
-        {
-            TickNumber = tickNumber;
-            PlayersInput = playersInput;
-        }
-    }
-
     /// <summary>
     /// sends and receives tick messages
     /// unfortunately this needs to be a Node to use RPCs.
@@ -49,7 +37,7 @@ namespace ADK.Net
         SortedList<int, ISerializableInput[]> inputBuffer = new();
 
         // where we should be at with consumption
-        int maxNextTickToConsume => localTick - delayTicks;
+        int maxNextTickToConsume => localTick - delayTicks - 1;
         // where we are actually at with consumption
         int nextTickToConsume = 0;
         int localTick = 0;
@@ -173,6 +161,7 @@ namespace ADK.Net
             Queue<TickInputs> ticks = new();
             if (nextTickToConsume > maxNextTickToConsume)
             {
+                // we are ahead of the fixed delay. wait.
                 return ticks;
             }
 
