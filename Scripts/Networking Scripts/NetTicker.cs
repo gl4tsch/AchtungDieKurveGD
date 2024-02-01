@@ -5,6 +5,18 @@ using Godot;
 
 namespace ADK.Net
 {
+    public class TickInputs
+    {
+        public int TickNumber;
+        public SortedList<long, ISerializableInput> PlayersInput;
+
+        public TickInputs(int tickNumber, SortedList<long, ISerializableInput> playersInput)
+        {
+            TickNumber = tickNumber;
+            PlayersInput = playersInput;
+        }
+    }
+
     /// <summary>
     /// sends and receives tick messages
     /// unfortunately this needs to be a Node to use RPCs.
@@ -16,12 +28,16 @@ namespace ADK.Net
 
         [ExportCategory("Lag Simulation")]
         [Export] bool simulateLag = false;
+        public bool DoSimulateLag => simulateLag;
         [Export] Key lagToggleKey = Key.Comma;
         [Export] Key packetLossKey = Key.Period;
         [Export] float minLagMs = 16f;
         [Export] float maxLagMs = 200f;
+
         SortedList<DateTime, ClientTickMessage> delayedClientMessages = new();
         SortedList<DateTime, ServerTickMessage> delayedServerMessages = new();
+        SortedList<DateTime, Action> delayedMethodCalls = new();
+
         bool lagging = false;
         bool loosingPackets = false;
         RandomNumberGenerator rng = new();
@@ -31,10 +47,15 @@ namespace ADK.Net
         int numPlayers => sortedPlayerIds.Count;
         // all received inputs not consumed yet
         SortedList<int, ISerializableInput[]> inputBuffer = new();
-        int nextTickToConsume => localTick - delayTicks;
+
+        // where we should be at with consumption
+        int maxNextTickToConsume => localTick - delayTicks;
+        // where we are actually at with consumption
+        int nextTickToConsume = 0;
+        int localTick = 0;
+
         public ISerializableInput LocalInput { get; set; }
         List<int> receivedServerTicksToAcknowledge = new();
-        int localTick = 0;
         #endregion
 
         #region ServerOnly
@@ -102,6 +123,9 @@ namespace ADK.Net
             }
         }
 
+        /// <summary>
+        /// update the simulated delay queues
+        /// </summary>
         public override void _Process(double delta)
         {
             if (!simulateLag) return;
@@ -120,11 +144,17 @@ namespace ADK.Net
                 RpcId(message.Receiver, nameof(ReceiveServerTickOnClients), message.ToMessage());
                 delayedServerMessages.Remove(key);
             }
+
+            while (delayedMethodCalls.Count > 0 && DateTime.Compare(delayedMethodCalls.Keys[0], DateTime.Now) <= 0)
+            {
+                var key = delayedMethodCalls.Keys[0];
+                delayedMethodCalls[key]?.Invoke();
+                delayedMethodCalls.Remove(key);
+            }
         }
 
         /// <param name="localInput">the input to be sent to the server</param>
-        /// <returns>the input for all players (by id) received from the server</returns>
-        public Dictionary<long, ISerializableInput> Tick(ISerializableInput localInput)
+        public void Tick(ISerializableInput localInput)
         {
             // clients send their input and acknowledge received input
             SendClientTickMessage(localInput);
@@ -134,23 +164,36 @@ namespace ADK.Net
             {
                 SendServerTickMessage();
             }
+            localTick++;
+        }
 
-            // consume input buffer
-            Dictionary<long, ISerializableInput> consumedInput = new();
-            if (inputBuffer.ContainsKey(nextTickToConsume))
+        /// <returns>the input for all players (by id) received from the server</returns>
+        public Queue<TickInputs> ConsumeAllReadyTicks()
+        {
+            Queue<TickInputs> ticks = new();
+            if (nextTickToConsume > maxNextTickToConsume)
             {
+                return ticks;
+            }
+
+            if(!inputBuffer.ContainsKey(nextTickToConsume)) // the next input needed is not here yet
+            {
+                GD.Print($"no input available for expected tick {nextTickToConsume}");
+            }
+
+            // only actually consume input if we are sufficiently behind delay already
+            while (inputBuffer.ContainsKey(nextTickToConsume) && nextTickToConsume <= maxNextTickToConsume)
+            {
+                SortedList<long, ISerializableInput> consumedInput = new();
                 for (int i = 0; i < inputBuffer[nextTickToConsume].Length; i++)
                 {
                     consumedInput.Add(sortedPlayerIds[i], inputBuffer[nextTickToConsume][i]);
                 }
+                ticks.Enqueue(new TickInputs(nextTickToConsume, consumedInput));
                 inputBuffer.Remove(nextTickToConsume);
+                nextTickToConsume++;
             }
-            else // the next input needed is not here yet
-            {
-                GD.Print($"no input available for expected tick {nextTickToConsume}");
-            }
-            localTick++;
-            return consumedInput;
+            return ticks;
         }
 
         void SendClientTickMessage(ISerializableInput input)
@@ -256,6 +299,22 @@ namespace ADK.Net
                     delayedClientMessages.Add(delayedTime, clientTick);
                     break;
             }
+        }
+
+        public void SimulateDelayedRpc(Action method, float delayMs = -1)
+        {
+            if (!simulateLag || !lagging && !loosingPackets)
+            {
+                method?.Invoke();
+                return;
+            }
+
+            if (delayMs < 0)
+            {
+                delayMs = rng.RandfRange(minLagMs, maxLagMs);
+            }
+            DateTime delayedTime = DateTime.Now.AddMilliseconds(delayMs);
+            delayedMethodCalls.Add(delayedTime, method);
         }
     }
 }

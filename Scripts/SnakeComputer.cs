@@ -142,13 +142,8 @@ namespace ADK
                 drainedLineDrawData.Add(line);
             }
 
-            ComputeDrawSync(snakesData.ToArray(), drainedLineDrawData);
-        }
-
-        void ComputeDrawSync(LineData[] snakesData, List<LineData> lineDrawData)
-        {
-            ComputeDrawAsync(snakesData, lineDrawData);
-            //rd.Sync();
+            // DrawSync is not possible anymore because we are on the main rendering device (?)
+            ComputeDrawAsync(snakesData.ToArray(), drainedLineDrawData);
             rd.Barrier(RenderingDevice.BarrierMask.Compute);
         }
 

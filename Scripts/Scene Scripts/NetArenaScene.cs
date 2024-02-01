@@ -11,7 +11,8 @@ namespace ADK.Net
         [Export] Arena arena;
         SnakeHandler snakeHandler;
 
-        Dictionary<long, NetSnake> playerSnakes = new();
+        SortedList<long, NetSnake> playerSnakes = new();
+        List<Snake> sortedSnakes; // sorted by player id from playerSnakes
         Snake localSnake => GameManager.Instance.Snakes[0];
         SnakeInputSerializer inputSerializer = new();
 
@@ -63,34 +64,65 @@ namespace ADK.Net
 
             if (playerSnakes.Values.All(s => s != null))
             {
-                var snakes = playerSnakes.Values.Cast<Snake>().ToList();
-                snakeHandler.SetSnakes(snakes);
-                arena.Init(snakes.Count);
+                sortedSnakes = playerSnakes.Values.Cast<Snake>().ToList();
+                snakeHandler.SetSnakes(sortedSnakes);
+                arena.Init(sortedSnakes.Count);
             }
         }
 
         /// <summary>
-        /// TICK
+        /// NET TICK
         /// </summary>
         public override void _PhysicsProcess(double delta)
         {
             var collectedInput = CollectLocalInput();
-            var input = netTicker.Tick(collectedInput);
-            if (input.Count == 0)
+            netTicker.Tick(collectedInput);
+            var ticks = netTicker.ConsumeAllReadyTicks();
+            if (ticks.Count == 0)
             {
                 GD.PrintErr("no input available. freezing simulation until it arrives");
             }
-            else
+            while (ticks.Count > 0)
             {
-                HandleInput(input.Values.Cast<SnakeInput>().ToList());
-                snakeHandler.UpdateSnakes(delta, false);
-                snakeHandler.HandleCollisions();
+                var tick = ticks.Dequeue();
+                ExecuteTick(tick, delta);
             }
         }
 
-        public override void _Process(double delta)
+        void ExecuteTick(TickInputs inputs, double deltaT)
         {
-            
+            var orderedInputList = inputs.PlayersInput.Values.Cast<SnakeInput>().ToList();
+            snakeHandler.HandleSnakeInput(orderedInputList);
+            snakeHandler.UpdateSnakes(deltaT, false);
+            if (Multiplayer.IsServer() && snakeHandler.CollidedSnakes.Count > 0)
+            {
+                SendCollisionMessages(snakeHandler.CollidedSnakes);
+            }
+        }
+
+        void SendCollisionMessages(List<Snake> collidedSnakes)
+        {
+            foreach (var snake in collidedSnakes)
+            {
+                long collidedPlayer = playerSnakes.FirstOrDefault(ps => ps.Value == snake).Key;
+                foreach (var player in playerSnakes.Keys)
+                {
+                    if (netTicker.DoSimulateLag)
+                    {
+                        netTicker.SimulateDelayedRpc(() => RpcId(player, nameof(ReceiveCollisionMessage), collidedPlayer));
+                    }
+                    else
+                    {
+                        RpcId(player, nameof(ReceiveCollisionMessage), collidedPlayer);
+                    }
+                }
+            }
+        }
+
+        [Rpc(MultiplayerApi.RpcMode.AnyPeer, CallLocal = true, TransferMode = MultiplayerPeer.TransferModeEnum.Reliable)]
+        void ReceiveCollisionMessage(long collidedPlayer)
+        {
+            snakeHandler.HandleCollisions(new(){playerSnakes[collidedPlayer]});
         }
 
         ISerializableInput CollectLocalInput()
@@ -113,11 +145,6 @@ namespace ADK.Net
                 input |= InputFlags.Fire;
             }
             return new SnakeInput(input);
-        }
-
-        public void HandleInput(List<SnakeInput> inputs)
-        {
-            snakeHandler.HandleSnakeInput(inputs);
         }
 
         void OnBattleStateChanged(ArenaScene.BattleState battleState)

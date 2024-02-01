@@ -8,12 +8,13 @@
 script = ExtResource("1_t0tpl")
 netTicker = NodePath("NetTicker")
 arena = NodePath("TextureRect")
+metadata/_edit_horizontal_guides_ = [-48.0]
 
 [node name="NetTicker" type="Node" parent="."]
 script = ExtResource("2_du3f1")
 delayTicks = 8
 simulateLag = true
-minLagMs = 40.0
-maxLagMs = 40.0
+minLagMs = 200.0
+maxLagMs = 400.0
 
 [node name="TextureRect" parent="." instance=ExtResource("3_qhwow")]
