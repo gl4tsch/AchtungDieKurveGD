@@ -58,6 +58,7 @@ namespace ADK
         /// </summary>
         public void UpdateSnakes(double deltaT, bool handleCollisionsImmediately = true)
         {
+            collidedSnakes.Clear();
             aliveSnakes.RemoveAll(s => !s.IsAlive);
             // we have a winner
             if (aliveSnakes.Count <= 1)

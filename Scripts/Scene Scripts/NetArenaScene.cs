@@ -83,14 +83,14 @@ namespace ADK.Net
             else
             {
                 HandleInput(input.Values.Cast<SnakeInput>().ToList());
-                snakeHandler.UpdateSnakes(delta);
-                // snakeHandler.HandleCollisions(); // wtf why does this not work
+                snakeHandler.UpdateSnakes(delta, false);
+                snakeHandler.HandleCollisions();
             }
         }
 
         public override void _Process(double delta)
         {
-
+            
         }
 
         ISerializableInput CollectLocalInput()
