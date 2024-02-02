@@ -189,7 +189,7 @@ namespace ADK.Net
         {
             ClientTickMessage clientTick = new(input, receivedServerTicksToAcknowledge.ToArray());
 
-            GD.Print($"{Multiplayer.GetUniqueId()}:\nSending input {clientTick.Input}\nand sending acknowledgements for ticks {string.Join(",", clientTick.AcknowledgedServerTicks)}");
+            GD.Print($"{Multiplayer.GetUniqueId()}:\nSending input {clientTick.Input}\nand sending acknowledgements for ticks [{string.Join(",", clientTick.AcknowledgedServerTicks)}]");
 
             // send local input to server
             if (simulateLag && loosingPackets)
@@ -212,7 +212,7 @@ namespace ADK.Net
             ClientTickMessage clientTick = new(clientTickData, inputSerializer);
             int playerId = Multiplayer.GetRemoteSenderId();
 
-            GD.Print($"Server received input {clientTick.Input} from Player {playerId}");
+            GD.Print($"Server received input {clientTick.Input} from Player {playerId} for tick {localTick}");
             serverTickInputBlock[PlayerIdToIdx(playerId)] = clientTick.Input;
 
             // all ticks acknowledged by the client will not be sent anymore
@@ -223,16 +223,17 @@ namespace ADK.Net
         void SendServerTickMessage()
         {
             inputHistory.Add(localTick, serverTickInputBlock);
+            GD.Print($"Server sending unacknowledged ticks to clients");
 
-            foreach (var id in sortedPlayerIds)
+            foreach (var playerId in sortedPlayerIds)
             {
                 // always send input for the current server tick
-                pendingAcknowledgements[id].Add(localTick);
+                pendingAcknowledgements[playerId].Add(localTick);
 
-                ServerTickMessage serverTick = new(GetPendingInputsForPlayer(id), id);
+                ServerTickMessage serverTick = new(GetPendingInputsForPlayer(playerId), playerId);
                 if (simulateLag && loosingPackets)
                 {
-                    GD.Print($"Simulated packet loss for server tick {localTick} to client {id}");
+                    GD.PrintErr($"Simulated packet loss for server tick {localTick} to client {playerId}");
                 }
                 else if (simulateLag && lagging)
                 {
@@ -240,7 +241,7 @@ namespace ADK.Net
                 }
                 else
                 {
-                    RpcId(id, nameof(ReceiveServerTickOnClients), serverTick.ToMessage());
+                    RpcId(playerId, nameof(ReceiveServerTickOnClients), serverTick.ToMessage());
                 }
             }
             // do not reset input block between sends. this way, the previous input will be used if no input arrived from a client in time

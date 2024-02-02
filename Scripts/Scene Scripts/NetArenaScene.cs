@@ -62,7 +62,7 @@ namespace ADK.Net
             var snake = new NetSnake(NetworkManager.Instance.Players[playerId], position, direction);
             // snake.PlayerId = playerId;
             playerSnakes[playerId] = snake;
-            GD.Print($"Snake spawned at {position}, {direction}");
+            GD.Print($"{Multiplayer.GetUniqueId()}: Snake spawned at {position}, {direction}");
 
             if (playerSnakes.Values.All(s => s != null))
             {
@@ -79,10 +79,10 @@ namespace ADK.Net
         {
             var collectedInput = CollectLocalInput();
             netTicker.Tick(collectedInput);
-            var ticks = netTicker.ConsumeAllReadyTicks();
+            Queue<TickInputs> ticks = netTicker.ConsumeAllReadyTicks();
             if (ticks.Count == 0)
             {
-                GD.PrintErr("no input available. freezing simulation until it arrives");
+                GD.PrintErr($"{Multiplayer.GetUniqueId()}: no input available. freezing simulation until it arrives");
             }
             while (ticks.Count > 0)
             {
@@ -91,23 +91,18 @@ namespace ADK.Net
             }
         }
 
-        double t = 0;
         public override void _Process(double delta)
         {
-            t += delta;
-            if (t > 0.1f)
+            if (ticksToExecute.TryDequeue(out TickInputs tick))
             {
-                if (ticksToExecute.TryDequeue(out var tick))
-                {
-                    ExecuteTick(tick, 1f/3f);
-                }
-                t -= 0.1f;
+                ExecuteTick(tick, 1f/3f);
             }
         }
 
         void ExecuteTick(TickInputs inputs, double deltaT)
         {
             var orderedInputList = inputs.PlayersInput.Values.Cast<SnakeInput>().ToList();
+            GD.PrintErr($"{Multiplayer.GetUniqueId()}: executing input for tick {inputs.TickNumber}: {string.Join(",", orderedInputList)}");
             snakeHandler.HandleSnakeInput(orderedInputList);
             snakeHandler.UpdateSnakes(deltaT, false);
             if (Multiplayer.IsServer() && snakeHandler.CollidedSnakes.Count > 0)
@@ -141,11 +136,13 @@ namespace ADK.Net
             snakeHandler.HandleCollisions(new(){playerSnakes[collidedPlayer]});
         }
 
+        bool flipFlop = false;
         ISerializableInput CollectLocalInput()
         {
             // local input
-            bool left = Input.IsPhysicalKeyPressed(localSnake.TurnLeftKey);
-            bool right = Input.IsPhysicalKeyPressed(localSnake.TurnRightKey);
+            bool left = flipFlop; //Input.IsPhysicalKeyPressed(localSnake.TurnLeftKey);
+            bool right = !flipFlop; //Input.IsPhysicalKeyPressed(localSnake.TurnRightKey);
+            flipFlop = !flipFlop;
             bool fire = Input.IsPhysicalKeyPressed(localSnake.FireKey);
             InputFlags input = InputFlags.None;
             if (left)
