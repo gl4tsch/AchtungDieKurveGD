@@ -262,6 +262,7 @@ namespace ADK.Net
 
             foreach (var inputTick in serverTick.ClientsInputData)
             {
+                //TODO: do not re-add ticks already removed from inputBuffer due to being consumed already
                 if (inputBuffer.TryAdd(inputTick.Key, inputTick.Value))
                 {
                     GD.Print($"{Multiplayer.GetUniqueId()}: tick {inputTick.Key} is new");

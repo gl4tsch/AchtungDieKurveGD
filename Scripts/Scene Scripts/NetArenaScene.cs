@@ -20,7 +20,6 @@ namespace ADK.Net
         public override void _Ready()
         {
             base._Ready();
-            Engine.PhysicsTicksPerSecond = 3;
             snakeHandler = new(arena);
             var playerIDs = NetworkManager.Instance.Players.Keys.ToList();
             netTicker.Init(inputSerializer, playerIDs);
@@ -95,7 +94,7 @@ namespace ADK.Net
         {
             if (ticksToExecute.TryDequeue(out TickInputs tick))
             {
-                ExecuteTick(tick, 1f/3f);
+                ExecuteTick(tick, 1f / Engine.PhysicsTicksPerSecond);
             }
         }
 
@@ -137,12 +136,18 @@ namespace ADK.Net
         }
 
         bool flipFlop = false;
+        ISerializableInput DebugFlipFlopInput()
+        {
+            flipFlop = !flipFlop;
+            InputFlags input = flipFlop ? InputFlags.Left : InputFlags.Right;
+            return new SnakeInput(input);
+        }
+
         ISerializableInput CollectLocalInput()
         {
             // local input
-            bool left = flipFlop; //Input.IsPhysicalKeyPressed(localSnake.TurnLeftKey);
-            bool right = !flipFlop; //Input.IsPhysicalKeyPressed(localSnake.TurnRightKey);
-            flipFlop = !flipFlop;
+            bool left = Input.IsPhysicalKeyPressed(localSnake.TurnLeftKey);
+            bool right = Input.IsPhysicalKeyPressed(localSnake.TurnRightKey);
             bool fire = Input.IsPhysicalKeyPressed(localSnake.FireKey);
             InputFlags input = InputFlags.None;
             if (left)
