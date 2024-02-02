@@ -219,7 +219,7 @@ namespace ADK.Net
             serverTickInputBlock[PlayerIdToIdx(playerId)] = clientTick.Input;
 
             // all ticks acknowledged by the client will not be sent anymore
-            //pendingAcknowledgements[playerId].RemoveAll(tick => clientTick.AcknowledgedServerTicks.Contains(tick));
+            pendingAcknowledgements[playerId].RemoveAll(tick => clientTick.AcknowledgedServerTicks.Contains(tick));
             //TODO: shorten input history if possible
         }
 
