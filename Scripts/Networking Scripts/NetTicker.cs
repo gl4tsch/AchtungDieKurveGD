@@ -50,7 +50,7 @@ namespace ADK.Net
         // input from all clients gets collected here every tick
         ISerializableInput[] serverTickInputBlock;
         // input history sorted by tickNumber
-        SortedList<int, ISerializableInput[]> inputHistory = new();
+        SortedList<int, ISerializableInput[]> inputHistory = new(); //TODO: make round robin buffer
         // keys = player id. value = list of tick numbers
         Dictionary<long, List<int>> pendingAcknowledgements = new();
         #endregion
@@ -220,7 +220,24 @@ namespace ADK.Net
 
             // all ticks acknowledged by the client will not be sent anymore
             pendingAcknowledgements[playerId].RemoveAll(tick => clientTick.AcknowledgedServerTicks.Contains(tick));
-            //TODO: shorten input history if possible
+
+            // if a tick has been acknowledged by all clients, it can be removed from inputHistory
+            if (inputHistory.Count > 0)
+            {
+                int minPendingTick = int.MaxValue;
+                foreach (var pending in pendingAcknowledgements)
+                {
+                    if (pending.Value.Count > 0)
+                    {
+                        minPendingTick = Math.Min(minPendingTick, pending.Value[0]);
+                    }
+                }
+                while(inputHistory.Count > 0 && inputHistory.Keys[0] < minPendingTick)
+                {
+                    inputHistory.Remove(inputHistory.Keys[0]);
+                }
+            }
+            GD.Print("Input history now of size " + inputHistory.Count);
         }
 
         void SendServerTickMessage()
