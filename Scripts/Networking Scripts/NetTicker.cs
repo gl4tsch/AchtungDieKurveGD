@@ -22,8 +22,8 @@ namespace ADK.Net
         [Export] float minLagMs = 16f;
         [Export] float maxLagMs = 200f;
 
-        SortedList<DateTime, ClientTickMessage> delayedClientMessages = new();
-        SortedList<DateTime, ServerTickMessage> delayedServerMessages = new();
+        SortedList<DateTime, byte[]> delayedClientMessages = new();
+        SortedList<DateTime, (long receiver, byte[] message)> delayedServerMessages = new();
         SortedList<DateTime, Action> delayedMethodCalls = new();
 
         bool lagging = false;
@@ -121,7 +121,7 @@ namespace ADK.Net
             while (delayedClientMessages.Count > 0 && DateTime.Compare(delayedClientMessages.Keys[0], DateTime.Now) <= 0)
             {
                 var key = delayedClientMessages.Keys[0];
-                RpcId(1, nameof(ReceiveClientTickOnServer), delayedClientMessages[key].ToMessage());
+                RpcId(1, nameof(ReceiveClientTickOnServer), delayedClientMessages[key]);
                 delayedClientMessages.Remove(key);
             }
 
@@ -129,7 +129,7 @@ namespace ADK.Net
             {
                 var key = delayedServerMessages.Keys[0];
                 var message = delayedServerMessages[key];
-                RpcId(message.Receiver, nameof(ReceiveServerTickOnClients), message.ToMessage());
+                RpcId(message.receiver, nameof(ReceiveServerTickOnClients), message.message);
                 delayedServerMessages.Remove(key);
             }
 
@@ -219,7 +219,7 @@ namespace ADK.Net
             serverTickInputBlock[PlayerIdToIdx(playerId)] = clientTick.Input;
 
             // all ticks acknowledged by the client will not be sent anymore
-            pendingAcknowledgements[playerId].RemoveAll(tick => clientTick.AcknowledgedServerTicks.Contains(tick));
+            //pendingAcknowledgements[playerId].RemoveAll(tick => clientTick.AcknowledgedServerTicks.Contains(tick));
             //TODO: shorten input history if possible
         }
 
@@ -289,10 +289,10 @@ namespace ADK.Net
             switch (message)
             {
                 case ServerTickMessage serverTick:
-                    delayedServerMessages.Add(delayedTime, serverTick);
+                    delayedServerMessages.Add(delayedTime, (serverTick.Receiver, serverTick.ToMessage()));
                     break;
                 case ClientTickMessage clientTick:
-                    delayedClientMessages.Add(delayedTime, clientTick);
+                    delayedClientMessages.Add(delayedTime, clientTick.ToMessage());
                     break;
             }
         }

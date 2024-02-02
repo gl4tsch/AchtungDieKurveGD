@@ -31,7 +31,7 @@ namespace ADK.Net
             {
                 int tick = BitConverter.ToInt32(tickData, i);
 
-                Span<byte> inputs = tickData.AsSpan().Slice(sizeof(int), numPlayers*sizeofInput);
+                Span<byte> inputs = tickData.AsSpan().Slice(i + sizeof(int), numPlayers*sizeofInput);
                 List<ISerializableInput> tickInputs = new();
                 for (int j = 0; j < numPlayers; j++)
                 {
