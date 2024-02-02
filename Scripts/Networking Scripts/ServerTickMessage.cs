@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
+using System.Text;
 using Godot;
 
 namespace ADK.Net
@@ -54,6 +55,16 @@ namespace ADK.Net
                 }
             }
             return data.ToArray();
+        }
+
+        public override string ToString()
+        {
+            StringBuilder sb = new();
+            foreach (var cid in ClientsInputData)
+            {
+                sb.Append($"[{cid.Key}: {string.Join(',', cid.Value.ToList())}]");
+            }
+            return sb.ToString();
         }
     }
 }

@@ -189,7 +189,7 @@ namespace ADK.Net
         {
             ClientTickMessage clientTick = new(input, receivedServerTicksToAcknowledge.ToArray());
 
-            GD.Print($"{Multiplayer.GetUniqueId()}:\nSending input {clientTick.Input}\nand sending acknowledgements for ticks [{string.Join(",", clientTick.AcknowledgedServerTicks)}]");
+            GD.Print($"{Multiplayer.GetUniqueId()}: Sending input {clientTick.Input}\t and sending acknowledgements for ticks [{string.Join(",", clientTick.AcknowledgedServerTicks)}]");
 
             // send local input to server
             if (simulateLag && loosingPackets)
@@ -204,6 +204,9 @@ namespace ADK.Net
             {
                 RpcId(1, nameof(ReceiveClientTickOnServer), clientTick.ToMessage());
             }
+
+            // do not send acknowledgements again for ticks no longer received from the server
+            receivedServerTicksToAcknowledge.Clear();
         }
 
         [Rpc(MultiplayerApi.RpcMode.AnyPeer, CallLocal = true, TransferMode = MultiplayerPeer.TransferModeEnum.Unreliable)]
@@ -217,13 +220,15 @@ namespace ADK.Net
 
             // all ticks acknowledged by the client will not be sent anymore
             pendingAcknowledgements[playerId].RemoveAll(tick => clientTick.AcknowledgedServerTicks.Contains(tick));
-            // shorten input history if possible
+            //TODO: shorten input history if possible
         }
 
         void SendServerTickMessage()
         {
-            inputHistory.Add(localTick, serverTickInputBlock);
-            GD.Print($"Server sending unacknowledged ticks to clients");
+            ISerializableInput[] inputBlock = new ISerializableInput[serverTickInputBlock.Length];
+            serverTickInputBlock.CopyTo(inputBlock, 0);
+            GD.Print($"Server tick [{localTick}] input history addition: {string.Join(',', inputBlock.ToList())}");
+            inputHistory.Add(localTick, inputBlock);
 
             foreach (var playerId in sortedPlayerIds)
             {
@@ -231,6 +236,8 @@ namespace ADK.Net
                 pendingAcknowledgements[playerId].Add(localTick);
 
                 ServerTickMessage serverTick = new(GetPendingInputsForPlayer(playerId), playerId);
+                GD.Print($"Server sending unacknowledged ticks to {playerId}: {serverTick}");
+
                 if (simulateLag && loosingPackets)
                 {
                     GD.PrintErr($"Simulated packet loss for server tick {localTick} to client {playerId}");
@@ -251,14 +258,13 @@ namespace ADK.Net
         void ReceiveServerTickOnClients(byte[] serverTickData)
         {
             ServerTickMessage serverTick = new(serverTickData, numPlayers, inputSerializer);
-
-            // do not send acknowledgements again for ticks no longer received from the server
-            receivedServerTicksToAcknowledge.Clear();
+            GD.Print($"{Multiplayer.GetUniqueId()}: received server message with ticks: {serverTick}");
 
             foreach (var inputTick in serverTick.ClientsInputData)
             {
                 if (inputBuffer.TryAdd(inputTick.Key, inputTick.Value))
                 {
+                    GD.Print($"{Multiplayer.GetUniqueId()}: tick {inputTick.Key} is new");
                     receivedServerTicksToAcknowledge.Add(inputTick.Key);
                 }
                 // else it is an input repeated by sliding window. ignore.
