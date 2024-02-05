@@ -16,7 +16,9 @@ namespace ADK.Net
 
         [ExportCategory("Lag Simulation")]
         [Export] bool simulateLag = false;
+        [Export] bool lagging = false;
         public bool DoSimulateLag => simulateLag;
+        bool loosingPackets = false;
         [Export] Key lagToggleKey = Key.Comma;
         [Export] Key packetLossKey = Key.Period;
         [Export] float minLagMs = 16f;
@@ -25,25 +27,21 @@ namespace ADK.Net
         SortedList<DateTime, byte[]> delayedClientMessages = new();
         SortedList<DateTime, (long receiver, byte[] message)> delayedServerMessages = new();
         SortedList<DateTime, Action> delayedMethodCalls = new();
-
-        bool lagging = false;
-        bool loosingPackets = false;
         RandomNumberGenerator rng = new();
 
         #region AllClients
         List<long> sortedPlayerIds;
         int numPlayers => sortedPlayerIds.Count;
+
         // all received inputs not consumed yet
         SortedList<int, ISerializableInput[]> inputBuffer = new();
+        List<int> receivedServerTicksToAcknowledge = new();
 
         // where we should be at with consumption
         int maxNextTickToConsume => localTick - delayTicks - 1;
         // where we are actually at with consumption
         int nextTickToConsume = 0;
         int localTick = 0;
-
-        public ISerializableInput LocalInput { get; set; }
-        List<int> receivedServerTicksToAcknowledge = new();
         #endregion
 
         #region ServerOnly
@@ -72,7 +70,26 @@ namespace ADK.Net
             this.inputSerializer = inputSerializer;
             this.sortedPlayerIds = playerIDs.OrderBy(id => id).ToList();
             sortedPlayerIds.ForEach(id => pendingAcknowledgements.Add(id, new()));
+            Reset();
+        }
+
+        public void Reset()
+        {
+            // client
+            localTick = 0;
+            nextTickToConsume = 0;
+            inputBuffer.Clear();
+            receivedServerTicksToAcknowledge.Clear();
+
+            // server
             ResetServerInputBlock();
+            inputHistory.Clear();
+            pendingAcknowledgements.Keys.ToList().ForEach(id => pendingAcknowledgements[id].Clear());
+
+            // lag sim
+            delayedClientMessages.Clear();
+            delayedServerMessages.Clear();
+            delayedMethodCalls.Clear();
         }
 
         void ResetServerInputBlock()

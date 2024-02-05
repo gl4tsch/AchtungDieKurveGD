@@ -11,6 +11,7 @@ namespace ADK
         uint pxWidth = 1024, pxHeight = 1024;
         public uint Width => pxWidth;
         public uint Height => pxHeight;
+        public Vector2 Dimensions => new Vector2(Width, Height);
 
         public static readonly string WidthSettingName = "PxWidth";
         public static readonly string HeightSettingName = "PxHeight";

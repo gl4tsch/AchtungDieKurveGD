@@ -24,7 +24,7 @@ namespace ADK
         public void SetSnakes(List<Snake> snakes)
         {
             this.snakes = snakes;
-            Reset();
+            //Reset();
         }
 
         public void Reset()
@@ -34,6 +34,15 @@ namespace ADK
             {
                 aliveSnakes.Add(snake);
             }
+        }
+
+        public void KillAll()
+        {
+            foreach (var snake in aliveSnakes)
+            {
+                snake.Kill();
+            }
+            aliveSnakes.Clear();
         }
 
         public void HandleSnakeInput(InputEventKey keyEvent)

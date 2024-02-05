@@ -25,7 +25,7 @@ namespace ADK.Net
         public event Action<(long id, PlayerInfo info)> PlayerInfoChanged;
         public event Action<long> PlayerDisconnected;
         public event Action ServerDisconnected;
-        public event Action AllReady;
+        public event Action AllReadyOneshot;
 
         PlayerInfo localPlayerInfo;
         public PlayerInfo LocalPlayerInfo
@@ -219,7 +219,7 @@ namespace ADK.Net
             RpcId(1, nameof(SetReady));
         }
 
-        // runs on server only
+        // server
         [Rpc(MultiplayerApi.RpcMode.AnyPeer, CallLocal = true, TransferMode = MultiplayerPeer.TransferModeEnum.Reliable)]
         void SetReady()
         {
@@ -235,16 +235,18 @@ namespace ADK.Net
             }
             if (isEveryoneReady)
             {
-                Rpc(nameof(ReadyToRumble));
                 // clear the list for the next ready check
                 readyPlayers.Clear();
+                Rpc(nameof(ReadyToRumble));
             }
         }
 
         [Rpc(MultiplayerApi.RpcMode.AnyPeer, CallLocal = true, TransferMode = MultiplayerPeer.TransferModeEnum.Reliable)]
         void ReadyToRumble()
         {
-            AllReady?.Invoke();
+            var oneshot = AllReadyOneshot;
+            AllReadyOneshot = null;
+            oneshot?.Invoke();
         }
     }
 }

@@ -12,63 +12,118 @@ namespace ADK.Net
         SnakeHandler snakeHandler;
 
         SortedList<long, NetSnake> playerSnakes = new();
-        List<Snake> sortedSnakes; // sorted by player id from playerSnakes
         Snake localSnake => GameManager.Instance.Snakes[0];
         SnakeInputSerializer inputSerializer = new();
         Queue<TickInputs> ticksToExecute = new();
+        int snakeRespawnCounter = 0;
+        bool readyToRumble = false;
 
         public override void _Ready()
         {
-            base._Ready();
             snakeHandler = new(arena);
             var playerIDs = NetworkManager.Instance.Players.Keys.ToList();
             netTicker.Init(inputSerializer, playerIDs);
-            playerIDs.ForEach(id => playerSnakes.Add(id, null));
-            NetworkManager.Instance.AllReady += OnSceneLoadedForAllPlayers;
+            InitializeSnakes();
+            if (Multiplayer.IsServer())
+            {
+                NetworkManager.Instance.AllReadyOneshot += SendStartNewRound;
+            }
             NetworkManager.Instance.SendReady();
             GD.Print("Waiting for other Players...");
         }
 
-        void OnSceneLoadedForAllPlayers()
+        void InitializeSnakes()
         {
-            GD.Print("All Ready!");
-
-            // oneshot event. unsubscribe so the ready event can be reused later
-            NetworkManager.Instance.AllReady -= OnSceneLoadedForAllPlayers;
-
-            if (Multiplayer.IsServer())
+            foreach (var player in NetworkManager.Instance.Players)
             {
-                var rng = new RandomNumberGenerator();
-                Vector2 arenaSize = new(1024, 1024);
-                Vector2 arenaCenter = arenaSize / 2;
+                playerSnakes.Add(player.Key, new NetSnake(player.Value));
+            }
+                
+            var sortedSnakes = playerSnakes.Values.Cast<Snake>().ToList();
+            snakeHandler.SetSnakes(sortedSnakes);
+            arena.Init(sortedSnakes.Count);
+        }
 
-                foreach (var player in NetworkManager.Instance.Players)
+        public override void _Input(InputEvent @event)
+        {
+            if (@event is InputEventKey keyEvent && keyEvent.IsPressed() && !keyEvent.IsEcho())
+            {
+                if (keyEvent.Keycode == Key.Escape)
                 {
-                    var pxPosition = new Vector2(rng.RandfRange(0 + arenaSize.X / 4, arenaSize.X - arenaSize.X / 4), rng.RandfRange(0 + arenaSize.Y / 4, arenaSize.Y - arenaSize.Y / 4));
-                    var direction = (arenaCenter - pxPosition).Normalized();
-                    Rpc(nameof(SpawnSnakeForPlayer), player.Key, pxPosition, direction);
+                }
+                if (keyEvent.Keycode == Key.Enter && Multiplayer.IsServer())
+                {
+                    SendStartNewRound();
                 }
             }
         }
 
+        // server
+        // send snake spawn positions once all players have finished loading the scene
+        void SendStartNewRound()
+        {
+            GD.PrintErr("Server starting new round...");
+            Rpc(nameof(ReceiveStartNewRound));
+            NetworkManager.Instance.AllReadyOneshot += SendReadyToRumble;
+            SendRespawnSnakes();
+        }
+
         [Rpc(MultiplayerApi.RpcMode.AnyPeer, CallLocal = true, TransferMode = MultiplayerPeer.TransferModeEnum.Reliable)]
-        void SpawnSnakeForPlayer(long playerId, Vector2 position, Vector2 direction)
+        void ReceiveStartNewRound()
+        {
+            readyToRumble = false;
+            netTicker.Reset();
+            // kill the last remaining snake if there is one to update score
+            snakeHandler.KillAll();
+            snakeHandler.Reset();
+            arena.ResetArena();
+        }
+
+        // server
+        void SendRespawnSnakes()
+        {
+            var rng = new RandomNumberGenerator();
+            Vector2 arenaCenter = arena.Dimensions / 2f;
+
+            foreach (var player in playerSnakes)
+            {
+                var pxPosition = new Vector2(rng.RandfRange(0 + arena.Width / 4, arena.Width - arena.Width / 4), rng.RandfRange(0 + arena.Height / 4, arena.Height - arena.Height / 4));
+                var direction = (arenaCenter - pxPosition).Normalized();
+                Rpc(nameof(ReceiveSnakeSpawn), player.Key, pxPosition, direction);
+            }
+        }
+
+        [Rpc(MultiplayerApi.RpcMode.AnyPeer, CallLocal = true, TransferMode = MultiplayerPeer.TransferModeEnum.Reliable)]
+        void ReceiveSnakeSpawn(long playerId, Vector2 position, Vector2 direction)
         {
             if (!playerSnakes.ContainsKey(playerId))
             {
                 GD.PrintErr("received snake spawn rpc for unknown player: " + playerId);
             }
-            var snake = new NetSnake(NetworkManager.Instance.Players[playerId], position, direction);
-            // snake.PlayerId = playerId;
-            playerSnakes[playerId] = snake;
+
+            playerSnakes[playerId].Spawn(position, direction);
             GD.Print($"{Multiplayer.GetUniqueId()}: Snake spawned at {position}, {direction}");
 
-            if (playerSnakes.Values.All(s => s != null))
+            snakeRespawnCounter++;
+            if (snakeRespawnCounter == playerSnakes.Count)
             {
-                sortedSnakes = playerSnakes.Values.Cast<Snake>().ToList();
-                snakeHandler.SetSnakes(sortedSnakes);
-                arena.Init(sortedSnakes.Count);
+                GD.Print($"{Multiplayer.GetUniqueId()} has spawned all snakes and is ready to rumble!");
+                NetworkManager.Instance.SendReady();
+                snakeRespawnCounter = 0;
             }
+        }
+
+        // server
+        void SendReadyToRumble()
+        {
+            Rpc(nameof(ReceiveReadyToRumble));
+        }
+
+        [Rpc(MultiplayerApi.RpcMode.AnyPeer, CallLocal = true, TransferMode = MultiplayerPeer.TransferModeEnum.Reliable)]
+        void ReceiveReadyToRumble()
+        {
+            GD.Print($"{Multiplayer.GetUniqueId()} received ready to rumble!");
+            readyToRumble = true;
         }
 
         /// <summary>
@@ -76,6 +131,8 @@ namespace ADK.Net
         /// </summary>
         public override void _PhysicsProcess(double delta)
         {
+            if (!readyToRumble) return;
+
             var collectedInput = CollectLocalInput();
             netTicker.Tick(collectedInput);
             Queue<TickInputs> ticks = netTicker.ConsumeAllReadyTicks();
@@ -110,6 +167,7 @@ namespace ADK.Net
             }
         }
 
+        // server
         void SendCollisionMessages(List<Snake> collidedSnakes)
         {
             foreach (var snake in collidedSnakes)
@@ -130,7 +188,7 @@ namespace ADK.Net
         }
 
         [Rpc(MultiplayerApi.RpcMode.AnyPeer, CallLocal = true, TransferMode = MultiplayerPeer.TransferModeEnum.Reliable)]
-        void ReceiveCollisionMessage(long collidedPlayer)
+        void ReceiveCollisionMessage(long collidedPlayer) // TODO: pass tick number and explode accordingly
         {
             snakeHandler.HandleCollisions(new(){playerSnakes[collidedPlayer]});
         }
@@ -163,20 +221,6 @@ namespace ADK.Net
                 input |= InputFlags.Fire;
             }
             return new SnakeInput(input);
-        }
-
-        void OnBattleStateChanged(ArenaScene.BattleState battleState)
-        {
-            if (battleState == ArenaScene.BattleState.StartOfRound)
-            {
-                arena.ResetArena();
-                return;
-            }
-            else if (battleState == ArenaScene.BattleState.EndOfRound)
-            {
-                //EndRound();
-                return;
-            }
         }
     }
 }
