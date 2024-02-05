@@ -52,13 +52,38 @@ namespace ADK.Net
 
         public override void _Ready()
         {
-            base._Ready();
             Engine.PhysicsTicksPerSecond = TicksPerSecond;
             Multiplayer.PeerConnected += OnPeerConnected;
             Multiplayer.PeerDisconnected += OnPeerDisconnected;
             Multiplayer.ConnectedToServer += OnConnectedToServer;
             Multiplayer.ConnectionFailed += OnConnectionFailed;
             Multiplayer.ServerDisconnected += OnServerDisconnected;
+        }
+
+        public bool HostGameUpnp()
+        {
+            Upnp upnp = new();
+            Upnp.UpnpResult discoverResult = (Upnp.UpnpResult)upnp.Discover();
+
+            GD.Print("UPNP discover: " + discoverResult);
+            if (discoverResult != Upnp.UpnpResult.Success)
+            {
+                return false;
+            }
+
+            GD.Print("UPNP valid gateway? " + upnp.GetGateway().IsValidGateway());
+            if (!(upnp.GetGateway()?.IsValidGateway() ?? false))
+            {
+                return false;
+            }
+
+            GD.Print("UPNP valid gateway at " + upnp.QueryExternalAddress());
+            Upnp.UpnpResult portMapResult = (Upnp.UpnpResult)upnp.AddPortMapping(port, 0, "AchtungDieKurve_UPD", "UDP");
+            GD.Print("UPNP UDP port mapping result: " + portMapResult);
+            portMapResult = (Upnp.UpnpResult)upnp.AddPortMapping(port, 0, "AchtungDieKurve_TCP", "TCP");
+            GD.Print("UPNP TCP port mapping result: " + portMapResult);
+            
+            return HostGame();
         }
 
         public bool HostGame()
