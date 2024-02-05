@@ -34,7 +34,9 @@ namespace ADK.Net
         int numPlayers => sortedPlayerIds.Count;
 
         // all received inputs not consumed yet
-        SortedList<int, ISerializableInput[]> inputBuffer = new();
+        SortedList<int, ISerializableInput[]> realInputs = new();
+        SortedList<int, TickInputs> predictedInputs = new();
+        TickInputs lastExecutedTick;
         List<int> receivedServerTicksToAcknowledge = new();
 
         // where we should be at with consumption
@@ -78,7 +80,7 @@ namespace ADK.Net
             // client
             localTick = 0;
             nextTickToConsume = 0;
-            inputBuffer.Clear();
+            realInputs.Clear();
             receivedServerTicksToAcknowledge.Clear();
 
             // server
@@ -172,6 +174,30 @@ namespace ADK.Net
             localTick++;
         }
 
+        public TickInputs GetNextInputs()
+        {
+            if (realInputs.ContainsKey(nextTickToConsume))
+            {
+                SortedList<long, ISerializableInput> consumedInput = new();
+                for (int i = 0; i < this.realInputs[nextTickToConsume].Length; i++)
+                {
+                    consumedInput.Add(sortedPlayerIds[i], this.realInputs[nextTickToConsume][i]);
+                }
+                TickInputs inputs = new TickInputs(nextTickToConsume, consumedInput);
+                lastExecutedTick = inputs;
+                this.realInputs.Remove(nextTickToConsume);
+                nextTickToConsume++;
+                return inputs;
+            }
+            else
+            {
+                // we have to predict
+                //TODO: copy lastExecutedTick
+                predictedInputs.Add(localTick, lastExecutedTick);
+                return lastExecutedTick;
+            }
+        }
+
         /// <returns>the input for all players (by id) received from the server</returns>
         public Queue<TickInputs> ConsumeAllReadyTicks()
         {
@@ -182,21 +208,21 @@ namespace ADK.Net
                 return ticks;
             }
 
-            if(!inputBuffer.ContainsKey(nextTickToConsume)) // the next input needed is not here yet
+            if(!realInputs.ContainsKey(nextTickToConsume)) // the next input needed is not here yet
             {
                 GD.Print($"no input available for expected tick {nextTickToConsume}");
             }
 
             // only actually consume input if we are sufficiently behind delay already
-            while (inputBuffer.ContainsKey(nextTickToConsume) && nextTickToConsume <= maxNextTickToConsume)
+            while (realInputs.ContainsKey(nextTickToConsume) && nextTickToConsume <= maxNextTickToConsume)
             {
                 SortedList<long, ISerializableInput> consumedInput = new();
-                for (int i = 0; i < inputBuffer[nextTickToConsume].Length; i++)
+                for (int i = 0; i < realInputs[nextTickToConsume].Length; i++)
                 {
-                    consumedInput.Add(sortedPlayerIds[i], inputBuffer[nextTickToConsume][i]);
+                    consumedInput.Add(sortedPlayerIds[i], realInputs[nextTickToConsume][i]);
                 }
                 ticks.Enqueue(new TickInputs(nextTickToConsume, consumedInput));
-                inputBuffer.Remove(nextTickToConsume);
+                realInputs.Remove(nextTickToConsume);
                 nextTickToConsume++;
             }
             return ticks;
@@ -300,7 +326,7 @@ namespace ADK.Net
                 receivedServerTicksToAcknowledge.Add(inputTick.Key);
                 //do not re-add sliding window ticks already consumed
                 if (inputTick.Key < nextTickToConsume) continue;
-                if (inputBuffer.TryAdd(inputTick.Key, inputTick.Value))
+                if (realInputs.TryAdd(inputTick.Key, inputTick.Value))
                 {
                     GD.Print($"{Multiplayer.GetUniqueId()}: tick {inputTick.Key} is new");
                 }

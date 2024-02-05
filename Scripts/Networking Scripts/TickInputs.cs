@@ -2,7 +2,7 @@ using System.Collections.Generic;
 
 namespace ADK.Net
 {
-    public class TickInputs
+    public struct TickInputs
     {
         public int TickNumber;
         public SortedList<long, ISerializableInput> PlayersInput;
