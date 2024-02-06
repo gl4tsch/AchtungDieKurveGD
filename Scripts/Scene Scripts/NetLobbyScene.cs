@@ -50,6 +50,12 @@ namespace ADK
 
             SetLobbyState(NetLobbyState.Disconnected);
             NetworkManager.Instance.ServerDisconnected += () => SetLobbyState(NetLobbyState.Disconnected);
+            NetworkManager.Instance.RttChecker.DoRegularRttChecks = true;
+        }
+
+        public override void _ExitTree()
+        {
+            NetworkManager.Instance.RttChecker.DoRegularRttChecks = false;
         }
 
         void OnIpInput(string ip)

@@ -8,6 +8,13 @@ namespace ADK.UI
     {
         [Export] Label nameLabel;
         [Export] Label ability;
+        [Export] Label pingLabel;
+
+        int lowPing = 40;
+        int highPing = 100;
+        Color lowPingColor = new(0, 1, 0);
+        Color medPingColor = new(1, 1, 0);
+        Color highPingColor = new(1, 0, 0);
 
         PlayerInfo playerInfo;
 
@@ -21,6 +28,13 @@ namespace ADK.UI
             ability.Text = GameManager.Instance.GetAbilityName(playerInfo.Ability);
 
             return this;
+        }
+
+        public void UpdatePing(float pingMs)
+        {
+            int ping = (int)pingMs;
+            pingLabel.Text = ping.ToString() + "ms";
+            pingLabel.AddThemeColorOverride("font_color", ping < lowPing ? lowPingColor : ping < highPing ? medPingColor : highPingColor);
         }
     }
 }

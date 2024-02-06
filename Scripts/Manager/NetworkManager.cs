@@ -8,6 +8,8 @@ namespace ADK.Net
     public partial class NetworkManager : Node
     {
         public static NetworkManager Instance { get; private set; }
+        [Export] RttChecker rttChecker;
+        public RttChecker RttChecker => rttChecker;
 
         [Export] int port = 1414;
         public int Port => port;
@@ -59,6 +61,11 @@ namespace ADK.Net
             Multiplayer.ConnectedToServer += OnConnectedToServer;
             Multiplayer.ConnectionFailed += OnConnectionFailed;
             Multiplayer.ServerDisconnected += OnServerDisconnected;
+        }
+
+        public override void _Process(double delta)
+        {
+            base._Process(delta);
         }
 
         public void SetPort(int port)

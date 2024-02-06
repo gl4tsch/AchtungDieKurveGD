@@ -2,12 +2,13 @@
 
 [ext_resource type="Script" path="res://Scripts/UI Scripts/NetworkLobbySnake.cs" id="1_mromy"]
 
-[node name="NetworkLobbySnake" type="HBoxContainer" node_paths=PackedStringArray("nameLabel", "ability")]
+[node name="NetworkLobbySnake" type="HBoxContainer" node_paths=PackedStringArray("nameLabel", "ability", "pingLabel")]
 size_flags_vertical = 4
 alignment = 1
 script = ExtResource("1_mromy")
 nameLabel = NodePath("Name")
 ability = NodePath("Ability")
+pingLabel = NodePath("Ping")
 
 [node name="Name" type="Label" parent="."]
 layout_mode = 2
@@ -24,3 +25,10 @@ vertical_alignment = 1
 [node name="Ability" type="Label" parent="."]
 layout_mode = 2
 text = "blub"
+
+[node name="VSeparator2" type="VSeparator" parent="."]
+layout_mode = 2
+
+[node name="Ping" type="Label" parent="."]
+layout_mode = 2
+text = "?ms"

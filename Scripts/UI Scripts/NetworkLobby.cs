@@ -23,6 +23,7 @@ namespace ADK.UI
             NetworkManager.Instance.PlayerInfoChanged += OnPlayerInfoChanged;
             NetworkManager.Instance.PlayerDisconnected += OnPlayerDisconnected;
             NetworkManager.Instance.ServerDisconnected += OnServerDisconnected;
+            NetworkManager.Instance.RttChecker.RttUpdateForPlayer += OnRttUpdateForPlayer;
         }
 
         public override void _ExitTree()
@@ -33,6 +34,7 @@ namespace ADK.UI
             NetworkManager.Instance.PlayerInfoChanged -= OnPlayerInfoChanged;
             NetworkManager.Instance.PlayerDisconnected -= OnPlayerDisconnected;
             NetworkManager.Instance.ServerDisconnected -= OnServerDisconnected;
+            NetworkManager.Instance.RttChecker.RttUpdateForPlayer -= OnRttUpdateForPlayer;
         }
 
         void ClearNetSnakeInstances()
@@ -75,6 +77,11 @@ namespace ADK.UI
                 netSnake.Value.QueueFree();
             }
             netSnakeInstances.Clear();
+        }
+
+        void OnRttUpdateForPlayer((float playerId, float rttMs)rttUpdate)
+        {
+            netSnakeInstances[(long)rttUpdate.playerId].UpdatePing(rttUpdate.rttMs / 2f);
         }
     }
 }

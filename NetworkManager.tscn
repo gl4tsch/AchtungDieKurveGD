@@ -1,7 +1,12 @@
-[gd_scene load_steps=2 format=3 uid="uid://c0aeqgt1hcybk"]
+[gd_scene load_steps=3 format=3 uid="uid://c0aeqgt1hcybk"]
 
 [ext_resource type="Script" path="res://Scripts/Manager/NetworkManager.cs" id="1_0sfgl"]
+[ext_resource type="Script" path="res://Scripts/Networking Scripts/RttChecker.cs" id="2_c6bx8"]
 
-[node name="NetworkManager" type="Node"]
+[node name="NetworkManager" type="Node" node_paths=PackedStringArray("rttChecker")]
 script = ExtResource("1_0sfgl")
+rttChecker = NodePath("RttChecker")
 TicksPerSecond = 60
+
+[node name="RttChecker" type="Node" parent="."]
+script = ExtResource("2_c6bx8")
