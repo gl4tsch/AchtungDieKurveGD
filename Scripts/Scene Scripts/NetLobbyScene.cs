@@ -6,9 +6,10 @@ namespace ADK
 {
     public partial class NetLobbyScene : Node
     {
+        [Export] LineEdit ipInput, portInput;
         [Export] Button backButton;
         [Export] LobbySnake ownSnake;
-        [Export] Button hostButton, joinButton, startButton, readyButton;
+        [Export] Button hostButton, joinButton, startButton, readyButton, leaveButton;
         [Export] NetworkLobby lobby;
         [Export] Control lobbyContent;
 
@@ -27,7 +28,9 @@ namespace ADK
 
         public override void _Ready()
         {
-            base._Ready();
+            ipInput.TextChanged += OnIpInput;
+            portInput.Text = NetworkManager.Instance.Port.ToString();
+            portInput.TextChanged += OnPortInput;
 
             GameManager.Instance.Snakes.Clear();
             var snake = GameManager.Instance.CreateNewSnake();
@@ -42,9 +45,24 @@ namespace ADK
             joinButton.Pressed += OnJoinButtonClicked;
             readyButton.Pressed += OnReadyButtonClicked;
             startButton.Pressed += OnStartButtonClicked;
+            leaveButton.Pressed += OnLeaveButtonClicked;
             backButton.Pressed += GoBack;
 
             SetLobbyState(NetLobbyState.Disconnected);
+            NetworkManager.Instance.ServerDisconnected += () => SetLobbyState(NetLobbyState.Disconnected);
+        }
+
+        void OnIpInput(string ip)
+        {
+            // todo: check for validity
+        }
+
+        void OnPortInput(string port)
+        {
+            if (int.TryParse(port, out int portNum))
+            {
+                NetworkManager.Instance.SetPort(portNum);
+            }
         }
 
         public override void _Input(InputEvent @event)
@@ -87,7 +105,8 @@ namespace ADK
             hostButton.Visible = state == NetLobbyState.Disconnected;
             joinButton.Visible = state == NetLobbyState.Disconnected;
             startButton.Visible = state == NetLobbyState.Host;
-            readyButton.Visible = state != NetLobbyState.Disconnected;
+            readyButton.Visible = false; //state != NetLobbyState.Disconnected;
+            leaveButton.Visible = state != NetLobbyState.Disconnected;
 
             // lobby
             lobbyContent.Visible = state != NetLobbyState.Disconnected;
@@ -103,9 +122,13 @@ namespace ADK
 
         void OnJoinButtonClicked()
         {
-            if (NetworkManager.Instance.JoinGame())
+            if (NetworkManager.Instance.JoinGame(ipInput.Text))
             {
                 SetLobbyState(NetLobbyState.Client);
+            }
+            else
+            {
+                SetLobbyState(NetLobbyState.Disconnected);
             }
         }
 
@@ -117,6 +140,12 @@ namespace ADK
         void OnStartButtonClicked()
         {
             NetworkManager.Instance.SendStartGame();
+        }
+
+        void OnLeaveButtonClicked()
+        {
+            NetworkManager.Instance.Disconnect();
+            SetLobbyState(NetLobbyState.Disconnected);
         }
 
         void GoBack()

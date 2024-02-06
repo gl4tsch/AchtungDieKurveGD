@@ -12,6 +12,7 @@ metadata/_edit_horizontal_guides_ = [-48.0]
 
 [node name="NetTicker" type="Node" parent="."]
 script = ExtResource("2_du3f1")
+delayTicks = 8
 simulateLag = true
 minLagMs = 200.0
 maxLagMs = 400.0

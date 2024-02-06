@@ -10,6 +10,7 @@ namespace ADK.Net
         public static NetworkManager Instance { get; private set; }
 
         [Export] int port = 1414;
+        public int Port => port;
         [Export] string defaultServerIP = "localhost";
         [Export] int maxConnections = 99;
         /// <summary>
@@ -58,6 +59,11 @@ namespace ADK.Net
             Multiplayer.ConnectedToServer += OnConnectedToServer;
             Multiplayer.ConnectionFailed += OnConnectionFailed;
             Multiplayer.ServerDisconnected += OnServerDisconnected;
+        }
+
+        public void SetPort(int port)
+        {
+            this.port = port;
         }
 
         public bool HostGameUpnp()
@@ -124,9 +130,7 @@ namespace ADK.Net
 
         public void Disconnect()
         {
-            players.Clear();
-            Multiplayer.MultiplayerPeer?.Close();
-            Multiplayer.MultiplayerPeer = null;
+            OnServerDisconnected();
         }
 
         /// <summary>
@@ -165,7 +169,7 @@ namespace ADK.Net
         private void OnConnectionFailed()
         {
             GD.Print("Connection Failed");
-            Multiplayer.MultiplayerPeer = null;
+            OnServerDisconnected();
         }
 
         /// <summary>
@@ -173,6 +177,7 @@ namespace ADK.Net
         /// </summary>
         private void OnServerDisconnected()
         {
+            Multiplayer.MultiplayerPeer?.Close();
             Multiplayer.MultiplayerPeer = null;
             players.Clear();
             ServerDisconnected?.Invoke();
