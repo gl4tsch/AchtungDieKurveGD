@@ -35,8 +35,6 @@ namespace ADK.Net
 
         // all received inputs not consumed yet
         SortedList<int, ISerializableInput[]> realInputs = new();
-        SortedList<int, TickInputs> predictedInputs = new();
-        TickInputs lastExecutedTick;
         List<int> receivedServerTicksToAcknowledge = new();
 
         // where we should be at with consumption
@@ -172,30 +170,6 @@ namespace ADK.Net
                 SendServerTickMessage();
             }
             localTick++;
-        }
-
-        public TickInputs GetNextInputs()
-        {
-            if (realInputs.ContainsKey(nextTickToConsume))
-            {
-                SortedList<long, ISerializableInput> consumedInput = new();
-                for (int i = 0; i < this.realInputs[nextTickToConsume].Length; i++)
-                {
-                    consumedInput.Add(sortedPlayerIds[i], this.realInputs[nextTickToConsume][i]);
-                }
-                TickInputs inputs = new TickInputs(nextTickToConsume, consumedInput);
-                lastExecutedTick = inputs;
-                this.realInputs.Remove(nextTickToConsume);
-                nextTickToConsume++;
-                return inputs;
-            }
-            else
-            {
-                // we have to predict
-                //TODO: copy lastExecutedTick
-                predictedInputs.Add(localTick, lastExecutedTick);
-                return lastExecutedTick;
-            }
         }
 
         /// <returns>the input for all players (by id) received from the server</returns>

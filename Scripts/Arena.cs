@@ -28,13 +28,15 @@ namespace ADK
         Rid arenaTexReadWrite;
         Texture2Drd renderTex;
 
-        SnakeComputer snakeComputer;
+        protected SnakeComputer snakeComputer;
         ExplodeComputer explodeComputer;
         PixelSelector pixelSelector;
 
         Rid texClearShader;
         Rid texClearPipeline;
         Rid texClearUniformSet;
+
+        int snakeCount;
 
         public override void _Ready()
         {
@@ -68,6 +70,7 @@ namespace ADK
 
         public void Init(int snakeCount)
         {
+            this.snakeCount = snakeCount;
             snakeComputer = new SnakeComputer(Width, Height, snakeCount, rd, snakeComputeShader, arenaTexReadWrite);
             explodeComputer = new ExplodeComputer(rd, explodeComputeShader, arenaTexReadWrite);
             pixelSelector = new PixelSelector(rd, selectComputeShader, arenaTexReadWrite, pxWidth, pxHeight);
@@ -157,6 +160,13 @@ namespace ADK
         /// <returns>collided snakes</returns>
         public List<Snake> DrawSnakesAndLines(List<Snake> aliveSnakes)
         {
+            var drawData = GetDrawData(aliveSnakes);
+            snakeComputer.Draw(drawData.SnakeDrawData, drawData.LineDrawData);
+            return GetCollisions(aliveSnakes);
+        }
+
+        protected FrameDrawData GetDrawData(List<Snake> aliveSnakes)
+        {
             List<LineData> snakeDrawData = new();
             List<LineData> lineDrawData = new();
             foreach (var snake in aliveSnakes)
@@ -169,15 +179,22 @@ namespace ADK
                     lineDrawData.Add(line);
                 }
             }
-            snakeComputer.Draw(snakeDrawData, lineDrawData);
+            return new FrameDrawData()
+            {
+                SnakeDrawData = snakeDrawData,
+                LineDrawData = lineDrawData
+            };
+        }
 
+        protected List<Snake> GetCollisions(List<Snake> snakes)
+        {
             // collisions
             List<Snake> collidedSnakes = new();
             int[] collisions = snakeComputer.GetCollisions();
-            for (int i = 0; i < aliveSnakes.Count; i++)
+            for (int i = 0; i < snakes.Count; i++)
             {
                 if (collisions[i] != 0)
-                collidedSnakes.Add(aliveSnakes[i]);
+                collidedSnakes.Add(snakes[i]);
             }
             return collidedSnakes;
         }
