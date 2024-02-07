@@ -50,7 +50,6 @@ namespace ADK
 
             SetLobbyState(NetLobbyState.Disconnected);
             NetworkManager.Instance.ServerDisconnected += () => SetLobbyState(NetLobbyState.Disconnected);
-            NetworkManager.Instance.RttChecker.DoRegularRttChecks = true;
         }
 
         public override void _ExitTree()
@@ -116,6 +115,7 @@ namespace ADK
 
             // lobby
             lobbyContent.Visible = state != NetLobbyState.Disconnected;
+            NetworkManager.Instance.RttChecker.DoRegularRttChecks = state == NetLobbyState.Host;
         }
 
         void OnHostButtonClicked()

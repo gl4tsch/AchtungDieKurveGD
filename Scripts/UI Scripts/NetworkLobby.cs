@@ -79,9 +79,12 @@ namespace ADK.UI
             netSnakeInstances.Clear();
         }
 
-        void OnRttUpdateForPlayer((float playerId, float rttMs)rttUpdate)
+        void OnRttUpdateForPlayer((long playerId, float rttMs)rttUpdate)
         {
-            netSnakeInstances[(long)rttUpdate.playerId].UpdatePing(rttUpdate.rttMs / 2f);
+            if (netSnakeInstances.ContainsKey(rttUpdate.playerId))
+            {
+                netSnakeInstances[rttUpdate.playerId].UpdatePing(rttUpdate.rttMs / 2f);
+            }
         }
     }
 }

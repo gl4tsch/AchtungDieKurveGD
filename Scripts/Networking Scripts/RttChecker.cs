@@ -10,12 +10,14 @@ namespace ADK.Net
         [Export] float checkIntervalSeconds = 3;
         double t;
 
-        public event Action<(float playerId, float rtt)> RttUpdateForPlayer;
+        public event Action<(long playerId, float rtt)> RttUpdateForPlayer;
         Dictionary<long, DateTime> pendingPingTimes = new();
         Dictionary<long, float> lastRecordedRtt = new();
 
         public override void _Process(double delta)
         {
+            if (!DoRegularRttChecks) return;
+
             t += delta;
             if (t >= checkIntervalSeconds)
             {
@@ -24,8 +26,11 @@ namespace ADK.Net
             }
         }
 
+        // server only
         public void RttCheckAll()
         {
+            if (!Multiplayer.IsServer()) return;
+
             var players = NetworkManager.Instance.Players.Keys;
             foreach (var playerId in players)
             {
@@ -38,7 +43,7 @@ namespace ADK.Net
                 {
                     lastRecordedRtt.Add(playerId, -1);
                 }
-                Rpc(nameof(ReceiveRttUpdateForPlayer), (float)playerId, lastRecordedRtt[playerId]);
+                Rpc(nameof(ReceiveRttUpdateForPlayer), playerId, lastRecordedRtt[playerId]);
             }
         }
 
@@ -58,7 +63,7 @@ namespace ADK.Net
         }
 
         [Rpc(MultiplayerApi.RpcMode.AnyPeer, CallLocal = true, TransferMode = MultiplayerPeer.TransferModeEnum.Reliable)]
-        void ReceiveRttUpdateForPlayer(float playerId, float rttMs)
+        void ReceiveRttUpdateForPlayer(long playerId, float rttMs)
         {
             RttUpdateForPlayer?.Invoke((playerId, rttMs));
         }
