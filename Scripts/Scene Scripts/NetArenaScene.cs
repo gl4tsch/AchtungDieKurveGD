@@ -11,7 +11,7 @@ namespace ADK.Net
         [Export] Arena arena;
         SnakeHandler snakeHandler;
 
-        SortedList<long, NetSnake> playerSnakes = new();
+        SortedList<long, Snake> playerSnakes = new();
         Snake localSnake => GameManager.Instance.Snakes[0];
         SnakeInputSerializer inputSerializer = new();
         Queue<TickInputs> ticksToExecute = new();
@@ -36,10 +36,11 @@ namespace ADK.Net
         {
             foreach (var player in NetworkManager.Instance.Players)
             {
-                playerSnakes.Add(player.Key, new NetSnake(player.Value));
+                Ability ability = GameManager.Instance.CreateAbility(player.Value.Ability);
+                playerSnakes.Add(player.Key, new Snake(player.Value.Name, player.Value.Color, ability));
             }
                 
-            var sortedSnakes = playerSnakes.Values.Cast<Snake>().ToList();
+            var sortedSnakes = playerSnakes.Values.ToList();
             snakeHandler.SetSnakes(sortedSnakes);
             arena.Init(sortedSnakes.Count);
         }
