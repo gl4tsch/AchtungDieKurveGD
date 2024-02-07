@@ -6,6 +6,7 @@ namespace ADK
 {
     public partial class NetLobbyScene : Node
     {
+        [Export] NetSettingsSynchronizer netSettingsSynchronizer;
         [Export] LineEdit ipInput, portInput;
         [Export] Button backButton;
         [Export] LobbySnake ownSnake;
@@ -145,6 +146,12 @@ namespace ADK
 
         void OnStartButtonClicked()
         {
+            if (netSettingsSynchronizer.ConfirmationsPending)
+            {
+                GD.PrintErr("Need to wait for all clients to receive and confirm settings");
+                return;
+            }
+            GameManager.Instance.ApplySettings(netSettingsSynchronizer.NetSettings);
             NetworkManager.Instance.SendStartGame();
         }
 

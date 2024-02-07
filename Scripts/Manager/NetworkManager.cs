@@ -235,7 +235,7 @@ namespace ADK.Net
             }
         }
 
-        // only the server may start the game
+        // server only
         public void SendStartGame()
         {
             if (Multiplayer.IsServer())

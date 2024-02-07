@@ -104,7 +104,7 @@ namespace ADK.UI
         {
             // save settings
             GameManager.Instance.ApplySettings(localSettings);
-            GameManager.Instance.Settings.SaveSettings();
+            GameManager.Instance.Settings.SaveSettingsToConfig();
             QueueFree();
         }
 

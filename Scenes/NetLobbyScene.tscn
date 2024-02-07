@@ -12,7 +12,7 @@ border_width_top = 2
 border_width_right = 2
 border_width_bottom = 2
 
-[node name="NetLobbyScene" type="Control" node_paths=PackedStringArray("ipInput", "portInput", "backButton", "ownSnake", "hostButton", "joinButton", "startButton", "readyButton", "leaveButton", "lobbyContent")]
+[node name="NetLobbyScene" type="Control" node_paths=PackedStringArray("netSettingsSynchronizer", "ipInput", "portInput", "backButton", "ownSnake", "hostButton", "joinButton", "startButton", "readyButton", "leaveButton", "lobbyContent")]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -20,6 +20,7 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_3b25f")
+netSettingsSynchronizer = NodePath("NetSettingsSynchronizer")
 ipInput = NodePath("Content/Container/HBoxContainer2/LineEdit")
 portInput = NodePath("Content/Container/HBoxContainer/LineEdit")
 backButton = NodePath("Back Button")

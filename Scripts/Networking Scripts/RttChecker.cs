@@ -7,7 +7,7 @@ namespace ADK.Net
     public partial class RttChecker : Node
     {
         [Export] public bool DoRegularRttChecks = false;
-        [Export] float checkIntervalSeconds = 3;
+        [Export] float checkIntervalSeconds = 1;
         double t;
 
         public event Action<(long playerId, float rtt)> RttUpdateForPlayer;

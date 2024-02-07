@@ -1,12 +1,12 @@
 using System.Collections.Generic;
 using System.Linq;
-using ADK.Net;
 using Godot;
 
-namespace ADK
+namespace ADK.Net
 {
     public partial class NetSettingsSynchronizer : Node
     {
+        public Settings NetSettings => settingsCopy;
         Settings settingsCopy;
         SettingsSection netArenaSettings => settingsCopy.ArenaSettings;
         SettingsSection netSnakeSettings => settingsCopy.SnakeSettings;

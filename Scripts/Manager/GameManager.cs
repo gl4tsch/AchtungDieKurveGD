@@ -32,7 +32,7 @@ namespace ADK
 
             // load settings
             Settings = new();
-            Settings.LoadSettings();
+            Settings.LoadSettingsFromConfig();
             ApplySettings(Settings);
 
             // create ability factory

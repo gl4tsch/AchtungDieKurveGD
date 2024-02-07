@@ -27,7 +27,7 @@ namespace ADK
         /// <summary>
         /// loads settings from settings.cfg file
         /// </summary>
-        public void LoadSettings()
+        public void LoadSettingsFromConfig()
         {
             var error = config.Load(settingsFilePathRelative);
             GD.Print($"Settings File Loading: {error}");
@@ -47,7 +47,7 @@ namespace ADK
         /// <summary>
         /// saves settings to settings.cfg file
         /// </summary>
-        public void SaveSettings()
+        public void SaveSettingsToConfig()
         {
             GraphicsSettings.SaveToConfig(config);
             AudioSettings.SaveToConfig(config);
@@ -65,8 +65,8 @@ namespace ADK
             if (File.Exists(settingsFilePathAbsolute))
             {
                 File.WriteAllText(settingsFilePathAbsolute, string.Empty);
-                LoadSettings();
-                SaveSettings();
+                LoadSettingsFromConfig();
+                SaveSettingsToConfig();
             }
             else
             {
@@ -80,9 +80,9 @@ namespace ADK
         /// </summary>
         public Settings NewCopy()
         {
-            SaveSettings();
+            SaveSettingsToConfig();
             Settings newSettings = new();
-            newSettings.LoadSettings();
+            newSettings.LoadSettingsFromConfig();
             return newSettings;
         }
     }
