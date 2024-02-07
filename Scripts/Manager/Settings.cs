@@ -8,9 +8,9 @@ namespace ADK
 {
     public class Settings
     {
-        static readonly string settingsFileName = "settings.cfg";
-        static readonly string settingsFilePathRelative = $"user://{settingsFileName}";
-        static readonly string settingsFilePathAbsolute = Path.Combine(OS.GetUserDataDir(), settingsFileName);
+        string settingsFileName = "settings.cfg";
+        string settingsFilePathRelative => $"user://{settingsFileName}";
+        string settingsFilePathAbsolute => Path.Combine(OS.GetUserDataDir(), settingsFileName);
         ConfigFile config = new();
 
         public string AudioSectionName => "Audio";
@@ -102,6 +102,21 @@ namespace ADK
             Settings = defaultSettings;
         }
 
+        public void LoadFromGodotDict(Godot.Collections.Dictionary<string, Variant> dict)
+        {
+            foreach (var entry in dict)
+            {
+                if (Settings.ContainsKey(entry.Key))
+                {
+                    Settings[entry.Key] = entry.Value;
+                }
+                else
+                {
+                    Settings.Add(entry.Key, entry.Value);
+                }
+            }
+        }
+
         public void LoadFromConfig(ConfigFile config)
         {
             if (config.HasSection(ConfigSectionName))
@@ -118,6 +133,16 @@ namespace ADK
                     }
                 }
             }
+        }
+
+        public Godot.Collections.Dictionary<string, Variant> ToGodotDict()
+        {
+            Godot.Collections.Dictionary<string, Variant> gdDict = new();
+            foreach (var entry in Settings)
+            {
+                gdDict.Add(entry.Key, entry.Value);
+            }
+            return gdDict;
         }
 
         public void SaveToConfig(ConfigFile config)

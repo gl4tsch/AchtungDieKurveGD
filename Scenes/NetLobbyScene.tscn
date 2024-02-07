@@ -1,8 +1,9 @@
-[gd_scene load_steps=5 format=3 uid="uid://c1ntf8evbrjbr"]
+[gd_scene load_steps=6 format=3 uid="uid://c1ntf8evbrjbr"]
 
 [ext_resource type="Script" path="res://Scripts/Scene Scripts/NetLobbyScene.cs" id="1_3b25f"]
 [ext_resource type="PackedScene" uid="uid://bae87207cf2dx" path="res://NetworkLobby.tscn" id="2_mryw8"]
 [ext_resource type="PackedScene" uid="uid://ca7fqescjyftk" path="res://Prefabs/LobbySnake.tscn" id="2_wudt5"]
+[ext_resource type="Script" path="res://Scripts/Networking Scripts/NetSettingsSynchronizer.cs" id="2_x8fcl"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_iljp0"]
 bg_color = Color(0, 0, 0, 1)
@@ -29,6 +30,9 @@ startButton = NodePath("Content/Buttons/Start")
 readyButton = NodePath("Content/Buttons/Ready")
 leaveButton = NodePath("Content/Buttons/Leave")
 lobbyContent = NodePath("Content/Bot/Lobby")
+
+[node name="NetSettingsSynchronizer" type="Node" parent="."]
+script = ExtResource("2_x8fcl")
 
 [node name="ColorRect" type="ColorRect" parent="."]
 layout_mode = 1
