@@ -51,6 +51,8 @@ namespace ADK
 
             SetLobbyState(NetLobbyState.Disconnected);
             NetworkManager.Instance.ServerDisconnected += () => SetLobbyState(NetLobbyState.Disconnected);
+
+            AudioManager.Instance?.PlayMusic(Music.LobbyTheme);
         }
 
         public override void _ExitTree()

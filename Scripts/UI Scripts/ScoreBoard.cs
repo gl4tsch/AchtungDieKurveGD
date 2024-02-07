@@ -14,11 +14,9 @@ namespace ADK.UI
         ScoreTracker scoreTracker;
         List<ScoreBoardEntry> scoreInstances = new();
 
-        public override void _Ready()
+        public void SetScoreTracker(ScoreTracker scoreTracker)
         {
-            base._Ready();
-
-            scoreTracker = new ScoreTracker(GameManager.Instance.Snakes);
+            this.scoreTracker = scoreTracker;
             scoreTracker.ScoresChanged += OnScoresChanged;
 
             // clear old ui instances
@@ -27,7 +25,6 @@ namespace ADK.UI
             {
                 node.Free();
             }
-
             // spawn new ui instances
             foreach (var score in scoreTracker.SortedScores)
             {
@@ -40,7 +37,10 @@ namespace ADK.UI
         public override void _ExitTree()
         {
             base._ExitTree();
-            scoreTracker.ScoresChanged -= OnScoresChanged;
+            if (scoreTracker != null)
+            {
+                scoreTracker.ScoresChanged -= OnScoresChanged;
+            }
         }
 
         void OnScoresChanged(ReadOnlyCollection<SnakeScore> snakeScores)

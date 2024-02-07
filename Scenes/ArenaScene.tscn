@@ -5,9 +5,10 @@
 [ext_resource type="PackedScene" uid="uid://cyk1hxyvevajg" path="res://Prefabs/ArenaRect.tscn" id="3_h4tyc"]
 [ext_resource type="PackedScene" uid="uid://tytbc3qfkstf" path="res://Prefabs/ScoreBoard.tscn" id="4_ow57f"]
 
-[node name="ArenaScene" type="Node" node_paths=PackedStringArray("arena")]
+[node name="ArenaScene" type="Node" node_paths=PackedStringArray("arena", "scoreBoard")]
 script = ExtResource("1_i4ipp")
 arena = NodePath("Arena Texture")
+scoreBoard = NodePath("Score Board")
 WinPopUpPrefab = ExtResource("2_dx02w")
 
 [node name="BG" type="ColorRect" parent="."]

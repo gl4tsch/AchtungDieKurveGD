@@ -1,5 +1,7 @@
+using ADK.UI;
 using Godot;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace ADK
@@ -7,6 +9,7 @@ namespace ADK
     public partial class ArenaScene : Node
     {
         [Export] Arena arena;
+        [Export] ScoreBoard scoreBoard;
         [Export] PackedScene WinPopUpPrefab;
 
         public enum BattleState
@@ -16,13 +19,18 @@ namespace ADK
             EndOfRound
         }
         public BattleState CurrentBattleState { get; private set; }
-        public event Action<BattleState> BattleStateChanged;
 
         EndOfRoundPopup popUpWindowInstance;
+        SnakeHandler snakeHandler;
+        ScoreTracker scoreTracker;
 
         public override void _Ready()
         {
             base._Ready();
+            snakeHandler = new(arena);
+            snakeHandler.SetSnakes(GameManager.Instance.Snakes);
+            scoreTracker = new ScoreTracker(GameManager.Instance.Snakes);
+            scoreBoard?.SetScoreTracker(scoreTracker);
             arena.Init(GameManager.Instance.Snakes.Count);
             AudioManager.Instance?.PlayMusic(Music.BattleTheme);
             StartNewRound();
@@ -31,29 +39,47 @@ namespace ADK
         public override void _Input(InputEvent @event)
         {
             base._Input(@event);
-            if (@event is InputEventKey keyEvent && keyEvent.IsPressed() && !keyEvent.IsEcho())
+            if (@event is InputEventKey keyEvent && !keyEvent.IsEcho())
             {
-                if (keyEvent.Keycode == Key.Escape)
+                snakeHandler.HandleSnakeInput(keyEvent);
+                
+                if (keyEvent.IsPressed())
                 {
-                    // TODO pause game and open pause screen
-                    GameManager.Instance.GoToScene(GameScene.Lobby);
-                }
-                if (keyEvent.Keycode == Key.Enter && CurrentBattleState == BattleState.EndOfRound)
-                {
-                    // kill the last remaining snake if there is one to update score
-                    foreach (var aliveSnake in GameManager.Instance.Snakes.Where(s => s.IsAlive))
+                    if (keyEvent.Keycode == Key.Escape)
                     {
-                        aliveSnake.Kill();
+                        // TODO pause game and open pause screen
+                        GameManager.Instance.GoToScene(GameScene.Lobby);
                     }
-                    StartNewRound();
+                    if (keyEvent.Keycode == Key.Enter && CurrentBattleState == BattleState.EndOfRound)
+                    {
+                        StartNewRound();
+                    }   
                 }
             }
+        }
+
+        public override void _Process(double delta)
+        {
+            var aliveSnakes = snakeHandler.AliveSnakes;
+            // we have a winner
+            if (aliveSnakes.Count <= 1)
+            {
+                EndRound(aliveSnakes.Count == 1 ? aliveSnakes[0] : null);
+            }
+
+            // but the last player may still move while the round ends
+            snakeHandler.UpdateSnakes(delta);
         }
 
         public void StartNewRound()
         {
             popUpWindowInstance?.QueueFree();
-            BroadcastBattleStateTransition(BattleState.StartOfRound);
+            // kill the last remaining snake if there is one to update score
+            snakeHandler.KillAll();
+            snakeHandler.Reset();
+            snakeHandler.SpawnSnakes();
+            arena.ResetArena();
+            CurrentBattleState = BattleState.StartOfRound;
         }
 
         public void EndRound(Snake winner = null)
@@ -64,19 +90,14 @@ namespace ADK
                 return;
             }
             DisplayWinPopup(winner);
-            BroadcastBattleStateTransition(BattleState.EndOfRound);
+            scoreTracker.ResetAbilityUses();
+            CurrentBattleState = BattleState.EndOfRound;
         }
 
         void DisplayWinPopup(Snake winner)
         {
             popUpWindowInstance = WinPopUpPrefab.Instantiate<EndOfRoundPopup>().PopUp(winner);
             AddChild(popUpWindowInstance);
-        }
-
-        void BroadcastBattleStateTransition(BattleState state)
-        {
-            CurrentBattleState = state;
-            BattleStateChanged?.Invoke(CurrentBattleState);
         }
     }
 }

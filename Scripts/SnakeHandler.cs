@@ -12,6 +12,7 @@ namespace ADK
     {
         List<Snake> snakes = new();
         List<Snake> aliveSnakes = new();
+        public List<Snake> AliveSnakes => aliveSnakes;
         List<Snake> collidedSnakes = new();
         public List<Snake> CollidedSnakes => collidedSnakes;
         Arena arena;
@@ -24,7 +25,6 @@ namespace ADK
         public void SetSnakes(List<Snake> snakes)
         {
             this.snakes = snakes;
-            //Reset();
         }
 
         public void Reset()
@@ -43,6 +43,14 @@ namespace ADK
                 snake.Kill();
             }
             aliveSnakes.Clear();
+        }
+
+        public void SpawnSnakes()
+        {
+            foreach (var snake in snakes)
+            {
+                snake.Spawn((Vector2I)arena.Dimensions);
+            }
         }
 
         public void HandleSnakeInput(InputEventKey keyEvent)
@@ -69,12 +77,6 @@ namespace ADK
         {
             collidedSnakes.Clear();
             aliveSnakes.RemoveAll(s => !s.IsAlive);
-            // we have a winner
-            if (aliveSnakes.Count <= 1)
-            {
-                GameManager.Instance?.ActiveArenaScene?.EndRound(aliveSnakes.Count == 1 ? aliveSnakes[0] : null);
-            }
-            // but the last player may still move while the round ends
             if (aliveSnakes.Count == 0)
             {
                 return;
@@ -118,7 +120,6 @@ namespace ADK
             foreach (var snake in collidedSnakes)
             {
                 snake.OnCollision();
-                // aliveSnakes.Remove(snake);
             }
 
             HandleSnakeExplosionRequests();

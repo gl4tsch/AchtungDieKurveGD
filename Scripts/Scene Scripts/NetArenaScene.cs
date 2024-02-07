@@ -30,6 +30,7 @@ namespace ADK.Net
             }
             NetworkManager.Instance.SendReady();
             GD.Print("Waiting for other Players...");
+            AudioManager.Instance?.PlayMusic(Music.BattleTheme);
         }
 
         void InitializeSnakes()

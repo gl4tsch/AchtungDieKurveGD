@@ -5,7 +5,7 @@ using System.Linq;
 
 namespace ADK
 {
-    public partial class ScoreTracker
+    public class ScoreTracker
     {
         List<Snake> snakes;
 
@@ -32,20 +32,15 @@ namespace ADK
                 snake.Died += OnSnakeDeath;
             }
             SortScores();
-            GameManager.Instance.ActiveArenaScene.BattleStateChanged += OnBattleStateChanged;
         }
 
-        void OnBattleStateChanged(ArenaScene.BattleState battleState)
+        public void ResetAbilityUses()
         {
-            if (battleState == ArenaScene.BattleState.StartOfRound)
+            foreach (var snake in snakes)
             {
-                // reset ability uses
-                foreach (var snake in snakes)
+                if (snake.Ability != null)
                 {
-                    if (snake.Ability != null)
-                    {
-                        snake.Ability.Uses = sortedScores.Find(ss => ss.Snake == snake).Place;
-                    }
+                    snake.Ability.Uses = sortedScores.Find(ss => ss.Snake == snake).Place;
                 }
             }
         }
