@@ -1,3 +1,4 @@
+using ADK.UI;
 using Godot;
 using System;
 using System.Collections.Generic;
@@ -9,7 +10,9 @@ namespace ADK.Net
     {
         [Export] NetTicker netTicker;
         [Export] Arena arena;
+        [Export] ScoreBoard scoreBoard;
         SnakeHandler snakeHandler;
+        ScoreTracker scoreTracker;
 
         SortedList<long, Snake> playerSnakes = new();
         Snake localSnake => GameManager.Instance.Snakes[0];
@@ -30,6 +33,9 @@ namespace ADK.Net
             }
             NetworkManager.Instance.SendReady();
             GD.Print("Waiting for other Players...");
+
+            scoreTracker = new(playerSnakes.Values.ToList());
+            scoreBoard.SetScoreTracker(scoreTracker);
             AudioManager.Instance?.PlayMusic(Music.BattleTheme);
         }
 
@@ -79,6 +85,7 @@ namespace ADK.Net
             snakeHandler.KillAll();
             snakeHandler.Reset();
             arena.ResetArena();
+            scoreTracker.ResetAbilityUses();
         }
 
         // server

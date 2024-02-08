@@ -1,13 +1,15 @@
-[gd_scene load_steps=4 format=3 uid="uid://d0ddhy5gjnplg"]
+[gd_scene load_steps=5 format=3 uid="uid://d0ddhy5gjnplg"]
 
 [ext_resource type="Script" path="res://Scripts/Scene Scripts/NetArenaScene.cs" id="1_t0tpl"]
 [ext_resource type="Script" path="res://Scripts/Networking Scripts/NetTicker.cs" id="2_du3f1"]
 [ext_resource type="PackedScene" uid="uid://cyk1hxyvevajg" path="res://Prefabs/ArenaRect.tscn" id="3_qhwow"]
+[ext_resource type="PackedScene" uid="uid://tytbc3qfkstf" path="res://Prefabs/ScoreBoard.tscn" id="4_aooi4"]
 
-[node name="NetArenaScene" type="Node" node_paths=PackedStringArray("netTicker", "arena")]
+[node name="NetArenaScene" type="Node" node_paths=PackedStringArray("netTicker", "arena", "scoreBoard")]
 script = ExtResource("1_t0tpl")
 netTicker = NodePath("NetTicker")
 arena = NodePath("TextureRect")
+scoreBoard = NodePath("Score Board")
 metadata/_edit_horizontal_guides_ = [-48.0]
 
 [node name="NetTicker" type="Node" parent="."]
@@ -17,3 +19,5 @@ minLagMs = 200.0
 maxLagMs = 400.0
 
 [node name="TextureRect" parent="." instance=ExtResource("3_qhwow")]
+
+[node name="Score Board" parent="." instance=ExtResource("4_aooi4")]
