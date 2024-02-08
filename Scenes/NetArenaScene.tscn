@@ -18,6 +18,14 @@ simulateLag = true
 minLagMs = 200.0
 maxLagMs = 400.0
 
+[node name="Background" type="ColorRect" parent="."]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0, 0, 0, 1)
+
 [node name="TextureRect" parent="." instance=ExtResource("3_qhwow")]
 
 [node name="Score Board" parent="." instance=ExtResource("4_aooi4")]
