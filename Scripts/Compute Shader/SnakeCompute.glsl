@@ -151,7 +151,7 @@ void main()
             {
                 // COLLISION
                 collisionBuffer.collisions[i] = 1;
-				imageStore(arena, coords, vec4(1,0,0,1));
+				//imageStore(arena, coords, vec4(1,0,0,1));
             }
 			else
 			{
