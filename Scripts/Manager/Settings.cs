@@ -66,6 +66,7 @@ namespace ADK
             if (File.Exists(settingsFilePathAbsolute))
             {
                 File.WriteAllText(settingsFilePathAbsolute, string.Empty);
+                GD.Print("Settings Wiped");
                 LoadSettingsFromConfig();
                 SaveSettingsToConfig();
             }

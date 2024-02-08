@@ -119,6 +119,7 @@ namespace ADK.UI
         {
             // clear settings file
             GameManager.Instance.Settings.WipeSettings();
+            GameManager.Instance.ApplySettings(GameManager.Instance.Settings);
             QueueFree();
         }
 
