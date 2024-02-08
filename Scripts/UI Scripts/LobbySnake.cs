@@ -134,7 +134,10 @@ namespace ADK.UI
         {
             var idx = abilityFactory.FindIndex(a => a.name == (Snake.Ability?.Name ?? Ability.NoAbilityDisplayName));
             //int idx = allAbilities.FindIndex(a => a?.Name == Snake.Ability?.Name);
-            abilityDD.Select(idx);
+            if (abilityDD.ItemCount > idx)
+            {
+                abilityDD.Select(idx);
+            }
         }
 
         void OnSnakeNameInput(string input)
