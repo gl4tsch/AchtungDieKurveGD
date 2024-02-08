@@ -130,6 +130,8 @@ void main()
 	// Grab the current pixel's position from the ID of this specific invocation ("thread").
 	ivec2 coords = ivec2(gl_GlobalInvocationID.xy);
 	ivec2 dimensions = imageSize(arena);
+	// as margin to avoid accidental self collisions due to float imprecision errors
+	float epsilon = 1.0 / dimensions.x / 4.0;
 	vec4 pixel = imageLoad(arena, coords);
 
 	// SNAKES
@@ -145,14 +147,17 @@ void main()
 		{
 			// if the pixel is not the end of same snake from previous frame && the pixel has a value already
 			float distToStart = length(prevPos - coords);
-            if (distToStart > snake.halfThickness && pixel.a == 1)
+            if (distToStart - epsilon > snake.halfThickness && pixel.a == 1)
             {
                 // COLLISION
                 collisionBuffer.collisions[i] = 1;
+				imageStore(arena, coords, vec4(1,0,0,1));
             }
-
-			// draw pixel
-			imageStore(arena, coords, color);
+			else
+			{
+				// draw pixel
+				imageStore(arena, coords, color);
+			}
 		}
 	}
 

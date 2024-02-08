@@ -361,6 +361,7 @@ namespace ADK
 
         public void RequestExplosion(LineFilter pixels)
         {
+            return;
             explosionBuffer.Add(pixels);
         }
 
