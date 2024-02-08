@@ -24,6 +24,13 @@ namespace ADK.Net
             Clear();
         }
 
+        public override void _ExitTree()
+        {
+            NetworkManager.Instance.PlayerConnected -= OnPlayerConnected;
+            NetworkManager.Instance.PlayerDisconnected -= OnPlayerDisconnected;
+            NetworkManager.Instance.ServerDisconnected -= Clear;
+        }
+
         void Clear()
         {
             settingsCopy = GameManager.Instance.Settings.NewCopy();

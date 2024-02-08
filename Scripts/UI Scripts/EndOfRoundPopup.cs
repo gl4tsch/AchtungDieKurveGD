@@ -34,6 +34,7 @@ namespace ADK
 
         public EndOfRoundPopup PopUp(Snake winner)
         {
+            if (winner == null) return null;
             winnerHue = winner.Color.H;
             winnerName.Text = winner.Name;
             winnerName.AddThemeColorOverride("font_color", winner.Color);

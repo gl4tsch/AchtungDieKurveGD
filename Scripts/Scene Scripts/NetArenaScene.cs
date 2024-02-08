@@ -6,13 +6,9 @@ using System.Linq;
 
 namespace ADK.Net
 {
-    public partial class NetArenaScene : Node
+    public partial class NetArenaScene : ArenaScene
     {
         [Export] NetTicker netTicker;
-        [Export] Arena arena;
-        [Export] ScoreBoard scoreBoard;
-        SnakeHandler snakeHandler;
-        ScoreTracker scoreTracker;
 
         SortedList<long, Snake> playerSnakes = new();
         Snake localSnake => GameManager.Instance.Snakes[0];
@@ -23,10 +19,16 @@ namespace ADK.Net
 
         public override void _Ready()
         {
-            snakeHandler = new(arena);
+            NetworkManager.Instance.ServerDisconnected += OnServerDisconnected;
+
             var playerIDs = NetworkManager.Instance.Players.Keys.ToList();
             netTicker.Init(inputSerializer, playerIDs);
-            InitializeSnakes();
+
+            var sortedSnakes = InitializeSnakes();
+            snakeHandler = new(arena);
+            snakeHandler.SetSnakes(sortedSnakes);
+            arena.Init(sortedSnakes.Count);
+
             if (Multiplayer.IsServer())
             {
                 NetworkManager.Instance.AllReadyOneshot += SendStartNewRound;
@@ -39,17 +41,26 @@ namespace ADK.Net
             AudioManager.Instance?.PlayMusic(Music.BattleTheme);
         }
 
-        void InitializeSnakes()
+        public override void _ExitTree()
+        {
+            NetworkManager.Instance.ServerDisconnected -= OnServerDisconnected;
+            NetworkManager.Instance.AllReadyOneshot -= SendStartNewRound;
+            NetworkManager.Instance.AllReadyOneshot -= SendReadyToRumble;
+        }
+
+        void OnServerDisconnected()
+        {
+            GameManager.Instance.GoToScene(GameScene.Main);
+        }
+
+        List<Snake> InitializeSnakes()
         {
             foreach (var player in NetworkManager.Instance.Players)
             {
                 Ability ability = GameManager.Instance.CreateAbility(player.Value.Ability);
                 playerSnakes.Add(player.Key, new Snake(player.Value.Name, player.Value.Color, ability));
             }
-                
-            var sortedSnakes = playerSnakes.Values.ToList();
-            snakeHandler.SetSnakes(sortedSnakes);
-            arena.Init(sortedSnakes.Count);
+            return playerSnakes.Values.ToList();
         }
 
         public override void _Input(InputEvent @event)
@@ -58,8 +69,10 @@ namespace ADK.Net
             {
                 if (keyEvent.Keycode == Key.Escape)
                 {
+                    NetworkManager.Instance.Disconnect();
+                    GameManager.Instance.GoToScene(GameScene.Main);
                 }
-                if (keyEvent.Keycode == Key.Enter && Multiplayer.IsServer())
+                if (keyEvent.Keycode == Key.Enter && Multiplayer.IsServer() && CurrentBattleState == BattleState.EndOfRound)
                 {
                     SendStartNewRound();
                 }
@@ -81,11 +94,15 @@ namespace ADK.Net
         {
             readyToRumble = false;
             netTicker.Reset();
+
             // kill the last remaining snake if there is one to update score
             snakeHandler.KillAll();
             snakeHandler.Reset();
             arena.ResetArena();
-            scoreTracker.ResetAbilityUses();
+            scoreTracker?.ResetAbilityUses();
+
+            popUpWindowInstance?.QueueFree();
+            CurrentBattleState = BattleState.Battle;
         }
 
         // server
@@ -200,6 +217,13 @@ namespace ADK.Net
         void ReceiveCollisionMessage(long collidedPlayer) // TODO: pass tick number and explode accordingly
         {
             snakeHandler.HandleCollisions(new(){playerSnakes[collidedPlayer]});
+
+            var aliveSnakes = snakeHandler.AliveSnakes;
+            // we have a winner
+            if (aliveSnakes.Count <= 1)
+            {
+                EndRound(aliveSnakes.Count == 1 ? aliveSnakes[0] : null);
+            }
         }
 
         bool flipFlop = false;

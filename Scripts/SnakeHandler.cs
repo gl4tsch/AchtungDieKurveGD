@@ -76,7 +76,6 @@ namespace ADK
         public void UpdateSnakes(double deltaT, bool handleCollisionsImmediately = true)
         {
             collidedSnakes.Clear();
-            aliveSnakes.RemoveAll(s => !s.IsAlive);
             if (aliveSnakes.Count == 0)
             {
                 return;
@@ -121,7 +120,7 @@ namespace ADK
             {
                 snake.OnCollision();
             }
-
+            aliveSnakes.RemoveAll(s => !s.IsAlive);
             HandleSnakeExplosionRequests();
         }
 

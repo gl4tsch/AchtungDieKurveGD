@@ -1,32 +1,27 @@
 using ADK.UI;
 using Godot;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace ADK
 {
     public partial class ArenaScene : Node
     {
-        [Export] Arena arena;
-        [Export] ScoreBoard scoreBoard;
-        [Export] PackedScene WinPopUpPrefab;
+        [Export] protected Arena arena;
+        [Export] protected ScoreBoard scoreBoard;
+        [Export] protected PackedScene WinPopUpPrefab;
 
         public enum BattleState
         {
-            StartOfRound,
             Battle,
             EndOfRound
         }
-        public BattleState CurrentBattleState { get; private set; }
+        public BattleState CurrentBattleState { get; protected set; }
 
-        EndOfRoundPopup popUpWindowInstance;
-        SnakeHandler snakeHandler;
-        ScoreTracker scoreTracker;
+        protected EndOfRoundPopup popUpWindowInstance;
+        protected SnakeHandler snakeHandler;
+        protected ScoreTracker scoreTracker;
 
         public override void _Ready()
         {
-            base._Ready();
             snakeHandler = new(arena);
             snakeHandler.SetSnakes(GameManager.Instance.Snakes);
             scoreTracker = new ScoreTracker(GameManager.Instance.Snakes);
@@ -38,7 +33,6 @@ namespace ADK
 
         public override void _Input(InputEvent @event)
         {
-            base._Input(@event);
             if (@event is InputEventKey keyEvent && !keyEvent.IsEcho())
             {
                 snakeHandler.HandleSnakeInput(keyEvent);
@@ -80,7 +74,7 @@ namespace ADK
             snakeHandler.SpawnSnakes();
             arena.ResetArena();
             scoreTracker.ResetAbilityUses();
-            CurrentBattleState = BattleState.StartOfRound;
+            CurrentBattleState = BattleState.Battle;
         }
 
         public void EndRound(Snake winner = null)
@@ -96,7 +90,9 @@ namespace ADK
 
         void DisplayWinPopup(Snake winner)
         {
-            popUpWindowInstance = WinPopUpPrefab.Instantiate<EndOfRoundPopup>().PopUp(winner);
+            var popUp = WinPopUpPrefab.Instantiate<EndOfRoundPopup>().PopUp(winner);
+            if (popUp == null) return;
+            popUpWindowInstance = popUp;
             AddChild(popUpWindowInstance);
         }
     }

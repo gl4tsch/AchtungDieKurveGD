@@ -50,13 +50,14 @@ namespace ADK
             backButton.Pressed += GoBack;
 
             SetLobbyState(NetLobbyState.Disconnected);
-            NetworkManager.Instance.ServerDisconnected += () => SetLobbyState(NetLobbyState.Disconnected);
+            NetworkManager.Instance.ServerDisconnected += OnServerDisconnected;
 
             AudioManager.Instance?.PlayMusic(Music.LobbyTheme);
         }
 
         public override void _ExitTree()
         {
+            NetworkManager.Instance.ServerDisconnected -= OnServerDisconnected;
             NetworkManager.Instance.RttChecker.DoRegularRttChecks = false;
         }
 
@@ -71,6 +72,11 @@ namespace ADK
             {
                 NetworkManager.Instance.SetPort(portNum);
             }
+        }
+
+        void OnServerDisconnected()
+        {
+            SetLobbyState(NetLobbyState.Disconnected);
         }
 
         public override void _Input(InputEvent @event)
