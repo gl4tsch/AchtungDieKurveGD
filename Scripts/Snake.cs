@@ -212,7 +212,7 @@ namespace ADK
             }
             else
             {
-                // L = ang * r; ang = L/r // ang in rad
+                // L = a*r; a = L/r // a in rad
                 arcAngle = moveDistance / (TurnRadius * TurnRadiusModifier) * TurnSign;
                 Vector2 dir90 = Direction.Rotated(Mathf.DegToRad(90) * TurnSign);
                 Vector2 turnCenter = PxPosition + dir90 * TurnRadius;
@@ -310,6 +310,7 @@ namespace ADK
         public void Kill()
         {
             IsAlive = false;
+            Ability?.Cancel();
             Died?.Invoke(this);
         }
 

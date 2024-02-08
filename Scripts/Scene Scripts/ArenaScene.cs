@@ -79,6 +79,7 @@ namespace ADK
             snakeHandler.Reset();
             snakeHandler.SpawnSnakes();
             arena.ResetArena();
+            scoreTracker.ResetAbilityUses();
             CurrentBattleState = BattleState.StartOfRound;
         }
 
@@ -90,7 +91,6 @@ namespace ADK
                 return;
             }
             DisplayWinPopup(winner);
-            scoreTracker.ResetAbilityUses();
             CurrentBattleState = BattleState.EndOfRound;
         }
 

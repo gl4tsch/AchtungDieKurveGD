@@ -11,7 +11,6 @@ namespace ADK
         string settingsFileName = "settings.cfg";
         string settingsFilePathRelative => $"user://{settingsFileName}";
         string settingsFilePathAbsolute => Path.Combine(OS.GetUserDataDir(), settingsFileName);
-        ConfigFile config = new();
 
         public string AudioSectionName => "Audio";
         public string ArenaSectionName => "Arena";
@@ -29,6 +28,7 @@ namespace ADK
         /// </summary>
         public void LoadSettingsFromConfig()
         {
+            ConfigFile config = new();
             var error = config.Load(settingsFilePathRelative);
             GD.Print($"Settings File Loading: {error}");
 
@@ -49,6 +49,7 @@ namespace ADK
         /// </summary>
         public void SaveSettingsToConfig()
         {
+            ConfigFile config = new();
             GraphicsSettings.SaveToConfig(config);
             AudioSettings.SaveToConfig(config);
             ArenaSettings.SaveToConfig(config);

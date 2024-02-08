@@ -57,5 +57,7 @@ namespace ADK
 
         /// <param name="deltaT">time since last tick in seconds</param>
         public virtual void Tick(float deltaT){}
+
+        public virtual void Cancel(){}
     }
 }

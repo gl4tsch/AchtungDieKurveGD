@@ -1,4 +1,5 @@
 using Godot;
+using System;
 using System.Collections.Generic;
 
 namespace ADK
@@ -9,30 +10,22 @@ namespace ADK
         public override string Name => DisplayName;
 
         static string speedSettingKey => $"{DisplayName}_{nameof(speedModifier)}";
-        static string turnSettingKey => $"{DisplayName}_{nameof(turnRateModifier)}";
+        static string turnSettingKey => $"{DisplayName}_{nameof(turnRadiusModifier)}";
         static string durationSettingKey => $"{DisplayName}_{nameof(duration)}";
 
-        float speedModifier = 1.5f;
-        float turnRateModifier = 1.5f;
+        float speedModifier = 2f;
+        float turnRadiusModifier = 1f;
         float duration = 1.5f; // [s]
 
         Snake snake;
-        List<Countdown> startedTimers = new();
-        class Countdown
-        {
-            public Countdown(float t)
-            {
-                this.t = t;
-            }
-            public float t;
-        }
+        List<DateTime> speedStartTimes = new();
 
         public SpeedAbility(SettingsSection settings) : base(settings){}
 
         public static Dictionary<string, Variant> DefaultSettings => new()
         {
-            {speedSettingKey, 1.5f},
-            {turnSettingKey, 1.5f},
+            {speedSettingKey, 2f},
+            {turnSettingKey, 1f},
             {durationSettingKey, 1.5f}
         };
 
@@ -44,7 +37,7 @@ namespace ADK
             }
             if (settings.Settings.TryGetValue(turnSettingKey, out Variant turnSetting))
             {
-                turnRateModifier = (float)turnSetting;
+                turnRadiusModifier = (float)turnSetting;
             }
             if (settings.Settings.TryGetValue(durationSettingKey, out Variant durationSetting))
             {
@@ -57,9 +50,9 @@ namespace ADK
             GD.Print("Mopsgeschwindigkeit!");
 
             this.snake = snake;
-            snake.MoveSpeedModifier += speedModifier;
-            snake.TurnRadiusModifier += turnRateModifier;
-            startedTimers.Add(new Countdown(duration));
+            snake.MoveSpeedModifier *= speedModifier;
+            snake.TurnRadiusModifier *= turnRadiusModifier;
+            speedStartTimes.Add(DateTime.Now);
             AudioManager.Instance?.PlaySound(SFX.SpeedAbility);
         }
 
@@ -67,22 +60,32 @@ namespace ADK
         {
             base.Tick(deltaT);
 
-            foreach (var countdown in startedTimers)
+            for (int i = speedStartTimes.Count - 1; i >= 0; i--)
             {
-                countdown.t -= deltaT;
-                if (countdown.t <= 0)
+                DateTime time = speedStartTimes[i];
+                if (DateTime.Now.CompareTo(time + TimeSpan.FromSeconds(duration)) > 0)
                 {
+                    speedStartTimes.RemoveAt(i);
                     OnBoostEnd();
                 }
             }
-            startedTimers.RemoveAll(t => t.t <= 0);
         }
 
         void OnBoostEnd()
         {
             GD.Print("Speed End");
-            snake.MoveSpeedModifier -= speedModifier;
-            snake.TurnRadiusModifier -= turnRateModifier;
+            snake.MoveSpeedModifier /= speedModifier;
+            snake.TurnRadiusModifier /= turnRadiusModifier;
+        }
+
+        public override void Cancel()
+        {
+            base.Cancel();
+            foreach (DateTime _ in speedStartTimes)
+            {
+                OnBoostEnd();
+            }
+            speedStartTimes.Clear();
         }
     }
 }
