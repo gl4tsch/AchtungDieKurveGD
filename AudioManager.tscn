@@ -1,9 +1,8 @@
-[gd_scene load_steps=12 format=3 uid="uid://bckwucveog1oc"]
+[gd_scene load_steps=11 format=3 uid="uid://bckwucveog1oc"]
 
 [ext_resource type="Script" path="res://Scripts/Manager/AudioManager.cs" id="1_t2pds"]
 [ext_resource type="AudioStream" uid="uid://chvh2hrqwspb3" path="res://Audio/Music/Chill Buster (From 'Deltarune') ~ Lofi Hip Hop Remix.mp3" id="2_oi8ib"]
 [ext_resource type="AudioStream" uid="uid://ysctqsw868ys" path="res://Audio/Music/Super Mario World - Koopa Castle (OC remix).mp3" id="3_m05du"]
-[ext_resource type="AudioStream" uid="uid://b8djkct8bj523" path="res://Audio/Music/JoelChipTunes.mp3" id="3_oi0mh"]
 [ext_resource type="AudioStream" uid="uid://1bbu83xq4qgj" path="res://Audio/SFX/smb_breakblock.wav" id="4_3yxtp"]
 [ext_resource type="AudioStream" uid="uid://b2u6o33chvu6g" path="res://Audio/Music/Monty Python and the Holy Grail- Intermission Music.mp3" id="4_kbgej"]
 [ext_resource type="AudioStream" uid="uid://dlrnuxmxtxsk0" path="res://Audio/SFX/smb_bump.wav" id="5_32j5p"]
@@ -14,8 +13,8 @@
 
 [node name="AudioManager" type="Node"]
 script = ExtResource("1_t2pds")
-lobbyMusic = Array[AudioStream]([ExtResource("2_oi8ib"), ExtResource("3_oi0mh"), ExtResource("4_kbgej"), ExtResource("5_jjcke")])
-battleMusic = Array[AudioStream]([ExtResource("3_m05du"), ExtResource("3_oi0mh")])
+lobbyMusic = Array[AudioStream]([ExtResource("2_oi8ib"), ExtResource("4_kbgej"), ExtResource("5_jjcke")])
+battleMusic = Array[AudioStream]([ExtResource("3_m05du")])
 snakeDeathExplosionSound = ExtResource("4_3yxtp")
 barAbilitySound = ExtResource("5_32j5p")
 teleportAbilitySound = ExtResource("6_ts674")

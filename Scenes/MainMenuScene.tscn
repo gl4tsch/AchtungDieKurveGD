@@ -37,7 +37,8 @@ grow_horizontal = 2
 grow_vertical = 2
 theme_type_variation = &"BigHeader"
 theme_override_font_sizes/font_size = 60
-text = "Achtung Die Kurve"
+text = "Achtung die Kurve GD"
+horizontal_alignment = 1
 
 [node name="Button" type="Button" parent="."]
 layout_mode = 1
@@ -53,7 +54,7 @@ offset_bottom = 34.0
 grow_horizontal = 2
 grow_vertical = 2
 theme_override_font_sizes/font_size = 30
-text = "Offline"
+text = " Share a Keyboard "
 
 [node name="Button2" type="Button" parent="."]
 layout_mode = 1
@@ -69,4 +70,4 @@ offset_bottom = 106.0
 grow_horizontal = 2
 grow_vertical = 2
 theme_override_font_sizes/font_size = 30
-text = "Online"
+text = " Net Multiplayer "
